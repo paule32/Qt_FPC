@@ -1,8 +1,12 @@
-program test1;
 {$mode delphi}
 {$L fpcinit.o}
-{$L Qt.qObject.o}
-uses rtl.utils;
+{$L rtl_utils.o}
+program test1;
+
+procedure test;
 begin
-test;
+end;
+
+begin
+  test;
 end.

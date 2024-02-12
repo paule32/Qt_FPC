@@ -1,5 +1,5 @@
 {$mode delphi}
-unit Qt.qObject;
+unit Qt_Object;
 
 interface
 

@@ -6,8 +6,8 @@ INPUT(
 .\units\test1.o
 .\units\fpcinit.o
 .\units\system.o
-.\units\rtl.utils.o
-.\units\Qt.qObject.o
+.\units\RTL_Utils.o
+.\units\Qt_Object.o
 )
 GROUP(
 .\units\libimpsystem.a
