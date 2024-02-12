@@ -8,6 +8,7 @@ INPUT(
 .\units\system.o
 .\units\RTL_Utils.o
 .\units\Qt_Object.o
+.\units\Qt_String.o
 )
 GROUP(
 .\units\libimpsystem.a

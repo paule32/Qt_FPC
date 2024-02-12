@@ -233,6 +233,11 @@ procedure LazExitProcess(ExitCode: LongInt); cdecl; external 'kernel32.dll' name
 procedure fpc_initializeunits; cdecl; external name 'fpc_initializeunits'; compilerproc;
 procedure fpc_do_exit; compilerproc;
 
+
+procedure fpc_ansistr_incr_ref;compilerproc;
+procedure fpc_ansistr_assign;compilerproc;
+procedure fpc_ansistr_concat;compilerproc;
+
 implementation
 
 procedure PascalMain; external name 'PASCALMAIN';
@@ -242,6 +247,10 @@ begin
   PascalMain;
   LazExitProcess(0);
 end;
+
+procedure fpc_ansistr_incr_ref;compilerproc; begin end;
+procedure fpc_ansistr_assign;compilerproc; begin end;
+procedure fpc_ansistr_concat;compilerproc; begin end;
 
 function TVmt.GetvParent: PVMT;
 begin

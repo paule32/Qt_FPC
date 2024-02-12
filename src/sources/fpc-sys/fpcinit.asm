@@ -53,6 +53,11 @@ SYSTEM$_$TOBJECT_$__$$_EQUALS$TOBJECT$$BOOLEAN:
 SYSTEM$_$TOBJECT_$__$$_TOSTRING$$ANSISTRING:
     ret
     
+    global SYSTEM$_$TOBJECT_$__$$_CREATE$$TOBJECT
+    section .text
+SYSTEM$_$TOBJECT_$__$$_CREATE$$TOBJECT:
+    ret
+    
     global RTTI_$SYSTEM_$$_TOBJECT$indirect
     section .text
 RTTI_$SYSTEM_$$_TOBJECT$indirect:
@@ -61,6 +66,36 @@ RTTI_$SYSTEM_$$_TOBJECT$indirect:
     global FPC_DONEEXCEPTION
     section .text
 FPC_DONEEXCEPTION:
+    ret
+
+    global VMT_$QT_OBJECT_$$_QOBJECT
+    section .text
+VMT_$QT_OBJECT_$$_QOBJECT:
+    ret
+    
+    global INIT$_$SYSTEM
+    section .text
+INIT$_$SYSTEM:
+    ret
+    
+    global INIT$_$FPINTRES
+    section .text
+INIT$_$FPINTRES:
+    ret
+    
+    global FINALIZE$_$OBJPAS
+    section .text
+FINALIZE$_$OBJPAS:
+    ret
+    
+    global SYSTEM$_$TOBJECT_$__$$_FREE
+    section .text
+SYSTEM$_$TOBJECT_$__$$_FREE:
+    ret
+    
+    global THREADVARLIST_$SYSTEM$indirect
+    section .text
+THREADVARLIST_$SYSTEM$indirect:
     ret
     
     global VMT_$SYSTEM_$$_TOBJECT$indirect
