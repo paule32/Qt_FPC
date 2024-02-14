@@ -1,36 +1,63 @@
-// ----------------------------------------------------------
+// ---------------------------------------------------------------------------
 // This file is part of RTL.
 //
 // (c) Copyright 2021 Jens Kallup - paule32
 // only for non-profit usage !!!
-// ----------------------------------------------------------
+// ---------------------------------------------------------------------------
 {$mode delphi}
 unit system;
 
 interface
+// ---------------------------------------------------------------------------
+// 64-bit data types
+// ---------------------------------------------------------------------------
+type Short_BYTE  =                 -128..127;
+type Short_WORD  =               -32768..32767;
+type Short_DWORD =          -2147483648..2147483647;
+type Short_QWORD = -9223372036854775808..9223372036854775807;
 
-//type Smallint = -32768..32767;
-//type LongWord =      0..4294967295;
+type Long_BYTE   =  0..255;
+type Long_WORD   =  0..65535;
+type Long_DWORD  =  0..4294967295;
+type Long_QWORD  =  0..18446744073709551615;
 
-type Integer  = SmallInt;
-type SizeInt  = LongInt;
+type DWord = Long_DWORD;
 
-type Cardinal = LongWord;
-type DWord    = LongWord;
-type UInt32   = Cardinal;
-type SizeUInt = DWord;
+type Integer  =      QWord;
+type Cardinal = Long_QWord;
 
-type CodePointer = Pointer;
+function sizeByte : Byte; inline; //  1
+function sizeChar : Byte; inline; //  2
+function sizeWord : Byte; inline; //  4
+function sizeDWord: Byte; inline; //  8
+function sizeQWord: Byte; inline; // 16
+
+type CodePointer  = Pointer;
 type PShortString = ^ShortString;
 
-type HRESULT  = LongInt;
+// ---------------------------------------------------------------------------
+// win32api constants, and variables ...
+// ---------------------------------------------------------------------------
+type HRESULT = Short_DWord;
+type UINT    =  Long_DWord;
+type SIZE_T  =  Long_DWord;
+
+const DLL_STR_kernel32 = 'kernel32.dll';
+
+// ---------------------------------------------------------------------------
+// win32api LocalAlloc, LocalReAlloc, and LocalFree:
+// ---------------------------------------------------------------------------
+const LMEM_MOVEABLE = $0002;
+const LMEM_ZEROINIT = $0040;
+
+const LHND = LMEM_MOVEABLE or LMEM_ZEROINIT;
 
 type
 	PJmp_buf = ^jmp_buf;
 	jmp_buf  = packed record
-		ebx:   LongInt;
-		esi:   LongInt;
-		edi:   LongInt;
+		ebx:   Long_DWord;
+		esi:   Long_DWord;
+		edi:   Long_DWord;
 		bp:    Pointer;
 		sp:    Pointer;
 		pc:    Pointer;
@@ -41,7 +68,7 @@ type
 	TExceptAddr = record
 		buf       : pjmp_buf;
 		next      : PExceptAddr;
-		frametype : Longint;
+		frametype : Long_Dword;
 	end;
 
 type
@@ -54,19 +81,19 @@ type
 	TGuid = packed record
 		case Integer of
 			1 : (
-				Data1 : DWord;
+				Data1 : Long_DWord;
 				Data2 : word;
 				Data3 : word;
 				Data4 : array[0..7] of byte;
 			);
 			2 : (
-				D1 : DWord;
+				D1 : Long_DWord;
 				D2 : word;
 				D3 : word;
 				D4 : array[0..7] of byte;
 			);
 			3 : ( { uuid fields according to RFC4122 }
-				time_low : dword;
+				time_low : Long_DWord;
 				time_mid : word;
 				time_hi_and_version : word;
 				clock_seq_hi_and_reserved : byte;
@@ -114,11 +141,11 @@ type
 	
 	TextRec = packed  record
 //		Handle    : THandle;
-		Mode      : longint;
-		bufsize   : SizeInt;
-		_private  : SizeInt;
+		Mode      : Long_DWord;
+		bufsize   : Long_DWord;
+		_private  : Long_DWord;
 		bufpos,
-		bufend    : SizeInt;
+		bufend    : Long_DWord;
 //		bufptr    : ^textbuf;
 //		openfunc,
 //		inoutfunc,
@@ -139,7 +166,7 @@ type
 
 type
 	TStringMessageTable = record
-		count: LongInt; 			// Number of messages in the string table.
+		count: Long_DWord; 			// Number of messages in the string table.
 		msgstrtable: array [0..0] of TMsgStrTable;
 	end;
 
@@ -165,7 +192,7 @@ type
 		VTable: Pointer;
 		case Integer of
 		1: (
-			IOffset: SizeUInt;
+			IOffset: Long_DWord;
 		);
 		2: (
 			IOffsetAsCodePtr: CodePointer;
@@ -177,7 +204,7 @@ type
 type
 	PInterfaceTable = ^TInterfaceTable;
 	TInterfaceTable = record
-		EntryCount: SizeUInt;
+		EntryCount: Long_DWord;
 		Entries: array [0..0] of TInterfaceEntry;
 	end;
 
@@ -185,7 +212,7 @@ type
 	PPVmt = ^PVmt;
 	PVmt  = ^TVmt;
 	TVmt = record
-		vInstanceSize: SizeInt;
+(*		vInstanceSize: SizeInt;
         	vInstanceSize2: SizeInt;
         	vParentRef: PPVmt;
         	vClassName: PShortString;
@@ -209,14 +236,29 @@ type
         	vDispatchStr: CodePointer;
         	vEquals: CodePointer;
         	vGetHashCode: CodePointer;
-        	vToString: CodePointer;
+        	vToString: CodePointer;*)
 	private
 		function GetvParent: PVmt; inline;
 	public
 		property vParent: PVmt read GetvParent;
 	end;
 
-procedure fpc_ansistr_decr_ref(Var S : Pointer); compilerproc;
+Type
+  TAnsiRec = record
+    CodePage: UINT;
+    Len     : Short_DWord;
+  end;
+  PAnsiRec = ^TAnsiRec;
+
+const
+  AnsiFirstOff = sizeof(TAnsiRec);
+
+procedure fpc_ansistr_decr_ref (Var S : Pointer); compilerproc;
+procedure fpc_AnsiStr_Incr_Ref (    S : Pointer); compilerproc; inline;
+
+Procedure fpc_AnsiStr_Assign   (Var DestS : Pointer;S2 : Pointer); compilerproc;
+procedure fpc_AnsiStr_Concat   (var DestS : String;const S1,S2 : String); compilerproc;
+
 
 function  fpc_get_input: PText;         compilerproc;
 procedure fpc_iocheck;                  compilerproc;
@@ -228,29 +270,85 @@ procedure fpc_help_fail(_self:pointer;var _vmt:pointer;vmt_pos:cardinal);compile
 
 procedure fpc_ReRaise; compilerproc;
 
-procedure LazExitProcess(ExitCode: LongInt); cdecl; external 'kernel32.dll' name 'ExitProcess';
-
 procedure fpc_initializeunits; cdecl; external name 'fpc_initializeunits'; compilerproc;
 procedure fpc_do_exit; compilerproc;
 
 
-procedure fpc_ansistr_incr_ref;compilerproc;
-procedure fpc_ansistr_assign;compilerproc;
-procedure fpc_ansistr_concat;compilerproc;
+// ---------------------------------------------------------------------------
+// win32api module kernel32.dll:
+// ---------------------------------------------------------------------------
+function  LocalAlloc( uFlags: UINT; uBytes: SIZE_T): UINT; cdecl; external DLL_STR_kernel32 name 'LocalAlloc';
+procedure ExitProcess( ExitCode: LongInt ); cdecl; external DLL_STR_kernel32 name 'ExitProcess';
 
 implementation
+
+function sizeByte : Byte; inline; begin result :=  1; end;
+function sizeChar : Byte; inline; begin result :=  2; end;
+function sizeWord : Byte; inline; begin result :=  4; end;
+function sizeDWord: Byte; inline; begin result :=  8; end;
+function sizeQWord: Byte; inline; begin result := 16; end;
 
 procedure PascalMain; external name 'PASCALMAIN';
 
 procedure Entry; [public, alias: '_mainCRTstartup'];
 begin
   PascalMain;
-  LazExitProcess(0);
+  ExitProcess(0);
 end;
 
-procedure fpc_ansistr_incr_ref;compilerproc; begin end;
-procedure fpc_ansistr_assign;compilerproc; begin end;
-procedure fpc_ansistr_concat;compilerproc; begin end;
+Procedure fpc_ansistr_decr_ref (Var S : Pointer); [Public,Alias:'FPC_ANSISTR_DECR_REF'];  compilerproc;
+Var
+  p: PAnsiRec;
+Begin
+  { Zero string }
+  If S=Nil then 
+    exit;
+  { check for constant strings ...}
+//  p:=PAnsiRec(S-AnsiFirstOff);
+//  s:=nil;
+//  If p^.ref<0 then exit;
+  { declocked does a MT safe dec and returns true, if the counter is 0 }
+//  If declocked(p^.ref) then
+//    FreeMem(p);
+end;
+
+Procedure fpc_AnsiStr_Incr_Ref (S : Pointer); [Public,Alias:'FPC_ANSISTR_INCR_REF'];  compilerproc; inline;
+Begin
+  If S=Nil then
+    exit;
+  { Let's be paranoid : Constant string ??}
+//  If PAnsiRec(S-AnsiFirstOff)^.Ref<0 then exit;
+end;
+
+Procedure fpc_ansistr_assign(Var DestS: Pointer; S2: Pointer); [Public, Alias:'FPC_ANSISTR_ASSIGN']; compilerproc;
+begin
+  if DestS = S2 then
+  exit;
+  
+  if DestS = nil then
+  begin
+    DestS := Pointer( LocalAlloc( LHND, 256 ) );
+  end;
+  
+//  If S2<>nil then
+//    If PAnsiRec(S2-AnsiFirstOff)^.Ref>0 then
+//      inclocked(PAnsiRec(S2-AnsiFirstOff)^.Ref);
+  { Decrease the reference count on the old S1 }
+  //fpc_ansistr_decr_ref (DestS);
+  { And finally, have DestS pointing to S2 (or its copy) }
+  DestS := S2;
+end;
+
+procedure fpc_AnsiStr_Concat   (var DestS : String;const S1,S2 : String); compilerproc;
+Var
+  S1Len, S2Len: Long_DWord;
+  same : boolean;
+begin
+  S1Len:=Length(S1);
+  S2Len:=length(S2);
+  
+  DestS := 'S1 + S2';
+end;
 
 function TVmt.GetvParent: PVMT;
 begin
@@ -267,13 +365,10 @@ begin end;
 
 procedure fpc_do_exit; alias: 'FPC_DO_EXIT'; compilerproc;
 begin
-  LazExitProcess(0);
+  ExitProcess(0);
 end;
 
 procedure fpc_iocheck; compilerproc;
-begin end;
-
-procedure fpc_ansistr_decr_ref(var s: Pointer); compilerproc;
 begin end;
 
 // -----------------------------------------------------

@@ -1,4 +1,5 @@
 SEARCH_DIR(".\units\fpc-sys\")
+SEARCH_DIR(".\units\fpc-win\")
 SEARCH_DIR(".\units\fpc-rtl\")
 SEARCH_DIR(".\units\fpc-qt\")
 SEARCH_DIR(".\tests\units\")
@@ -6,12 +7,14 @@ INPUT(
 .\units\test1.o
 .\units\fpcinit.o
 .\units\system.o
+.\units\RTL_Windows.o
 .\units\RTL_Utils.o
 .\units\Qt_Object.o
 .\units\Qt_String.o
 )
 GROUP(
 .\units\libimpsystem.a
+.\units\libimpRTL_Windows.a
 )
 OUTPUT_FORMAT(pei-x86-64)
 ENTRY(_mainCRTstartup)
