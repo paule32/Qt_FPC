@@ -14,7 +14,9 @@ uses
 procedure test;
 var
   q: QObject;
+  b: Array of Byte;
 begin
+  SetLength(b,16);
   q := QObject.Create;
   q.Free;
 end;

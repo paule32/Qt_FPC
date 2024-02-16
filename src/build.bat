@@ -1,3 +1,6 @@
+@echo on
+setlocal enabledelayedexpansion
+
 set fpcdir=C:\lazarus\x86_64\fpc\3.2.2\bin\x86_64-win64
 set fpcx64=%fpcdir%\fpc.exe
 set fpcstr=%fpcdir%\strip.exe
@@ -14,7 +17,7 @@ set fpcflags=%fpcdst% -b- -Sg -Sm -O2 -Os -vl ^
 
 set fpcsys=-Fu..\..\units\fpc-rtl -Fu..\..\units\fpc-sys -Fu..\..\units\fpc-win -Fu..\..\units\fpc-qt
 
-rm -rf ./units
+del .\units /F /S /Q
 
 mkdir .\units
 mkdir .\units\fpc-qt
@@ -22,13 +25,14 @@ mkdir .\units\fpc-rtl
 mkdir .\units\fpc-sys
 mkdir .\units\fpc-win
 
-rm -rf ./tests/units
+del .\tests\units /F /S /Q
 mkdir  .\tests\units
 
 nasm.exe -fwin64 -o.\units\fpc-sys\fpcinit.o .\sources\fpc-sys\fpcinit.asm
 
 cd .\sources\fpc-sys
 %fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al -FE..\..\units\fpc-sys -Us system.pas
+%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al -FE..\..\units\fpc-sys     objpas.pp
 %fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al -FE..\..\units\fpc-sys    sysinit.pas
 %fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al -FE..\..\units\fpc-sys   fpintres.pp
 cd ..\..
@@ -62,7 +66,6 @@ copy .\units\fpc-sys\libimpsystem.a .\tests\units\libimpsystem.a
 copy .\units\fpc-sys\fpcinit.o     .\tests\units\fpcinit.o
 copy .\units\fpc-sys\sysinit.o     .\tests\units\sysinit.o
 
-copy .\units\fpc-sys\fpintres.s    .\tests\units\fpintres.s
 copy .\units\fpc-sys\system.s      .\tests\units\system.s
 
 copy .\units\fpc-win\RTL_Windows.s .\tests\units\RTL_Windows.s
@@ -110,11 +113,19 @@ sed -i '/\; Begin asmlist al_const.*/,/\; End asmlist al_const.*/d' Qt_String.s
 
 
 sed -i '/\; Begin asmlist al_dwarf_frame.*/,/\; End asmlist al_dwarf_frame.*/d' test1.s
+sed -i '/\; Begin asmlist al_indirectglobals.*/,/\; End asmlist al_indirectglobals.*/d' test1.s
 sed -i '/\; Begin asmlist al_rtti.*/,/\; End asmlist al_rtti.*/d' test1.s
 sed -i '/\; Begin asmlist al_globals.*/,/\; End asmlist al_globals.*/d' test1.s
 sed -i '/File.*/d' test1.s
 
-nasm -f win64 -o fpintres.o    fpintres.s
+grep ".*lea.*\[RTTI_.*\$P\$.*\$\$_def.*\]" test1.s | awk '{print $2}' | sed -e "s/^.*\[//" -e "s/.$//" -e "1d" > tmp_file
+sort tmp_file | uniq > tmp_sort
+del  tmp_file /F /Q
+echo SECTION .data >> test1.s
+for /F "tokens=*" %%a in (tmp_sort) do (
+    echo %%a: dq 0 >> test1.s
+)
+
 nasm -f win64 -o system.o      system.s
 
 nasm -f win64 -o RTL_Windows.o RTL_Windows.s

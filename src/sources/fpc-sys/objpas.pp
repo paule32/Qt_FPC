@@ -5,10 +5,27 @@
 //
 // only for education, and non-profit usage !
 // -----------------------------------------------------------------
+{$mode delphi}
 unit objpas;
 
 interface
 
+type
+  TObject = class
+  public
+    constructor Create;
+    destructor Destroy;
+  end;
+
 implementation
+
+constructor TObject.Create;
+begin
+
+end;
+
+destructor TObject.Destroy;
+begin
+end;
 
 end.

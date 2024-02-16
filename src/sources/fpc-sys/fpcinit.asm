@@ -4,112 +4,66 @@
 ; -------------------------------------------------------------------------------------------
 
     global fpc_initializeunits
-    section .text
-fpc_initializeunits:
-    ret
-
-    global FPC_EMPTYMETHOD
-    section .text
-FPC_EMPTYMETHOD:
-    ret
-
-    global SYSTEM$_$TOBJECT_$__$$_DESTROY
-    section .text
-SYSTEM$_$TOBJECT_$__$$_DESTROY:
-    ret
-    
-    global SYSTEM$_$TOBJECT_$__$$_NEWINSTANCE$$TOBJECT
-    section .text
-SYSTEM$_$TOBJECT_$__$$_NEWINSTANCE$$TOBJECT:
-    ret
-    
-    global SYSTEM$_$TOBJECT_$__$$_FREEINSTANCE
-    section .text
-SYSTEM$_$TOBJECT_$__$$_FREEINSTANCE:
-    ret
-    
-    global SYSTEM$_$TOBJECT_$__$$_SAFECALLEXCEPTION$TOBJECT$POINTER$$HRESULT
-    section .text
-SYSTEM$_$TOBJECT_$__$$_SAFECALLEXCEPTION$TOBJECT$POINTER$$HRESULT:
-    ret
-    
-    global SYSTEM$_$TOBJECT_$__$$_DISPATCH$formal
-    section .text
-SYSTEM$_$TOBJECT_$__$$_DISPATCH$formal:
-    ret
-    
-    global SYSTEM$_$TOBJECT_$__$$_DISPATCHSTR$formal
-    section .text
-SYSTEM$_$TOBJECT_$__$$_DISPATCHSTR$formal:
-    ret
-    
-    global SYSTEM$_$TOBJECT_$__$$_EQUALS$TOBJECT$$BOOLEAN
-    section .text
-SYSTEM$_$TOBJECT_$__$$_EQUALS$TOBJECT$$BOOLEAN:
-    ret
-    
-    global SYSTEM$_$TOBJECT_$__$$_TOSTRING$$ANSISTRING
-    section .text
-SYSTEM$_$TOBJECT_$__$$_TOSTRING$$ANSISTRING:
-    ret
-    
-    global SYSTEM$_$TOBJECT_$__$$_CREATE$$TOBJECT
-    section .text
-SYSTEM$_$TOBJECT_$__$$_CREATE$$TOBJECT:
-    ret
-    
-    global RTTI_$SYSTEM_$$_TOBJECT$indirect
-    section .text
-RTTI_$SYSTEM_$$_TOBJECT$indirect:
-    ret
-    
-    global FPC_DONEEXCEPTION
-    section .text
-FPC_DONEEXCEPTION:
-    ret
-
-    global VMT_$QT_OBJECT_$$_QOBJECT
-    section .text
-VMT_$QT_OBJECT_$$_QOBJECT:
-    ret
-    
-    global INIT$_$SYSTEM
-    section .text
-INIT$_$SYSTEM:
-    ret
-    
-    global INIT$_$FPINTRES
-    section .text
-INIT$_$FPINTRES:
-    ret
     
     global FINALIZE$_$OBJPAS
-    section .text
-FINALIZE$_$OBJPAS:
-    ret
     
+    global FPC_DONEEXCEPTION
+    global FPC_EMPTYMETHOD
+    
+    global INIT$_$FPINTRES
+    global INIT$_$SYSTEM
+    
+    global SYSTEM$_$TOBJECT_$__$$_CREATE$$TOBJECT
+    global SYSTEM$_$TOBJECT_$__$$_DESTROY
+    global SYSTEM$_$TOBJECT_$__$$_DISPATCH$formal
+    global SYSTEM$_$TOBJECT_$__$$_DISPATCHSTR$formal
+    global SYSTEM$_$TOBJECT_$__$$_EQUALS$TOBJECT$$BOOLEAN
     global SYSTEM$_$TOBJECT_$__$$_FREE
-    section .text
-SYSTEM$_$TOBJECT_$__$$_FREE:
-    ret
-    
-    global THREADVARLIST_$SYSTEM$indirect
-    section .text
-THREADVARLIST_$SYSTEM$indirect:
-    ret
-    
-    global VMT_$SYSTEM_$$_TOBJECT$indirect
-    section .text
-VMT_$SYSTEM_$$_TOBJECT$indirect:
-    ret
-    
+    global SYSTEM$_$TOBJECT_$__$$_FREEINSTANCE
     global SYSTEM$_$TOBJECT_$__$$_GETHASHCODE$$INT64
-    section .text
-SYSTEM$_$TOBJECT_$__$$_GETHASHCODE$$INT64:
-    ret
+    global SYSTEM$_$TOBJECT_$__$$_SAFECALLEXCEPTION$TOBJECT$POINTER$$HRESULT
+    GLOBAL SYSTEM$_$TOBJECT_$__$$_TOSTRING$$ANSISTRING:
+    global SYSTEM$_$TOBJECT_$__$$_NEWINSTANCE$$TOBJECT
+    
     
     global RTTI_$QT_OBJECT_$$_QOBJECT
-    section .text
-RTTI_$QT_OBJECT_$$_QOBJECT:
-    ret
+    global RTTI_$SYSTEM_$$_TOBJECT$indirect
     
+    global THREADVARLIST_$SYSTEM$indirect
+
+    global VMT_$QT_OBJECT_$$_QOBJECT
+    global VMT_$SYSTEM_$$_TOBJECT$indirect
+    
+    section .text
+fpc_initializeunits:
+
+FPC_EMPTYMETHOD:
+FPC_DONEEXCEPTION:
+
+SYSTEM$_$TOBJECT_$__$$_DESTROY:
+SYSTEM$_$TOBJECT_$__$$_DISPATCH$formal:
+SYSTEM$_$TOBJECT_$__$$_DISPATCHSTR$formal:
+
+SYSTEM$_$TOBJECT_$__$$_EQUALS$TOBJECT$$BOOLEAN:
+
+SYSTEM$_$TOBJECT_$__$$_FREE:
+SYSTEM$_$TOBJECT_$__$$_FREEINSTANCE:
+SYSTEM$_$TOBJECT_$__$$_GETHASHCODE$$INT64:
+
+INIT$_$FPINTRES:
+INIT$_$SYSTEM:
+
+SYSTEM$_$TOBJECT_$__$$_SAFECALLEXCEPTION$TOBJECT$POINTER$$HRESULT:
+SYSTEM$_$TOBJECT_$__$$_TOSTRING$$ANSISTRING:
+SYSTEM$_$TOBJECT_$__$$_NEWINSTANCE$$TOBJECT:
+
+RTTI_$QT_OBJECT_$$_QOBJECT:
+RTTI_$SYSTEM_$$_TOBJECT$indirect:
+
+FINALIZE$_$OBJPAS:
+
+THREADVARLIST_$SYSTEM$indirect:
+VMT_$SYSTEM_$$_TOBJECT$indirect:
+
+VMT_$QT_OBJECT_$$_QOBJECT:
+    ret
