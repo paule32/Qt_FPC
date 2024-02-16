@@ -324,7 +324,7 @@ begin
 end;
 
 
-constructor TObject.Create; virtual;
+constructor TObject.Create;
 begin
 
 end;
