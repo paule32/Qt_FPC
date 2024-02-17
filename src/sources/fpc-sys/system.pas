@@ -269,18 +269,11 @@ Type
 const
   AnsiFirstOff = sizeof(TAnsiRec);
 
-type
-    TObject = class
-    public
-        constructor Create;
-        destructor Destroy;virtual;
-    end;
-
 procedure fpc_ansistr_decr_ref (Var S : Pointer); compilerproc;
 procedure fpc_AnsiStr_Incr_Ref (    S : Pointer); compilerproc; inline;
 
 Procedure fpc_AnsiStr_Assign   (Var DestS : Pointer;S2 : Pointer); compilerproc;
-procedure fpc_AnsiStr_Concat   (var DestS : String;const S1,S2 : String); compilerproc;
+procedure fpc_AnsiStr_Concat   (var DestS : String;const S1,S2 : String; cp: DWORD); compilerproc;
 
 
 function  fpc_get_input: PText;         compilerproc;
@@ -294,8 +287,9 @@ procedure fpc_help_fail(_self:pointer;var _vmt:pointer;vmt_pos:cardinal);compile
 procedure fpc_ReRaise; compilerproc;
 
 procedure fpc_initializeunits; cdecl; external name 'fpc_initializeunits'; compilerproc;
+procedure fpc_finalize(Data,TypeInfo: Pointer); compilerproc;
+procedure fpc_Copy_proc (Src, Dest, TypeInfo : Pointer);compilerproc; inline;
 procedure fpc_do_exit; compilerproc;
-
 
 // ---------------------------------------------------------------------------
 // win32api module kernel32.dll:
@@ -324,13 +318,8 @@ begin
 end;
 
 
-constructor TObject.Create;
-begin
-
-end;
-destructor TObject.Destroy;
-begin
-end;
+procedure fpc_copy_proc(Src, Dest, TypeInfo : Pointer);compilerproc; inline;
+begin end;
 
 procedure fpc_ansistr_decr_ref(Var S: Pointer); [public, alias: 'FPC_ANSISTR_DECR_REF'];  compilerproc;
 Var
@@ -375,7 +364,7 @@ begin
   DestS := S2;
 end;
 
-procedure fpc_AnsiStr_Concat   (var DestS : String;const S1,S2 : String); compilerproc;
+procedure fpc_AnsiStr_Concat   (var DestS : String;const S1,S2 : String; cp: DWORD); compilerproc;
 Var
   S1Len, S2Len: Long_DWord;
   same : boolean;
@@ -422,6 +411,8 @@ begin end;
 procedure fpc_ReRaise; compilerproc;
 begin end;
 
+procedure fpc_finalize(Data,TypeInfo: Pointer); compilerproc;
+begin end;
 
 procedure move(const source; var dest; count: DWord); assembler; nostackframe;
 asm

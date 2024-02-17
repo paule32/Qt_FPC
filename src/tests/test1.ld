@@ -7,6 +7,7 @@ INPUT(
 .\units\test1.o
 .\units\fpcinit.o
 .\units\system.o
+.\units\RTL.o
 .\units\RTL_Windows.o
 .\units\RTL_Utils.o
 .\units\Qt_Object.o

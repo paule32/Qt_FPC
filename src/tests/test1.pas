@@ -14,10 +14,10 @@ uses
 procedure test;
 var
   q: QObject;
-  b: Array of Byte;
+//  b: Array of Byte;
 begin
-  SetLength(b,16);
-  q := QObject.Create;
+//  SetLength(b,16);
+  //q := new QObject;
   q.Free;
 end;
 

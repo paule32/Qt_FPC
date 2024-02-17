@@ -1,31 +1,15 @@
 // -----------------------------------------------------------------
-// File:   objpas.pas
+// File:   objpas.pp
 // Author: (c) 2024 Jens Kallup - paule32
 // All rights reserved
 //
 // only for education, and non-profit usage !
 // -----------------------------------------------------------------
-{$mode delphi}
+{$mode objfpc}{$H+}
 unit objpas;
 
 interface
 
-type
-  TObject = class
-  public
-    constructor Create;
-    destructor Destroy;
-  end;
-
 implementation
-
-constructor TObject.Create;
-begin
-
-end;
-
-destructor TObject.Destroy;
-begin
-end;
 
 end.

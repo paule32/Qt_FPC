@@ -14,7 +14,6 @@
     global INIT$_$SYSTEM
     
     global SYSTEM$_$TOBJECT_$__$$_CREATE$$TOBJECT
-    global SYSTEM$_$TOBJECT_$__$$_DESTROY
     global SYSTEM$_$TOBJECT_$__$$_DISPATCH$formal
     global SYSTEM$_$TOBJECT_$__$$_DISPATCHSTR$formal
     global SYSTEM$_$TOBJECT_$__$$_EQUALS$TOBJECT$$BOOLEAN
@@ -40,7 +39,6 @@ fpc_initializeunits:
 FPC_EMPTYMETHOD:
 FPC_DONEEXCEPTION:
 
-SYSTEM$_$TOBJECT_$__$$_DESTROY:
 SYSTEM$_$TOBJECT_$__$$_DISPATCH$formal:
 SYSTEM$_$TOBJECT_$__$$_DISPATCHSTR$formal:
 

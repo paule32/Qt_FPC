@@ -5,74 +5,84 @@
 //
 // only for education, and non-profit usage !
 // -----------------------------------------------------------------
-{$mode delphi}
+{$mode objfpc}{$H+}
 unit Qt_String;
 
 interface
+uses Qt_Object;
+
 type
-  QString = class
-  strict protected
-    FStringObject: QString;
+  PQString = ^QString;
+  QString  = object(QObject)
+  protected
+    FStringObject: PQString;
     FString: String;
   public
-    constructor Create; overload;
+    constructor Create(other: PQString); overload;
     constructor Create(str: String); overload;
-    constructor Create(other: QString); overload;
-    destructor Destroy; override;
+    constructor Create; overload;
     
-    function append(str: String): QString; overload;
-    function append(other: QString): QString; overload;
+    constructor Init;
     
-    function arg(a: QString; fieldWidth: Integer = 0; base: Integer = 10; fillChar: Char = ' '): QString;
+    destructor Destroy;
+    
+    function append(str: String): PQString; overload;
+    function append(other: PQString): PQString; overload;
+    
+    function arg(a: PQString; fieldWidth: Integer = 0; base: Integer = 10; fillChar: Char = ' '): PQString;
   end;
 
 implementation
 
+constructor QString.Init;
+begin
+end;
+
 constructor QString.Create;
 begin
   FStringObject := nil;
-  FStringObject.FString := '';
+  FStringObject^.FString := '';
 end;
 constructor QString.Create(str: String);
 begin
   FStringObject := nil;
-  FStringObject.FString := str;
+  FStringObject^.FString := str;
 end;
-constructor QString.Create(other: QString);
+constructor QString.Create(other: PQString);
 begin
   if other <> nil then
   begin
     FStringObject := other;
-    FStringObject.FString := other.FString;
+    FStringObject^.FString := other^.FString;
   end;
 end;
 
 destructor QString.Destroy;
 begin
-  FStringObject.Free;
+  FStringObject^.Free;
 end;
 
-function QString.append(str: String): QString;
+function QString.append(str: String): PQString;
 begin
   if FStringObject = nil then
-  FStringObject := self;
+  FStringObject^ := self;
   
-  FStringObject.FString := FStringObject.FString + str;
+  FStringObject^.FString := FStringObject^.FString + str;
   result := FStringObject;
 end;
 
-function QString.append(other: QString): QString;
+function QString.append(other: PQString): PQString;
 begin
   if other = nil then
-  other := self;
+  other^ := self;
   
   FStringObject := other;
-  FStringObject.FString := other.FString;
+  FStringObject^.FString := other^.FString;
   
   result := FStringObject;
 end;
 
-function QString.arg(a: QString; fieldWidth: Integer = 0; base: Integer = 10; fillChar: Char = ' '): QString;
+function QString.arg(a: PQString; fieldWidth: Integer = 0; base: Integer = 10; fillChar: Char = ' '): PQString;
 begin
   result := FStringObject;
 end;

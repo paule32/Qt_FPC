@@ -1,3 +1,10 @@
+:: -----------------------------------------------------------------
+:: File:   build.bat
+:: Author: (c) 2023 Jens Kallup - paule32
+:: All rights reserved
+::
+:: only for education, and non-profit usage !
+:: -----------------------------------------------------------------
 @echo on
 setlocal enabledelayedexpansion
 
@@ -15,108 +22,77 @@ set fpcflags=%fpcdst% -b- -Sg -Sm -O2 -Os -vl ^
 	-Fu.\sources\fpc-rtl ^
 	-Fu.\sources\fpc-qt
 
-set fpcsys=-Fu..\..\units\fpc-rtl -Fu..\..\units\fpc-sys -Fu..\..\units\fpc-win -Fu..\..\units\fpc-qt
+set fpcsys1=-Fu..\..\units\fpc-rtl -Fu..\..\units\fpc-sys -Fu..\..\units\fpc-win -Fu..\..\units\fpc-qt
+set fpcsys2=-Fu..\units\fpc-rtl -Fu..\units\fpc-sys -Fu..\units\fpc-win -Fu..\units\fpc-qt
 
-del .\units /F /S /Q
+del .\units       /F /S /Q > nul
+del .\tests\units /F /S /Q > nul
 
 mkdir .\units
-mkdir .\units\fpc-qt
-mkdir .\units\fpc-rtl
-mkdir .\units\fpc-sys
-mkdir .\units\fpc-win
-
-del .\tests\units /F /S /Q
-mkdir  .\tests\units
+for %%A in (fpc-qt fpc-rtl fpc-sys fpc-win) do ( mkdir .\units\%%A > nul )
+mkdir  .\tests\units > nul
 
 nasm.exe -fwin64 -o.\units\fpc-sys\fpcinit.o .\sources\fpc-sys\fpcinit.asm
 
 cd .\sources\fpc-sys
 %fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al -FE..\..\units\fpc-sys -Us system.pas
-%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al -FE..\..\units\fpc-sys     objpas.pp
 %fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al -FE..\..\units\fpc-sys    sysinit.pas
 %fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al -FE..\..\units\fpc-sys   fpintres.pp
 cd ..\..
 
 cd .\sources\fpc-rtl
-%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al -FE..\..\units\fpc-rtl %fpcsys% RTL_DataCollection.pas
+%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al %fpcsys1% -FE..\..\units\fpc-rtl RTL.pas
+%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al %fpcsys1% -FE..\..\units\fpc-rtl RTL_DataCollection.pas
+%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al %fpcsys1% -FE..\..\units\fpc-rtl RTL_Utils.pas
 cd ..\..
 
 cd .\sources\fpc-win
-%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al -FE..\..\units\fpc-win %fpcsys% RTL_Windows.pas
-cd ..\..
-
-cd .\sources\fpc-rtl
-%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al -FE..\..\units\fpc-rtl %fpcsys% RTL_Utils.pas
+%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al %fpcsys1% -FE..\..\units\fpc-win RTL_Windows.pas
 cd ..\..
 
 cd .\sources\fpc-qt
-%fpcx64% %fpcdst% -O2 -vl -Anasmwin64 -al -FE..\..\units\fpc-qt Qt_Object.pas
-cd ..\..
-
-cd .\sources\fpc-qt
-%fpcx64% %fpcdst% -O2 -vl -Anasmwin64 -al -FE..\..\units\fpc-qt Qt_String.pas
+%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al %fpcsys1% -FE..\..\units\fpc-qt Qt_Object.pas
+%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al %fpcsys1% -FE..\..\units\fpc-qt Qt_String.pas
 cd ..\..
 
 cd .\tests
-%fpcx64% %fpcdst% -O2 -vl -Anasmwin64 -al -Fu..\units\fpc-qt -FE.\units test1.pas
+%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al %fpcsys2% -FE.\units test1.pas
 cd ..
 
-copy .\units\fpc-sys\libimpsystem.a .\tests\units\libimpsystem.a
+for %%A in (libimpsystem.a fpcinit.o sysinit.o system.s) do ( copy .\units\fpc-sys\%%A .\tests\units\%%A )
 
-copy .\units\fpc-sys\fpcinit.o     .\tests\units\fpcinit.o
-copy .\units\fpc-sys\sysinit.o     .\tests\units\sysinit.o
-
-copy .\units\fpc-sys\system.s      .\tests\units\system.s
-
-copy .\units\fpc-win\RTL_Windows.s .\tests\units\RTL_Windows.s
-copy .\units\fpc-rtl\RTL_Utils.s   .\tests\units\RTL_Utils.s
-
-copy .\units\fpc-qt\Qt_Object.s    .\tests\units\Qt_Object.s
-copy .\units\fpc-qt\Qt_String.s    .\tests\units\Qt_String.s
+for %%A in (RTL RTL_Utils)       do ( copy .\units\fpc-rtl\%%A.s .\tests\units\%%A.s )
+for %%A in (RTL_Windows)         do ( copy .\units\fpc-win\%%A.s .\tests\units\%%A.s )
+for %%A in (Qt_Object Qt_String) do ( copy .\units\fpc-qt\%%A.s  .\tests\units\%%A.s )
 
 cd .\tests
-%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al -FE.\units -XMmainCRTstartup ^
+%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al -Fu.\units -FE.\units -XMmainCRTstartup ^
 	-Fu..\units\fpc-sys   ^
 	-Fu..\units\fpc-win   ^
 	-Fu..\units\fpc-rtl   ^
 	-Fu..\units\fpc-qt    ^
-	test1.o
+	test1.pas
 
 cd ./units
 grep -v "SECTION .fpc" test1.s > test2.s
 grep -v "__fpc_ident"  test2.s > test1.s
 rm test2.s
 
-sed -i '/\; Begin asmlist al_dwarf_frame.*/,/\; End asmlist al_dwarf_frame.*/d' system.s
-sed -i '/\; Begin asmlist al_indirectglobals.*/,/\; End asmlist al_indirectglobals.*/d' system.s
-sed -i '/\; Begin asmlist al_rtti.*/,/\; End asmlist al_rtti.*/d' system.s
-
-sed -i '/\; Begin asmlist al_dwarf_frame.*/,/\; End asmlist al_dwarf_frame.*/d' RTL_Windows.s
-sed -i '/\; Begin asmlist al_indirectglobals.*/,/\; End asmlist al_indirectglobals.*/d' RTL_Windows.s
-sed -i '/\; Begin asmlist al_rtti.*/,/\; End asmlist al_rtti.*/d' RTL_Windows.s
-
-sed -i '/\; Begin asmlist al_dwarf_frame.*/,/\; End asmlist al_dwarf_frame.*/d' RTL_Utils.s
-sed -i '/\; Begin asmlist al_indirectglobals.*/,/\; End asmlist al_indirectglobals.*/d' RTL_Utils.s
-sed -i '/\; Begin asmlist al_rtti.*/,/\; End asmlist al_rtti.*/d' RTL_Utils.s
-
-sed -i '/\; Begin asmlist al_dwarf_frame.*/,/\; End asmlist al_dwarf_frame.*/d' Qt_Object.s
-sed -i '/\; Begin asmlist al_indirectglobals.*/,/\; End asmlist al_indirectglobals.*/d' Qt_Object.s
-sed -i '/\; Begin asmlist al_globals.*/,/\; End asmlist al_globals.*/d' Qt_Object.s
-sed -i '/\; Begin asmlist al_rtti.*/,/\; End asmlist al_rtti.*/d' Qt_Object.s
-sed -i '/\; Begin asmlist al_const.*/,/\; End asmlist al_const.*/d' Qt_Object.s
-
-sed -i '/\; Begin asmlist al_dwarf_frame.*/,/\; End asmlist al_dwarf_frame.*/d' Qt_String.s
-sed -i '/\; Begin asmlist al_indirectglobals.*/,/\; End asmlist al_indirectglobals.*/d' Qt_String.s
-sed -i '/\; Begin asmlist al_globals.*/,/\; End asmlist al_globals.*/d' Qt_String.s
-sed -i '/\; Begin asmlist al_rtti.*/,/\; End asmlist al_rtti.*/d' Qt_String.s
-sed -i '/\; Begin asmlist al_const.*/,/\; End asmlist al_const.*/d' Qt_String.s
-
-
-sed -i '/\; Begin asmlist al_dwarf_frame.*/,/\; End asmlist al_dwarf_frame.*/d' test1.s
-sed -i '/\; Begin asmlist al_indirectglobals.*/,/\; End asmlist al_indirectglobals.*/d' test1.s
-sed -i '/\; Begin asmlist al_rtti.*/,/\; End asmlist al_rtti.*/d' test1.s
-sed -i '/\; Begin asmlist al_globals.*/,/\; End asmlist al_globals.*/d' test1.s
-sed -i '/File.*/d' test1.s
+for %%A in (system RTL RTL_Windows RTL_Utils Qt_Object Qt_String test1) do (
+    sed -i '/\; Begin asmlist al_dwarf_frame.*/,/\; End asmlist al_dwarf_frame.*/d'         %%A.s
+    sed -i '/\; Begin asmlist al_indirectglobals.*/,/\; End asmlist al_indirectglobals.*/d' %%A.s
+    sed -i '/\; Begin asmlist al_globals.*/,/\; End asmlist al_globals.*/d'                 %%A.s
+    sed -i '/\; Begin asmlist al_rtti.*/,/\; End asmlist al_rtti.*/d'                       %%A.s
+    sed -i '/\; Begin asmlist al_const.*/,/\; End asmlist al_const.*/d'                     %%A.s
+    sed -i '/File.*/d' %%A.s
+    grep ".*lea.*\[INIT\_" %%A.s | awk '{print $2}' | sed -e "s/^.*\[//" -e "s/\]$//" -e "1d" > tmp_file
+    sort tmp_file | uniq > tmp_sort
+    del  tmp_file /F /Q
+    echo SECTION .data >> %%A.s
+    for /F "tokens=*" %%b in (tmp_sort) do (
+        echo %%b: dq 0 >> %%A.s
+    )
+)
 
 grep ".*lea.*\[RTTI_.*\$P\$.*\$\$_def.*\]" test1.s | awk '{print $2}' | sed -e "s/^.*\[//" -e "s/.$//" -e "1d" > tmp_file
 sort tmp_file | uniq > tmp_sort
@@ -126,14 +102,9 @@ for /F "tokens=*" %%a in (tmp_sort) do (
     echo %%a: dq 0 >> test1.s
 )
 
-nasm -f win64 -o system.o      system.s
-
-nasm -f win64 -o RTL_Windows.o RTL_Windows.s
-nasm -f win64 -o RTL_Utils.o   RTL_Utils.s
-
-nasm -f win64 -o Qt_Object.o   Qt_Object.s
-nasm -f win64 -o Qt_String.o   Qt_String.s
-nasm -f win64 -o test1.o       test1.s
+for %%A in (system RTL RTL_Windows RTL_Utils Qt_Object Qt_String test1) do (
+    nasm -f win64 -o %%A.o %%A.s
+)
 
 cd ..
 copy ..\units\fpc-win\libimpRTL_Windows.a .\units\libimpRTL_Windows.a
