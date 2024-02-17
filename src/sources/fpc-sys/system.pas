@@ -286,9 +286,11 @@ procedure fpc_help_fail(_self:pointer;var _vmt:pointer;vmt_pos:cardinal);compile
 
 procedure fpc_ReRaise; compilerproc;
 
-procedure fpc_initializeunits; cdecl; external name 'fpc_initializeunits'; compilerproc;
+procedure fpc_initializeunits;    cdecl; external name 'fpc_initializeunits';    compilerproc;
+procedure fpc_libinitializeunits; cdecl; external name 'fpc_libinitializeunits'; compilerproc;
+
 procedure fpc_finalize(Data,TypeInfo: Pointer); compilerproc;
-procedure fpc_Copy_proc (Src, Dest, TypeInfo : Pointer);compilerproc; inline;
+procedure fpc_copy_proc(Src, Dest, TypeInfo : Pointer);compilerproc; inline;
 procedure fpc_do_exit; compilerproc;
 
 // ---------------------------------------------------------------------------
@@ -297,7 +299,7 @@ procedure fpc_do_exit; compilerproc;
 function  LocalAlloc( uFlags: UINT; uBytes: SIZE_T): UINT; cdecl; external DLL_STR_kernel32 name 'LocalAlloc';
 procedure ExitProcess( ExitCode: LongInt ); cdecl; external DLL_STR_kernel32 name 'ExitProcess';
 
-procedure move(const source; var dest; count: DWord);
+procedure move(const source; var dest; count: DWord); export;
 
 implementation
 
@@ -414,7 +416,7 @@ begin end;
 procedure fpc_finalize(Data,TypeInfo: Pointer); compilerproc;
 begin end;
 
-procedure move(const source; var dest; count: DWord); assembler; nostackframe;
+procedure move(const source; var dest; count: DWord); assembler; nostackframe; export;
 asm
     mov    %r8, %rax
     sub    %rdx, %rcx            { rcx = src - dest }

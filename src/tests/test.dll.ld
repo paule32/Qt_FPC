@@ -1,10 +1,19 @@
-SEARCH_DIR(".\units\fpc-sys\")
-SEARCH_DIR(".\units\fpc-win\")
-SEARCH_DIR(".\units\fpc-rtl\")
-SEARCH_DIR(".\units\fpc-qt\")
-SEARCH_DIR(".\tests\units\")
+/* ----------------------------------------------------------------- */
+/* File:   test1.ld - linker script                                  */
+/* Author: (c) 2024 Jens Kallup - paule32                            */
+/* All rights reserved                                               */
+/*                                                                   */
+/* only for education, and non-profit usage !                        */
+/* ----------------------------------------------------------------- */
+ENTRY(PASCALMAIN)
+
+SEARCH_DIR(".\units\fpc-sys")
+SEARCH_DIR(".\units\fpc-win")
+SEARCH_DIR(".\units\fpc-rtl")
+SEARCH_DIR(".\units\fpc-qt")
+SEARCH_DIR(".\tests\units")
 INPUT(
-.\units\test1.o
+.\units\test2.o
 .\units\fpcinit.o
 .\units\system.o
 .\units\RTL.o
@@ -18,7 +27,6 @@ GROUP(
 .\units\libimpRTL_Windows.a
 )
 OUTPUT_FORMAT(pei-x86-64)
-ENTRY(_mainCRTstartup)
 SECTIONS
 {
   . = SIZEOF_HEADERS;
@@ -26,6 +34,7 @@ SECTIONS
   .text  __image_base__ + ( __section_alignment__ < 0x1000 ? . : __section_alignment__ ) :
   {
     __text_start__ = . ;
+    _DLLMainCRTStartup = . ;
     *(.init)
     *(.text .stub .text.* .gnu.linkonce.t.*)
     *(SORT(.text$*))

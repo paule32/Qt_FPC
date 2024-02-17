@@ -4,6 +4,7 @@
 ; -------------------------------------------------------------------------------------------
 
     global fpc_initializeunits
+    global fpc_libinitializeunits
     
     global FINALIZE$_$OBJPAS
     
@@ -21,7 +22,7 @@
     global SYSTEM$_$TOBJECT_$__$$_FREEINSTANCE
     global SYSTEM$_$TOBJECT_$__$$_GETHASHCODE$$INT64
     global SYSTEM$_$TOBJECT_$__$$_SAFECALLEXCEPTION$TOBJECT$POINTER$$HRESULT
-    GLOBAL SYSTEM$_$TOBJECT_$__$$_TOSTRING$$ANSISTRING:
+    GLOBAL SYSTEM$_$TOBJECT_$__$$_TOSTRING$$ANSISTRING
     global SYSTEM$_$TOBJECT_$__$$_NEWINSTANCE$$TOBJECT
     
     
@@ -35,6 +36,7 @@
     
     section .text
 fpc_initializeunits:
+fpc_libinitializeunits:
 
 FPC_EMPTYMETHOD:
 FPC_DONEEXCEPTION:

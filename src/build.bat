@@ -66,19 +66,18 @@ for %%A in (RTL_Windows)         do ( copy .\units\fpc-win\%%A.s .\tests\units\%
 for %%A in (Qt_Object Qt_String) do ( copy .\units\fpc-qt\%%A.s  .\tests\units\%%A.s )
 
 cd .\tests
-%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al -Fu.\units -FE.\units -XMmainCRTstartup ^
-	-Fu..\units\fpc-sys   ^
-	-Fu..\units\fpc-win   ^
-	-Fu..\units\fpc-rtl   ^
-	-Fu..\units\fpc-qt    ^
-	test1.pas
+%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al %fpcsys2% -Fu.\units -FE.\units -XMmainCRTstartup test1.pas
+%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al %fpcsys2% -Fu.\units -FE.\units -XMmainCRTstartup test2.pas
 
 cd ./units
-grep -v "SECTION .fpc" test1.s > test2.s
-grep -v "__fpc_ident"  test2.s > test1.s
-rm test2.s
+grep -v "SECTION .fpc" test1.s  > test1_.s
+grep -v "__fpc_ident"  test1_.s > test1.s
+rm test1_.s
+grep -v "SECTION .fpc" test2.s  > test2_.s
+grep -v "__fpc_ident"  test2_.s > test2.s
+rm test2_.s
 
-for %%A in (system RTL RTL_Windows RTL_Utils Qt_Object Qt_String test1) do (
+for %%A in (system RTL RTL_Windows RTL_Utils Qt_Object Qt_String test1 test2) do (
     sed -i '/\; Begin asmlist al_dwarf_frame.*/,/\; End asmlist al_dwarf_frame.*/d'         %%A.s
     sed -i '/\; Begin asmlist al_indirectglobals.*/,/\; End asmlist al_indirectglobals.*/d' %%A.s
     sed -i '/\; Begin asmlist al_globals.*/,/\; End asmlist al_globals.*/d'                 %%A.s
@@ -102,12 +101,14 @@ for /F "tokens=*" %%a in (tmp_sort) do (
     echo %%a: dq 0 >> test1.s
 )
 
-for %%A in (system RTL RTL_Windows RTL_Utils Qt_Object Qt_String test1) do (
+for %%A in (system RTL RTL_Windows RTL_Utils Qt_Object Qt_String test1 test2) do (
     nasm -f win64 -o %%A.o %%A.s
 )
 
 cd ..
 copy ..\units\fpc-win\libimpRTL_Windows.a .\units\libimpRTL_Windows.a
 
-x86_64-win64-ld.exe -b pei-x86-64 -nostdlib -s --entry=_mainCRTstartup -L.\units -o test1.exe test1.ld
+x86_64-win64-ld.exe -b pei-x86-64 -nostdlib -s -o test1.exe test.exe.ld
+x86_64-win64-ld.exe -b pei-x86-64 -nostdlib -s -o test2.dll test.dll.ld
+
 %fpcstr%  test1.exe
