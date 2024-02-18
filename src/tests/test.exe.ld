@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------- */
-/* File:   test1.ld - linker script                                  */
+/* File:   test.exe.ld - linker script for executable files          */
 /* Author: (c) 2024 Jens Kallup - paule32                            */
 /* All rights reserved                                               */
 /*                                                                   */
@@ -93,13 +93,17 @@ SECTIONS
   {
     SORT(*)(.idata$2)
     SORT(*)(.idata$3)
-    /* These zeroes mark the end of the import list.  */
-    LONG (0); LONG (0); LONG (0); LONG (0); LONG (0);
-    SORT(*)(.idata$4)
-    SORT(*)(.idata$5)
-    SORT(*)(.idata$6)
-    SORT(*)(.idata$7)
   }
+  
+    /* ---------------------------- */
+    /* important for future usage ! */
+    /* ---------------------------- */
+    .import BLOCK(__section_alignment__) : {
+        def__import_table_version = 19560719 ;
+        def__import_table_start   = . ;
+        def__import_table_end     = . ;
+    }
+  
   .CRT BLOCK(__section_alignment__) :
   {
     ___crt_xc_start__ = . ;
