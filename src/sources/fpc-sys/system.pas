@@ -4,7 +4,7 @@
 // (c) Copyright 2021 Jens Kallup - paule32
 // only for non-profit usage !!!
 // ---------------------------------------------------------------------------
-{$mode delphi}
+{$mode delphi}{$H+}
 unit system;
 
 interface
@@ -290,7 +290,7 @@ procedure fpc_initializeunits;    cdecl; external name 'fpc_initializeunits';   
 procedure fpc_libinitializeunits; cdecl; external name 'fpc_libinitializeunits'; compilerproc;
 
 procedure fpc_finalize(Data,TypeInfo: Pointer); compilerproc;
-procedure fpc_copy_proc(Src, Dest, TypeInfo : Pointer);compilerproc; inline;
+procedure fpc_copy_proc(Src, Dest, TypeInfo : Pointer); compilerproc; inline;
 procedure fpc_do_exit; compilerproc;
 
 // ---------------------------------------------------------------------------
@@ -299,7 +299,7 @@ procedure fpc_do_exit; compilerproc;
 function  LocalAlloc( uFlags: UINT; uBytes: SIZE_T): UINT; cdecl; external DLL_STR_kernel32 name 'LocalAlloc';
 procedure ExitProcess( ExitCode: LongInt ); cdecl; external DLL_STR_kernel32 name 'ExitProcess';
 
-procedure move(const source; var dest; count: DWord); export;
+procedure move(const source; var dest; count: DWord); assembler; export;
 
 implementation
 
@@ -416,7 +416,7 @@ begin end;
 procedure fpc_finalize(Data,TypeInfo: Pointer); compilerproc;
 begin end;
 
-procedure move(const source; var dest; count: DWord); assembler; nostackframe; export;
+procedure move(const source; var dest; count: DWord); [public, alias:'FPC_move']; assembler; nostackframe; export;
 asm
     mov    %r8, %rax
     sub    %rdx, %rcx            { rcx = src - dest }
@@ -682,4 +682,7 @@ asm
     jmpq   .Ldestalignedb
 end;
 
+exports
+    move;
+    
 end.
