@@ -16,15 +16,10 @@ INPUT(
 .\units\test1.o
 .\units\fpcinit.o
 .\units\system.o
-.\units\RTL.o
-.\units\RTL_Windows.o
 .\units\RTL_Utils.o
-.\units\Qt_Object.o
-.\units\Qt_String.o
 )
 GROUP(
 .\units\libimpsystem.a
-.\units\libimpRTL_Windows.a
 )
 OUTPUT_FORMAT(pei-x86-64)
 SECTIONS
@@ -34,6 +29,7 @@ SECTIONS
   .text  __image_base__ + ( __section_alignment__ < 0x1000 ? . : __section_alignment__ ) :
   {
     __text_start__ = . ;
+    mainCRTstartup = . ;
     *(.init)
     *(.text .stub .text.* .gnu.linkonce.t.*)
     *(SORT(.text$*))

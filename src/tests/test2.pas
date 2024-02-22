@@ -5,11 +5,8 @@
 //
 // only for education, and non-profit usage !
 // -----------------------------------------------------------------
-{$mode objfpc}{$H+}
+{$mode delphi}
 library test2;
-
-uses
-  Qt_Object;
 
 procedure test;
 var

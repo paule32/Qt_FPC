@@ -8,7 +8,6 @@
 {$mode delphi}
 unit RTL_DataCollection;
 interface
-const DLL_STR_kernel32 = 'kernel32.dll';
 
 implementation
 end.

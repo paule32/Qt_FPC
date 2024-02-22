@@ -5,11 +5,8 @@
 //
 // only for education, and non-profit usage !
 // -----------------------------------------------------------------
-{$mode objfpc}
+{$mode delphi}
 program test1;
-
-uses
-  Qt_Object;
 
 procedure test;
 var
@@ -22,5 +19,5 @@ begin
 end;
 
 begin
-  test;
+  MessageBox(0,'halllo','toitt',0);
 end.
