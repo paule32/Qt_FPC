@@ -5,7 +5,7 @@
 /*                                                                   */
 /* only for education, and non-profit usage !                        */
 /* ----------------------------------------------------------------- */
-ENTRY(PASCALMAIN)
+ENTRY("PASCALMAIN")
 
 SEARCH_DIR(".\units\fpc-sys")
 SEARCH_DIR(".\units\fpc-win")
