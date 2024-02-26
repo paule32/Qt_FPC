@@ -146,11 +146,11 @@ function GetOEMCP: DWORD; cdecl; external DLL_STR_kernel32 name 'GetOEMCP';
 // \see    GetOEMCP
 function TSystemCodePage: DWORD; inline;
 
+procedure ExitProcess ( ExitCode: LongInt );                                              cdecl; external DLL_STR_kernel32 name 'ExitProcess';
 function  FreeLibrary ( hLibModule: HMODULE ): BOOL;                                      cdecl; external DLL_STR_kernel32 name 'FreeLibrary';
 function  HeapCreate  ( flOptions: DWORD; dwInitialSize, dwMaximumSize: SIZE_T ): HANDLE; cdecl; external DLL_STR_kernel32 name 'HeapCreate';
 function  LoadLibrary ( lpLibFileName: LPCSTR ): HMODULE;                                 cdecl; external DLL_STR_kernel32 name 'LoadLibraryA';
 function  LocalAlloc  ( uFlags: UINT; uBytes: SIZE_T): UINT;                              cdecl; external DLL_STR_kernel32 name 'LocalAlloc';
-procedure ExitProcess ( ExitCode: LongInt );                                              cdecl; external DLL_STR_kernel32 name 'ExitProcess';
 
 // ---------------------------------------------------------------------------
 // win32api module user32.dll:

@@ -298,16 +298,16 @@ function  fpc_get_input: PText;         compilerproc;
 procedure fpc_iocheck;                  compilerproc;
 procedure fpc_readln_end(var f: Text);	compilerproc;
 
-function  fpc_help_constructor(_self:pointer;var _vmt:pointer;_vmt_pos:cardinal):pointer;compilerproc;
-procedure fpc_help_destructor(_self,_vmt:pointer;vmt_pos:cardinal);compilerproc;
-procedure fpc_help_fail(_self:pointer;var _vmt:pointer;vmt_pos:cardinal);compilerproc;
+function  fpc_help_constructor (_self: pointer; var _vmt: pointer; _vmt_pos: cardinal): Pointer;  compilerproc;
+procedure fpc_help_fail        (_self: pointer; var _vmt: pointer;  vmt_pos: cardinal);           compilerproc;
+procedure fpc_help_destructor  (_self,              _vmt: pointer;  vmt_pos: cardinal);           compilerproc;
 
 procedure fpc_doneexception; compilerproc;
 
 procedure fpc_ReRaise; compilerproc;
 
 procedure fpc_initializeunits; compilerproc;
-procedure fpc_libinitializeunits; cdecl; external name 'fpc_libinitializeunits'; compilerproc;
+procedure fpc_libinitializeunits; compilerproc;
 
 procedure fpc_finalize(Data,TypeInfo: Pointer); compilerproc;
 procedure fpc_copy_proc(Src, Dest, TypeInfo : Pointer); compilerproc; inline;
@@ -549,8 +549,7 @@ begin end;
 procedure fpc_finalize(Data,TypeInfo: Pointer); compilerproc;
 begin end;
 
-procedure fpc_InitializeUnits;[public,alias:'FPC_INITIALIZEUNITS']; compilerproc;
-begin
-end;
+procedure fpc_initializeunits;    [public, alias:'FPC_INITIALIZEUNITS']; compilerproc; begin end;
+procedure fpc_libinitializeunits; [public, alias:'FPC_LIBINITIALIZEUNITS']; compilerproc; begin end;
 
 end.

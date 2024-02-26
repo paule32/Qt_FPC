@@ -70,19 +70,19 @@ for %%A in (RTL_Memory RTL_Utils) do ( copy .\units\fpc-rtl\%%A.s .\tests\units\
 ::for %%A in (Qt_Object Qt_String) do ( copy .\units\fpc-qt\%%A.s  .\tests\units\%%A.s )
 
 cd .\tests
-%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al %fpcsys2% -Fu.\units -FE.\units -XMmainCRTstartup test1.pas
-%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al %fpcsys2% -Fu.\units -FE.\units -XMmainCRTstartup test2.pas
+%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al %fpcsys2% -Fu.\units -FE.\units test1.pas
+%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al %fpcsys2% -Fu.\units -FE.\units test2.pas
 
 echo =[ shrink data information ]=
 cd .\units
-grep -v 'SECTION .fpc'     test1.s > tmp1.txt
-grep -v 'SECTION .fpc'     test2.s > tmp2.txt
+::grep -v 'SECTION .fpc'     test1.s > tmp1.txt
+::grep -v 'SECTION .fpc'     test2.s > tmp2.txt
 
-grep -v '__fpc_ident .fpc' tmp1.txt > test1.s
-grep -v '__fpc_ident .fpc' tmp2.txt > test2.s
+::grep -v '__fpc_ident .fpc' tmp1.txt > test1.s
+::grep -v '__fpc_ident .fpc' tmp2.txt > test2.s
 
-del /S /Q tmp1.txt
-del /S /Q tmp2.txt
+::del /S /Q tmp1.txt
+::del /S /Q tmp2.txt
 
 for %%A in (system RTL_Memory RTL_Utils test1 test2) do (
     sed -i '/\; Begin asmlist al_dwarf_frame.*/,/\; End asmlist al_dwarf_frame.*/d' %%A.s

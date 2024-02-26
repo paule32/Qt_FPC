@@ -8,16 +8,17 @@
 {$mode delphi}
 library test2;
 
-procedure test;
-var
-  q: QObject;
+procedure test; export;
+//var
+//  q: QObject;
 //  b: Array of Byte;
 begin
 //  SetLength(b,16);
   //q := new QObject;
-  q.Free;
+//  q.Free;
+    MessageBox(0,'zuzu','foo',0);
 end;
 
-begin
-  test;
+exports test;
+
 end.
