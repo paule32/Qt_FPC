@@ -8,6 +8,9 @@
 {$mode delphi}
 program test1;
 
+var
+  hmod: HMODULE;
+  
 procedure test;
 var
   q: QObject;
@@ -20,4 +23,6 @@ end;
 
 begin
   MessageBox(0,'halllo','toitt',0);
+  hmod := LoadLibrary( 'test2.dll' );
+  FreeLibrary( hmod );
 end.

@@ -10,37 +10,42 @@
 // ---------------------------------------------------------------------------
 // win32api constants, and variables ...
 // ---------------------------------------------------------------------------
-type THANDLE =  LongWord;     // onject handle
-type PHandle = ^THANDLE;
+type BOOL      = Integer;       // true or false
 
-type LCID    = LongDWord;     // a local identifier
-type LANGID  = LongDWord;     // a language identifier
+type PVOID     = Pointer;
+type HANDLE    = PVOID;
 
-type WPARAM  = LongDWord;     // 32-bit message parameter
-type LPARAM  = LongDWord;     // 32-bit message parameter
+type THANDLE   =  LongWord;     // onject handle
+type PHandle   = ^THANDLE;
 
-type LRESULT = LongDWord;     // 32-bit unsigned return value
-type HRESULT = ShortDWord;    // 32-bit signed   return value
+type LCID      = LongDWord;     // a local identifier
+type LANGID    = LongDWord;     // a language identifier
 
-type HWND    = LongDWord;     // a handle to a window
-type ATOM    = LongDWord;     // local/global atom index for a string
+type WPARAM    = LongDWord;     // 32-bit message parameter
+type LPARAM    = LongDWord;     // 32-bit message parameter
 
-type HGLOBAL = THandle;       // a globally memory allocated handle
+type LRESULT   = LongDWord;     // 32-bit unsigned return value
+type HRESULT   = ShortDWord;    // 32-bit signed   return value
 
-type DWORD   = LongDWORD;
-type UINT    = LongDWORD;
-type SIZE_T  = LongDWORD;
+type HINSTANCE = HANDLE;        // a handle to an instance
+type HMODULE   = HINSTANCE;     // a handle to a module (.dll)
 
-type PVOID   = Pointer;
-type HANDLE  = PVOID;
+type HWND      = LongDWord;     // a handle to a window
+type ATOM      = LongDWord;     // local/global atom index for a string
 
-type LPCSTR  = String;
-type LPCWSTR = String;
+type HGLOBAL   = THandle;       // a globally memory allocated handle
+
+type DWORD     = LongDWORD;
+type UINT      = LongDWORD;
+type SIZE_T    = LongDWORD;
+
+type LPCSTR    = String;
+type LPCWSTR   = String;
 
 {$ifdef UNICODE}
-type LPCTSTR = LPCWSTR;
+type LPCTSTR   = LPCWSTR;
 {$else}
-type LPCTSTR = LPCSTR;
+type LPCTSTR   = LPCSTR;
 {$endif}
 
 // ---------------------------------------------------------------------------
@@ -141,9 +146,11 @@ function GetOEMCP: DWORD; cdecl; external DLL_STR_kernel32 name 'GetOEMCP';
 // \see    GetOEMCP
 function TSystemCodePage: DWORD; inline;
 
-function  HeapCreate( flOptions: DWORD; dwInitialSize, dwMaximumSize: SIZE_T ): HANDLE; external DLL_STR_kernel32 name 'HeapCreate';
-function  LocalAlloc( uFlags: UINT; uBytes: SIZE_T): UINT; cdecl; external DLL_STR_kernel32 name 'LocalAlloc';
-procedure ExitProcess( ExitCode: LongInt ); cdecl; external DLL_STR_kernel32 name 'ExitProcess';
+function  FreeLibrary ( hLibModule: HMODULE ): BOOL;                                      cdecl; external DLL_STR_kernel32 name 'FreeLibrary';
+function  HeapCreate  ( flOptions: DWORD; dwInitialSize, dwMaximumSize: SIZE_T ): HANDLE; cdecl; external DLL_STR_kernel32 name 'HeapCreate';
+function  LoadLibrary ( lpLibFileName: LPCSTR ): HMODULE;                                 cdecl; external DLL_STR_kernel32 name 'LoadLibraryA';
+function  LocalAlloc  ( uFlags: UINT; uBytes: SIZE_T): UINT;                              cdecl; external DLL_STR_kernel32 name 'LocalAlloc';
+procedure ExitProcess ( ExitCode: LongInt );                                              cdecl; external DLL_STR_kernel32 name 'ExitProcess';
 
 // ---------------------------------------------------------------------------
 // win32api module user32.dll:
@@ -161,6 +168,11 @@ procedure Entry; [public, alias: '_mainCRTstartup'];
 begin
     PascalMain;
     ExitProcess(0);
+end;
+
+procedure DllEntry; [public, alias: '_DLLMainCRTStartup'];
+begin
+    PascalMain;
 end;
 
 function TSystemCodePage: DWORD; inline;

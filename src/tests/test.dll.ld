@@ -5,7 +5,7 @@
 /*                                                                   */
 /* only for education, and non-profit usage !                        */
 /* ----------------------------------------------------------------- */
-ENTRY(PASCALMAIN)
+ENTRY("PASCALMAIN")
 
 SEARCH_DIR(".\units\fpc-sys")
 SEARCH_DIR(".\units\fpc-win")
@@ -29,7 +29,6 @@ SECTIONS
   .text  __image_base__ + ( __section_alignment__ < 0x1000 ? . : __section_alignment__ ) :
   {
     __text_start__ = . ;
-    DLLMainCRTStartup = . ;
     *(.init)
     *(.text .stub .text.* .gnu.linkonce.t.*)
     *(SORT(.text$*))
