@@ -3,8 +3,8 @@
 ; all rights reserved.
 ; -------------------------------------------------------------------------------------------
 
-    global fpc_libinitializeunits
-    
+extern PASCALMAIN
+
     global FINALIZE$_$OBJPAS
     
     global INIT$_$FPINTRES
@@ -20,15 +20,12 @@
     
     
     global RTTI_$QT_OBJECT_$$_QOBJECT
-    global RTTI_$SYSTEM_$$_TOBJECT$indirect
     
     global THREADVARLIST_$SYSTEM$indirect
 
     global VMT_$QT_OBJECT_$$_QOBJECT
-    global VMT_$SYSTEM_$$_TOBJECT$indirect
     
     section .text
-fpc_libinitializeunits:
 
 SYSTEM$_$TOBJECT_$__$$_DISPATCH$formal:
 SYSTEM$_$TOBJECT_$__$$_DISPATCHSTR$formal:
@@ -44,12 +41,10 @@ SYSTEM$_$TOBJECT_$__$$_SAFECALLEXCEPTION$TOBJECT$POINTER$$HRESULT:
 SYSTEM$_$TOBJECT_$__$$_TOSTRING$$ANSISTRING:
 
 RTTI_$QT_OBJECT_$$_QOBJECT:
-RTTI_$SYSTEM_$$_TOBJECT$indirect:
 
 FINALIZE$_$OBJPAS:
 
 THREADVARLIST_$SYSTEM$indirect:
-VMT_$SYSTEM_$$_TOBJECT$indirect:
 
 VMT_$QT_OBJECT_$$_QOBJECT:
     ret

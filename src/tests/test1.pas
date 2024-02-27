@@ -9,24 +9,17 @@
 program test1;
 
 var
-  hmod: HMODULE;
-
-procedure zum; stdcall; external 'test2.dll' name 'test';
-procedure test;
-//var
-//  q: QObject;
-//  b: Array of Byte;
-begin
-//  SetLength(b,16);
-  //q := new QObject;
-//  q.Free;
-MessageBox(0,'halllo','toitt',0);
-zum;
-end;
+  adll: HMODULE;
+  aproc: procedure; stdcall;
 
 begin
-  test;
-  //hmod := LoadLibrary( 'test2.dll' );
-  //if hmod <> nil then MessageBox(0,'xxxxxxxxx','222',0);
-  //FreeLibrary( hmod );
+  adll := LoadLibrary( 'test2.dll' );
+  if (not (adll = nil)) then
+  begin
+    MessageBox(0,'xxxxxxxxx','111 222 333',0);
+    @aproc := GetProcAddress(adll, 'test');
+    MessageBox(0,'xxxxxxxxx','222',0);
+    aproc;
+  end;
+  FreeLibrary( adll );
 end.

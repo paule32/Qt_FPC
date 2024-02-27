@@ -12,10 +12,10 @@ set fpcdir=C:\lazarus\x86_64\fpc\3.2.2\bin\x86_64-win64
 set fpcx64=%fpcdir%\fpc.exe
 set fpcstr=%fpcdir%\strip.exe
 
-set fpcdst=-Twin64 -Mdelphi -dwindows -dwin64 -v0 -dwindll
+set fpcdst=-Twin64 -Mdelphi -dwindows -dwin64 -v0 -Fi..\fpc-win
 set fpcasm=-Anasmwin64 -al
 
-set fpcsys1=-Fu..\..\units\fpc-rtl -Fu..\..\units\fpc-sys -Fu..\..\units\fpc-win -Fu..\..\units\fpc-qt -Fi..\..\sources\fpc-win
+set fpcsys1=-Fu..\..\units\fpc-rtl -Fu..\..\units\fpc-sys -Fu..\..\units\fpc-win -Fu..\..\units\fpc-qt
 set fpcsys2=-Fu..\units\fpc-rtl -Fu..\units\fpc-sys -Fu..\units\fpc-win -Fu..\units\fpc-qt
 
 echo =[ clean up directories    ]=
@@ -34,15 +34,14 @@ mkdir .\tests\units
 echo =[ begin compile stage     ]=
 nasm.exe -fwin64 -o.\units\fpc-sys\fpcinit.o .\sources\fpc-sys\fpcinit.asm
 nasm.exe -fwin64 -o.\units\fpc-sys\fpcdll.o  .\sources\fpc-sys\fpcdll.asm
+nasm.exe -fwin64 -o.\units\fpc-win\RTL_crt.o .\sources\fpc-win\RTL_crt.asm
 
-::cd .\sources\fpc-win
-::%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al %fpcsys1% -FE..\..\units\fpc-win RTL_Windows.pas
-::cd ..\..
+copy .\units\fpc-win\RTL_crt.o .\tests\units\RTL_crt.o
 
 cd .\sources\fpc-sys
-%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al %fpcsys1% -FE..\..\units\fpc-sys -Us system.pas
-%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al %fpcsys1% -FE..\..\units\fpc-sys    sysinit.pas
-%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al %fpcsys1% -FE..\..\units\fpc-sys   fpintres.pp
+%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al -FE..\..\units\fpc-sys -Us system.pas
+%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al -FE..\..\units\fpc-sys    sysinit.pas
+%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al -FE..\..\units\fpc-sys   fpintres.pp
 cd ..\..
 
 cd .\sources\fpc-rtl
@@ -52,28 +51,32 @@ cd .\sources\fpc-rtl
 %fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al %fpcsys1% -FE..\..\units\fpc-rtl RTL_Utils.pas
 cd ..\..
 
+cd .\sources\fpc-win
+::%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al %fpcsys1% -FE..\..\units\fpc-win RTL_Windows.pas
+cd ..\..
+
 cd .\sources\fpc-qt
 ::%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al %fpcsys1% -FE..\..\units\fpc-qt Qt_Object.pas
 ::%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al %fpcsys1% -FE..\..\units\fpc-qt Qt_String.pas
 cd ..\..
 
-cd .\tests
-%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al %fpcsys2% -FE.\units test1.pas
-cd ..
+::cd .\tests
+::%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al %fpcsys2% -FE.\units test1.pas
+::cd ..
 
-for %%A in (
-    libimpsystem.a fpcdll.o fpcinit.o sysinit.o system.s
-) do ( copy .\units\fpc-sys\%%A .\tests\units\%%A)
+::for %%A in (
+::    libimpsystem.a fpcdll.o fpcinit.o sysinit.o system.s
+::) do ( copy .\units\fpc-sys\%%A .\tests\units\%%A)
 
-for %%A in (RTL_Memory RTL_Utils) do ( copy .\units\fpc-rtl\%%A.s .\tests\units\%%A.s )
-::for %%A in (RTL_Windows)          do ( copy .\units\fpc-win\%%A.s .\tests\units\%%A.s )
+::for %%A in (RTL_Memory RTL_Utils) do ( copy .\units\fpc-rtl\%%A.s .\tests\units\%%A.s )
+::for %%A in (RTL_Windows)         do ( copy .\units\fpc-win\%%A.s .\tests\units\%%A.s )
 ::for %%A in (Qt_Object Qt_String) do ( copy .\units\fpc-qt\%%A.s  .\tests\units\%%A.s )
 
 cd .\tests
-%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al %fpcsys2% -Fu.\units -FE.\units test1.pas
-%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al %fpcsys2% -Fu.\units -FE.\units test2.pas
+%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al %fpcsys2% -dwinexe     -Fu.\units -FE.\units test1.pas
+%fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al %fpcsys2% -dwindll -CX -Fu.\units -FE.\units test2.pas
 
-echo =[ shrink data information ]=
+::echo =[ shrink data information ]=
 cd .\units
 ::grep -v 'SECTION .fpc'     test1.s > tmp1.txt
 ::grep -v 'SECTION .fpc'     test2.s > tmp2.txt
@@ -83,13 +86,13 @@ cd .\units
 
 ::del /S /Q tmp1.txt
 ::del /S /Q tmp2.txt
-
-for %%A in (system RTL_Memory RTL_Utils test1 test2) do (
+goto uzuz
+for %%A in (..\..\units\fpc-sys\system RTL_Memory RTL_Utils test1 test2) do (
     sed -i '/\; Begin asmlist al_dwarf_frame.*/,/\; End asmlist al_dwarf_frame.*/d' %%A.s
     sed -i '/\; Begin asmlist al_indirectglobals.*/,/\; End asmlist al_indirectglobals.*/d' %%A.s
     sed -i '/\; Begin asmlist al_globals.*/,/\; End asmlist al_globals.*/d' %%A.s
     sed -i '/\; Begin asmlist al_rtti.*/,/\; End asmlist al_rtti.*/d' %%A.s
-    sed -i '/\; Begin asmlist al_const.*/,/\; End asmlist al_const.*/d' %%A.s
+::    sed -i '/\; Begin asmlist al_const.*/,/\; End asmlist al_const.*/d' %%A.s
     sed -i '/File.*/d' %%A.s 2> nul
     grep ".*lea.*\[INIT\_" %%A.s | awk '{print $2}' | sed -e "s/^.*\[//" -e "s/\]$//" -e "1d" > tmp_file
     sort tmp_file | uniq > tmp_sort
@@ -100,17 +103,20 @@ for %%A in (system RTL_Memory RTL_Utils test1 test2) do (
     )
 )
 
-::grep ".*lea.*\[RTTI_.*\$P\$.*\$\$_def.*\]" test1.s | awk '{print $2}' | sed -e "s/^.*\[//" -e "s/.$//" -e "1d" > tmp_file
-::sort tmp_file | uniq > tmp_sort
-::del  tmp_file /F /Q
-::echo SECTION .data >> test1.s
-::for /F "tokens=*" %%a in (tmp_sort) do (
-::    echo %%a: dq 0 >> test1.s
-::)
-
-::for %%A in (system RTL_Memory RTL_Utils test1 test2) do (
-::    nasm -f win64 -o %%A.o %%A.s
-::)
+grep ".*lea.*\[RTTI_.*\$P\$.*\$\$_def.*\]" test1.s | awk '{print $2}' | sed -e "s/^.*\[//" -e "s/.$//" -e "1d" > tmp_file
+sort tmp_file | uniq > tmp_sort
+del  tmp_file /F /Q
+echo SECTION .data >> test1.s
+for /F "tokens=*" %%a in (tmp_sort) do (
+    echo %%a: dq 0 >> test1.s
+)
+:uzuz
+for %%A in (
+    ..\..\units\fpc-sys\system
+    ..\..\units\fpc-rtl\RTL_Memory
+    ..\..\units\fpc-rtl\RTL_Utils test1 test2) do (
+    nasm -f win64 -o %%A.o %%A.s
+)
 
 copy test1.exe ..\test1.exe
 

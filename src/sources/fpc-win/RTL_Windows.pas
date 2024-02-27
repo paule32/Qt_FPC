@@ -13,7 +13,9 @@
 type BOOL      = Integer;       // true or false
 
 type PVOID     = Pointer;
+
 type HANDLE    = PVOID;
+type FARPROC   = PVOID;
 
 type THANDLE   =  LongWord;     // onject handle
 type PHandle   = ^THANDLE;
@@ -144,19 +146,24 @@ function GetOEMCP: DWORD; cdecl; external DLL_STR_kernel32 name 'GetOEMCP';
 // \return DWORD - the current system code page.
 // \see    GetACP
 // \see    GetOEMCP
-function TSystemCodePage: DWORD; inline;
+function TSystemCodePage: DWORD;
 
-procedure ExitProcess ( ExitCode: LongInt );                                              cdecl; external DLL_STR_kernel32 name 'ExitProcess';
-function  FreeLibrary ( hLibModule: HMODULE ): BOOL;                                      cdecl; external DLL_STR_kernel32 name 'FreeLibrary';
-function  HeapCreate  ( flOptions: DWORD; dwInitialSize, dwMaximumSize: SIZE_T ): HANDLE; cdecl; external DLL_STR_kernel32 name 'HeapCreate';
-function  LoadLibrary ( lpLibFileName: LPCSTR ): HMODULE;                                 cdecl; external DLL_STR_kernel32 name 'LoadLibraryA';
-function  LocalAlloc  ( uFlags: UINT; uBytes: SIZE_T): UINT;                              cdecl; external DLL_STR_kernel32 name 'LocalAlloc';
+procedure ExitProcess    ( ExitCode: LongInt );                                              cdecl;   external DLL_STR_kernel32 name 'ExitProcess';
+function  FreeLibrary    ( hLibModule: HMODULE ): BOOL;                                      cdecl;   external DLL_STR_kernel32 name 'FreeLibrary';
+function  GetProcAddress ( hModule: HMODULE; lpProcName: LPCSTR): FARPROC;                   stdcall; external DLL_STR_kernel32 name 'GetProcAddress';
+function  HeapCreate     ( flOptions: DWORD; dwInitialSize, dwMaximumSize: SIZE_T ): HANDLE; cdecl;   external DLL_STR_kernel32 name 'HeapCreate';
+function  LoadLibrary    ( lpLibFileName: LPCSTR ): HMODULE;                                 cdecl;   external DLL_STR_kernel32 name 'LoadLibraryA';
+function  LocalAlloc     ( uFlags: UINT; uBytes: SIZE_T): UINT;                              cdecl;   external DLL_STR_kernel32 name 'LocalAlloc';
 
 // ---------------------------------------------------------------------------
 // win32api module user32.dll:
 // ---------------------------------------------------------------------------
-function MessageBox( _hwnd: HWND; lpText, lpCaption: LPCTSTR; uType: UINT): DWORD; cdecl external DLL_STR_user32 name 'MessageBoxA';
+function MessageBox( _hwnd: HWND; lpText, lpCaption: LPCTSTR; uType: UINT): DWORD; stdcall external DLL_STR_user32 name 'MessageBoxA';
 
+{$ifdef windll}
+function DLLMainCRTStartup(_hinstance: qword;_dllreason: dword; _dllparam:Pointer): BOOK; stdcall;
+{$L RTL_crt.o}
+{$endif}
 {$endif}
 
 {$ifdef windows_source}
@@ -164,19 +171,25 @@ function MessageBox( _hwnd: HWND; lpText, lpCaption: LPCTSTR; uType: UINT): DWOR
 // core Pascal entry point stuff:
 // ---------------------------------------------------------------------------
 procedure PascalMain; external name 'PASCALMAIN';
+{$ifdef winexe}
 procedure Entry; [public, alias: '_mainCRTstartup'];
 begin
     PascalMain;
     ExitProcess(0);
 end;
-
-procedure DllEntry; [public, alias: '_DLLMainCRTStartup'];
+{$endif}
+{$ifdef windll}
+function DLLMainCRTStartup(_hinstance: qword;_dllreason: dword; _dllparam:Pointer); external name '_DLLMainCRTStartup';
+procedure Entry; [public, alias: '_DLLMainCRTStartup'];
 begin
-    PascalMain;
+MessageBox(0,'llllllllllloooooooo','11111',0);
+//    PascalMain;
 end;
+{$endif}
 
-function TSystemCodePage: DWORD; inline;
+function TSystemCodePage: DWORD;
 begin
     result := GetACP;
 end;
+
 {$endif}
