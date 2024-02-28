@@ -5,7 +5,7 @@
 /*                                                                   */
 /* only for education, and non-profit usage !                        */
 /* ----------------------------------------------------------------- */
-ENTRY("PASCALMAIN")
+ENTRY(PASCALMAIN)
 
 SEARCH_DIR(".\units\fpc-sys")
 SEARCH_DIR(".\units\fpc-win")
@@ -13,13 +13,14 @@ SEARCH_DIR(".\units\fpc-rtl")
 SEARCH_DIR(".\units\fpc-qt")
 SEARCH_DIR(".\tests\units")
 INPUT(
-.\units\test2.o
-.\units\fpcinit.o
-.\units\system.o
-.\units\RTL_Utils.o
+.\RTL_crt.o
+.\RTL_Memory.o
+.\RTL_Utils.o
+.\system.o
+.\fpcinit.o
 )
 GROUP(
-.\units\libimpsystem.a
+.\libimpsystem.a
 )
 OUTPUT_FORMAT(pei-x86-64)
 SECTIONS
@@ -92,7 +93,7 @@ SECTIONS
     /* ---------------------------- */
     /* important for future usage ! */
     /* ---------------------------- */
-    .import BLOCK(__section_alignment__) : {
+    /*.import BLOCK(__section_alignment__) : {
         def__import_table_version = 19560719 ;
         def__import_table_start   = . ;
         
@@ -100,7 +101,7 @@ SECTIONS
 	.\units\RTL_Memory.o;
         
         def__import_table_end     = . ;
-    }
+    }*/
 
   .CRT BLOCK(__section_alignment__) :
   {

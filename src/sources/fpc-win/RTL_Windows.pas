@@ -160,10 +160,6 @@ function  LocalAlloc     ( uFlags: UINT; uBytes: SIZE_T): UINT;                 
 // ---------------------------------------------------------------------------
 function MessageBox( _hwnd: HWND; lpText, lpCaption: LPCTSTR; uType: UINT): DWORD; stdcall external DLL_STR_user32 name 'MessageBoxA';
 
-{$ifdef windll}
-function DLLMainCRTStartup(_hinstance: qword;_dllreason: dword; _dllparam:Pointer): BOOK; stdcall;
-{$L RTL_crt.o}
-{$endif}
 {$endif}
 
 {$ifdef windows_source}
@@ -179,7 +175,7 @@ begin
 end;
 {$endif}
 {$ifdef windll}
-function DLLMainCRTStartup(_hinstance: qword;_dllreason: dword; _dllparam:Pointer); external name '_DLLMainCRTStartup';
+//function DLLMainCRTStartup(_hinstance: qword;_dllreason: dword; _dllparam:Pointer): BOOL; external name '_DLLMainCRTStartup';
 procedure Entry; [public, alias: '_DLLMainCRTStartup'];
 begin
 MessageBox(0,'llllllllllloooooooo','11111',0);

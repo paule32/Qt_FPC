@@ -17,9 +17,9 @@ begin
   if (not (adll = nil)) then
   begin
     MessageBox(0,'xxxxxxxxx','111 222 333',0);
-    @aproc := GetProcAddress(adll, 'test');
-    MessageBox(0,'xxxxxxxxx','222',0);
-    aproc;
+    //aproc := GetProcAddress(adll, 'test');
+    //MessageBox(0,'xxxxxxxxx','222',0);
+    //aproc;
   end;
   FreeLibrary( adll );
 end.

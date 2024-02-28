@@ -76,55 +76,6 @@ cd .\tests
 %fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al %fpcsys2% -dwinexe     -Fu.\units -FE.\units test1.pas
 %fpcx64% %fpcdst% -O2 -Os -vl -Anasmwin64 -al %fpcsys2% -dwindll -CX -Fu.\units -FE.\units test2.pas
 
-::echo =[ shrink data information ]=
-cd .\units
-::grep -v 'SECTION .fpc'     test1.s > tmp1.txt
-::grep -v 'SECTION .fpc'     test2.s > tmp2.txt
-
-::grep -v '__fpc_ident .fpc' tmp1.txt > test1.s
-::grep -v '__fpc_ident .fpc' tmp2.txt > test2.s
-
-::del /S /Q tmp1.txt
-::del /S /Q tmp2.txt
-goto uzuz
-for %%A in (..\..\units\fpc-sys\system RTL_Memory RTL_Utils test1 test2) do (
-    sed -i '/\; Begin asmlist al_dwarf_frame.*/,/\; End asmlist al_dwarf_frame.*/d' %%A.s
-    sed -i '/\; Begin asmlist al_indirectglobals.*/,/\; End asmlist al_indirectglobals.*/d' %%A.s
-    sed -i '/\; Begin asmlist al_globals.*/,/\; End asmlist al_globals.*/d' %%A.s
-    sed -i '/\; Begin asmlist al_rtti.*/,/\; End asmlist al_rtti.*/d' %%A.s
-::    sed -i '/\; Begin asmlist al_const.*/,/\; End asmlist al_const.*/d' %%A.s
-    sed -i '/File.*/d' %%A.s 2> nul
-    grep ".*lea.*\[INIT\_" %%A.s | awk '{print $2}' | sed -e "s/^.*\[//" -e "s/\]$//" -e "1d" > tmp_file
-    sort tmp_file | uniq > tmp_sort
-    del  tmp_file /F /Q
-    echo SECTION .data >> %%A.s
-    for /F "tokens=*" %%b in (tmp_sort) do (
-        echo %%b: dq 0 >> %%A.s
-    )
-)
-
-grep ".*lea.*\[RTTI_.*\$P\$.*\$\$_def.*\]" test1.s | awk '{print $2}' | sed -e "s/^.*\[//" -e "s/.$//" -e "1d" > tmp_file
-sort tmp_file | uniq > tmp_sort
-del  tmp_file /F /Q
-echo SECTION .data >> test1.s
-for /F "tokens=*" %%a in (tmp_sort) do (
-    echo %%a: dq 0 >> test1.s
-)
-:uzuz
-for %%A in (
-    ..\..\units\fpc-sys\system
-    ..\..\units\fpc-rtl\RTL_Memory
-    ..\..\units\fpc-rtl\RTL_Utils test1 test2) do (
-    nasm -f win64 -o %%A.o %%A.s
-)
-
-copy test1.exe ..\test1.exe
-
-cd ..
-::copy ..\units\fpc-win\libimpRTL_Windows.a .\units\libimpRTL_Windows.a
-
-::x86_64-win64-ld.exe    -b pei-x86-64 -nostdlib -s -o test1.exe -T test.exe.ld
-::x86_64-win64-ld.exe -M -b pei-x86-64 -nostdlib -s -o test2.dll -T test.dll.ld > map.txt
 
 echo =[ create map              ]=
 grep "FPC_move" map.txt | awk '{print $1}'
