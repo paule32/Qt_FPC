@@ -1,10 +1,10 @@
-// -----------------------------------------------------------------
+// ---------------------------------------------------------------------------
 // File:   RTL_Windows.pas
 // Author: (c) 2024 Jens Kallup - paule32
 // All rights reserved
 //
 // only for education, and non-profit usage !
-// -----------------------------------------------------------------
+// ---------------------------------------------------------------------------
 {$ifdef windows_header}
 
 // ---------------------------------------------------------------------------
@@ -30,16 +30,13 @@ type LRESULT   = LongDWord;     // 32-bit unsigned return value
 type HRESULT   = ShortDWord;    // 32-bit signed   return value
 
 type HINSTANCE = HANDLE;        // a handle to an instance
+type HLOCAL    = HANDLE;        // a handle to a local memory block
 type HMODULE   = HINSTANCE;     // a handle to a module (.dll)
 
 type HWND      = LongDWord;     // a handle to a window
 type ATOM      = LongDWord;     // local/global atom index for a string
 
 type HGLOBAL   = THandle;       // a globally memory allocated handle
-
-type DWORD     = LongDWORD;
-type UINT      = LongDWORD;
-type SIZE_T    = LongDWORD;
 
 type LPCSTR    = String;
 type LPCWSTR   = String;
@@ -108,6 +105,41 @@ const IDTRYAGAIN = $10;
 const IDCONTINUE = $11;
 
 // ---------------------------------------------------------------------------
+// win32api VirtualAlloc:
+// ---------------------------------------------------------------------------
+const MEM_COALESCE_PLACEHOLDERS = $00000001;
+const MEM_PRESERVE_PLACEHOLDER  = $00000002;
+
+const MEM_COMMIT      = $00001000;
+const MEM_RESERVE     = $00002000;
+const MEM_DECOMMIT    = $00004000;
+const MEM_RELEASE     = $00008000;
+const MEM_RESET       = $00080000;
+const MEM_RESET_UNDO  = $10000000;
+
+const MEM_LARGE_PAGES = $20000000;
+const MEM_PHYSICAL    = $00400000;
+const MEM_TOP_DOWN    = $00100000;
+const MEM_WRITE_WATCH = $00200000;
+
+const PAGE_EXECUTE           = $10;
+const PAGE_EXECUTE_READ      = $20;
+const PAGE_EXECUTE_READWRITE = $40;
+const PAGE_EXECUTE_WRITECOPY = $80;
+
+const PAGE_NOACCESS  = $01;
+const PAGE_READONLY  = $02;
+const PAGE_READWRITE = $04;
+const PAGE_WRITECOPY = $08;
+
+const PAGE_TARGETS_INVALID   = $40000000;
+const PAGE_TARGETS_NO_UPDATE = $40000000;
+
+const PAGE_GUARD        = $100;
+const PAGE_NOCACHE      = $200;
+const PAGE_WRITECOMBINE = $400;
+
+// ---------------------------------------------------------------------------
 // win32api LocalAlloc, LocalReAlloc, and LocalFree:
 // ---------------------------------------------------------------------------
 const LMEM_MOVEABLE = $0002;
@@ -148,12 +180,32 @@ function GetOEMCP: DWORD; cdecl; external DLL_STR_kernel32 name 'GetOEMCP';
 // \see    GetOEMCP
 function TSystemCodePage: DWORD;
 
-procedure ExitProcess    ( ExitCode: LongInt );                                              cdecl;   external DLL_STR_kernel32 name 'ExitProcess';
-function  FreeLibrary    ( hLibModule: HMODULE ): BOOL;                                      cdecl;   external DLL_STR_kernel32 name 'FreeLibrary';
-function  GetProcAddress ( hModule: HMODULE; lpProcName: LPCSTR): FARPROC;                   stdcall; external DLL_STR_kernel32 name 'GetProcAddress';
-function  HeapCreate     ( flOptions: DWORD; dwInitialSize, dwMaximumSize: SIZE_T ): HANDLE; cdecl;   external DLL_STR_kernel32 name 'HeapCreate';
-function  LoadLibrary    ( lpLibFileName: LPCSTR ): HMODULE;                                 cdecl;   external DLL_STR_kernel32 name 'LoadLibraryA';
-function  LocalAlloc     ( uFlags: UINT; uBytes: SIZE_T): UINT;                              cdecl;   external DLL_STR_kernel32 name 'LocalAlloc';
+// ---------------------------------------------------------------------------
+// win32api module kernel32.dll:
+// ---------------------------------------------------------------------------
+procedure ExitProcess    ( ExitCode: LongInt ); cdecl; external DLL_STR_kernel32 name 'ExitProcess';
+
+// ---------------------------------------------------------------------------
+// win32api module kernel32.dll: dynamic library loader
+// ---------------------------------------------------------------------------
+function  FreeLibrary    ( hLibModule: HMODULE ): BOOL; cdecl; external DLL_STR_kernel32 name 'FreeLibrary';
+function  GetProcAddress ( hModule: HMODULE; lpProcName: LPCSTR): FARPROC; stdcall; external DLL_STR_kernel32 name 'GetProcAddress';
+function  LoadLibrary    ( lpLibFileName: LPCSTR ): HMODULE; stdcall; external DLL_STR_kernel32 name 'LoadLibraryA';
+
+// ---------------------------------------------------------------------------
+// win32api module kernel32.dll: Heap
+// ---------------------------------------------------------------------------
+function  HeapCreate     ( flOptions: DWORD; dwInitialSize, dwMaximumSize: SIZE_T ): HANDLE; cdecl; external DLL_STR_kernel32 name 'HeapCreate';
+function  LocalAlloc     ( uFlags: UINT; uBytes: SIZE_T): UINT; cdecl; external DLL_STR_kernel32 name 'LocalAlloc';
+function  LocalFree      ( hMem: HLOCAL): HLOCAL; cdecl; external DLL_STR_kernel32 name 'LocalFree';
+
+// ---------------------------------------------------------------------------
+// win32api module kernel32.dll: virtual memory
+// ---------------------------------------------------------------------------
+procedure FillChar       ( var Dest; Count: Integer; Value: Char );
+
+function  VirtualAlloc   ( lpAddress: PVOID; dwSize: SIZE_T; flAllocationType: DWORD; flProtect: DWORD): Pointer; stdcall; external DLL_STR_kernel32 name 'VirtualAlloc';
+function  VirtualFree    ( lpAddress: PVOID; dwSize: SIZE_T; dwFreeType: DWORD): BOOL; stdcall; external DLL_STR_kernel32 name 'VirtualAlloc';
 
 // ---------------------------------------------------------------------------
 // win32api module user32.dll:
@@ -175,13 +227,24 @@ begin
 end;
 {$endif}
 {$ifdef windll}
-//function DLLMainCRTStartup(_hinstance: qword;_dllreason: dword; _dllparam:Pointer): BOOL; external name '_DLLMainCRTStartup';
 procedure Entry; [public, alias: '_DLLMainCRTStartup'];
 begin
-MessageBox(0,'llllllllllloooooooo','11111',0);
-//    PascalMain;
+    PascalMain;
 end;
 {$endif}
+
+procedure FillChar(var Dest; Count: Integer; Value: Char);
+var
+    I: Integer;
+    P: PChar;
+begin
+    P := PChar(@Dest);
+    for I := 0 to Count - 1 do
+    begin
+        P^ := Value;
+        Inc(P);
+    end;
+end;
 
 function TSystemCodePage: DWORD;
 begin

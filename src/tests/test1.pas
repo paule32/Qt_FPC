@@ -9,17 +9,9 @@
 program test1;
 
 var
-  adll: HMODULE;
-  aproc: procedure; stdcall;
-
+  s1, s2: String;
 begin
-  adll := LoadLibrary( 'test2.dll' );
-  if (not (adll = nil)) then
-  begin
-    MessageBox(0,'xxxxxxxxx','111 222 333',0);
-    //aproc := GetProcAddress(adll, 'test');
-    //MessageBox(0,'xxxxxxxxx','222',0);
-    //aproc;
-  end;
-  FreeLibrary( adll );
+s1 := 'mufoLo';
+s2 := 'Hello World  --> ' + s1;
+  MessageBox(0,s2,s1,0);
 end.
