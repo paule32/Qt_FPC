@@ -5,7 +5,7 @@
 //
 // only for education, and non-profit usage !
 // -----------------------------------------------------------------
-{$mode objfpc}{$H+}
+{$mode delphi}{$H+}
 unit objpas;
 
 interface

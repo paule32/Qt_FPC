@@ -10,14 +10,12 @@ extern PASCALMAIN
     global INIT$_$FPINTRES
     global INIT$_$SYSTEM
     
-    global SYSTEM$_$TOBJECT_$__$$_CREATE$$TOBJECT
     global SYSTEM$_$TOBJECT_$__$$_DISPATCH$formal
     global SYSTEM$_$TOBJECT_$__$$_DISPATCHSTR$formal
     global SYSTEM$_$TOBJECT_$__$$_EQUALS$TOBJECT$$BOOLEAN
     global SYSTEM$_$TOBJECT_$__$$_GETHASHCODE$$INT64
     global SYSTEM$_$TOBJECT_$__$$_SAFECALLEXCEPTION$TOBJECT$POINTER$$HRESULT
     GLOBAL SYSTEM$_$TOBJECT_$__$$_TOSTRING$$ANSISTRING
-    
     
     global RTTI_$QT_OBJECT_$$_QOBJECT
     
@@ -48,3 +46,11 @@ THREADVARLIST_$SYSTEM$indirect:
 
 VMT_$QT_OBJECT_$$_QOBJECT:
     ret
+
+;;global U_$SYSTEM_$$_TQUEUE_MEM_TEMP
+;;U_$SYSTEM_$$_TQUEUE_MEM_TEMP:
+;;dq 1
+
+;;global VMT_$SYSTEM_$$_TQUEUE
+;;VMT_$SYSTEM_$$_TQUEUE:
+;;dq 0
