@@ -46,6 +46,10 @@ THREADVARLIST_$SYSTEM$indirect:
 
 VMT_$QT_OBJECT_$$_QOBJECT:
     ret
+ 
+global VMT_$SYSTEM_$$_QSTRING
+VMT_$SYSTEM_$$_QSTRING:
+    ret
 
 ;;global U_$SYSTEM_$$_TQUEUE_MEM_TEMP
 ;;U_$SYSTEM_$$_TQUEUE_MEM_TEMP:

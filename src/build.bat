@@ -39,6 +39,7 @@ set fpcasm=-Anasmwin64 -al
 
 set fpcsys1=^
     -Fu%prjdir1%\sources\fpc-sys ^
+    -Fu%prjdir1%\sources\fpc-qt  ^
     -Fu%prjdir1%\units\fpc-rtl ^
     -Fu%prjdir1%\units\fpc-sys ^
     -Fu%prjdir1%\units\fpc-win ^
@@ -52,20 +53,23 @@ set fpcsys2=^
     -sh -Ur  ^
     -WA -WD -WN %fpcasm% -vl
 
+set fpcsys3=^
+    -n ^
+    -O3 -Op3 -Os ^
+    -Si -Sc  -Sg ^
+    -Xd -Xe  -XD -CX -XXs ^
+    -sh -Ur
+
 cd %prjdir1%
 
 echo =[ clean up directories    ]=
 del   %prjdir1%\units       /F /S /Q
 del   %prjdir1%\tests\units /F /S /Q
 
-del   %prjdir1%\tmp  /F /S /Q
-rmdir %prjdir1%\tmp   F /S /Q
-
 rmdir %prjdir1%\units       /S /Q
 rmdir %prjdir1%\tests\units /S /Q
 
 mkdir %prjdir1%\units
-mkdir %prjdir1%\tmp
 
 cd %prjdir1%\units
 for %%A in (fpc-qt fpc-rtl fpc-sys fpc-win) do ( mkdir .\%%A )
@@ -78,58 +82,74 @@ echo =[ begin compile stage     ]=
 %asmx64% -o%prjdir1%\units\fpc-sys\fpcdll.o  %prjdir1%\sources\fpc-sys\fpcdll.asm
 
 %fpcx64% %fpcdst% %fpcsys2% %fpcsys1% %fpcasm% -dwindll     -FE%prjdir1%\units\fpc-sys %prjdir1%\sources\fpc-sys\fpintres.pp
-%fpcx64% %fpcdst% %fpcsys2% %fpcsys1% %fpcasm% -dwindll     -FE%prjdir1%\units\fpc-sys %prjdir1%\sources\fpc-sys\sysinit.pas
 %fpcx64% %fpcdst% %fpcsys2% %fpcsys1% %fpcasm% -dwindll -Us -FE%prjdir1%\units\fpc-sys %prjdir1%\sources\fpc-sys\system.pas
+%fpcx64% %fpcdst% %fpcsys2% %fpcsys1% %fpcasm% -dwindll     -FE%prjdir1%\units\fpc-sys %prjdir1%\sources\fpc-sys\sysinit.pas
 
-cd %prjdir1%\units\fpc-sys
-for %%A in (system) do (
-    sed -i '/\;.*\n$/d' %%A.s
-    sed -i '/^%LINE.*\n$/d' system.s
-    sed -i '/\; Begin asmlist al_dwarf_frame.*/,/\; End asmlist al_dwarf_frame.*/d' %%A.s
-    sed -i '/\; Begin asmlist al_rtti.*/,/\; End asmlist al_rtti.*/d' %%A.s
-    sed -i '/\; Begin asmlist al_globals.*/,/\; End asmlist al_globals.*/d' %%A.s
-    sed -i '/\; Begin asmlist al_indirectglobals.*/,/\; End asmlist al_indirectglobals.*/d' %%A.s
-    sed -i '/File.*/d' %%A.s
-)
-%asmx64% -o %prjdir1%\units\fpc-sys\system.o  %prjdir1%\units\fpc-sys\system.s
-%asmx64% -o %prjdir1%\units\fpc-sys\sysinit.o %prjdir1%\units\fpc-sys\sysinit.s
-
-%fpcx64% %fpcdst% %fpcsys2% %fpcsys1% -dwinexe -FE%prjdir1%\units\fpc-rtl ^
-    %prjdir1%\sources\fpc-rtl\RTL_Utils.pas
-
-%asmx64% -o %prjdir1%\units\fpc-rtl\TQueue_extern.o %prjdir1%\sources\fpc-rtl\TQueue_extern.asm
-%asmx64% -o %prjdir1%\units\fpc-rtl\RTL_Utils.o %prjdir1%\units\fpc-rtl\RTL_Utils.s
+%fpcx64% %fpcdst% %fpcsys2% %fpcsys1% -dwindll -FE%prjdir1%\units\fpc-rtl %prjdir1%\sources\fpc-rtl\RTL_Utils.pas
+::%fpcx64% %fpcdst% %fpcsys2% %fpcsys1% -dwindll -FE%prjdir1%\units\fpc-qt  %prjdir1%\sources\fpc-qt\Qt_String.pas
 
 echo =[ build dll file...       ]=
-%fpcx64% %fpcdst% %fpcsys1% -dwindll -XMDLLMainCRTStartup -FE%prjdir1%\tests\units %prjdir1%\tests\fpc_rtl.pas
-copy %prjdir1%\units\fpc-rtl\*.o %prjdir1%\tmp\
-copy %prjdir1%\units\fpc-sys\*.o %prjdir1%\tmp\
-copy %prjdir1%\units\fpc-sys\*.a %prjdir1%\tmp\
-copy %prjdir1%\units\fpc-win\*.o %prjdir1%\tmp\
+%fpcx64% %fpcdst% %fpcsys2% %fpcsys1% -dwindll ^
+-Fu%prjdir1%\sources\fpc-qt ^
+-FE%prjdir1%\tests\units %prjdir1%\tests\fpc_rtl.pas
 
-%gcc64% -shared -nostdlib -o %prjdir2%/tests/units/fpc_rtl.dll %prjdir2%/tmp/*.o -L%prjdir2%/tmp -limpsystem
-%strip% %prjdir2%/tests/units/fpc_rtl.dll
-upx   %prjdir2%/tests/fpc_rtl.dll
-
+cd %prjdir1%\tests\units
+SET THEFILE=system
+echo Assembling %THEFILE%
+E:\nasm\nasm.exe -f win64 -o ^
+E:\Projekte\fpc-qt\src\tests\units\system.o    -w-orphan-labels ^
+E:\Projekte\fpc-qt\src\tests\units\system.s
+SET THEFILE=qt_string
+echo Assembling %THEFILE%
+E:\nasm\nasm.exe -f win64 -o ^
+E:\Projekte\fpc-qt\src\tests\units\Qt_String.o -w-orphan-labels ^
+E:\Projekte\fpc-qt\src\tests\units\Qt_String.s
+SET THEFILE=fpc_rtl
+echo Assembling %THEFILE%
+E:\nasm\nasm.exe -f win64 -o ^
+E:\Projekte\fpc-qt\src\tests\units\fpc_rtl.o   -w-orphan-labels ^
+E:\Projekte\fpc-qt\src\tests\units\fpc_rtl.s
+SET THEFILE=E:\Projekte\fpc-qt\src\tests\units\fpc_rtl.dll
+echo Linking %THEFILE%
+E:\FPC\3.2.0\bin\i386-win32\ld.exe      -b pei-x86-64  -s --dll --entry _DLLMainCRTStartup -o ^
+E:\Projekte\fpc-qt\src\tests\units\fpc_rtl.dll ^
+E:\Projekte\fpc-qt\src\tests\units\link.res
+E:\FPC\3.2.0\bin\i386-win32\dlltool.exe -S     ^
+E:\FPC\3.2.0\bin\i386-win32\as.exe      -D     ^
+E:\Projekte\fpc-qt\src\tests\units\fpc_rtl.dll -e exp.$$$  -d ^
+E:\Projekte\fpc-qt\src\tests\units\fpc_rtl.def
+E:\FPC\3.2.0\bin\i386-win32\ld.exe      -b pei-x86-64  -s --dll  --entry _DLLMainCRTStartup -o ^
+E:\Projekte\fpc-qt\src\tests\units\fpc_rtl.dll ^
+E:\Projekte\fpc-qt\src\tests\units\link.res exp.$$$
+::
+copy E:\Projekte\fpc-qt\src\tests\units\fpc_rtl.dll E:\Projekte\fpc-qt\src\tests\fpc_rtl.dll
 ::
 echo =[ build exe file...       ]=
-%fpcx64% %fpcdst% %fpcsys2% %fpcsys1% %fpcasm% -dwinexe -Us -FE%prjdir1%\units\fpc-sys %prjdir1%\sources\fpc-sys\system.pas
+%fpcx64% %fpcdst% %fpcsys2% %fpcsys1% -dwinexe     -FE%prjdir1%\tests\units %prjdir1%\sources\fpc-sys\fpintres.pp
+%fpcx64% %fpcdst% %fpcsys2% %fpcsys1% -dwinexe -Us -FE%prjdir1%\tests\units %prjdir1%\sources\fpc-sys\system.pas
+%fpcx64% %fpcdst% %fpcsys2% %fpcsys1% -dwinexe     -FE%prjdir1%\tests\units %prjdir1%\sources\fpc-sys\sysinit.pas
 
-cd %prjdir1%\units\fpc-sys
-for %%A in (system) do (
-    sed -i '/\;.*\n$/d' %%A.s
-    sed -i '/^%LINE.*\n$/d' system.s
-    sed -i '/\; Begin asmlist al_dwarf_frame.*/,/\; End asmlist al_dwarf_frame.*/d' %%A.s
-    sed -i '/\; Begin asmlist al_rtti.*/,/\; End asmlist al_rtti.*/d' %%A.s
-    sed -i '/\; Begin asmlist al_globals.*/,/\; End asmlist al_globals.*/d' %%A.s
-    sed -i '/\; Begin asmlist al_indirectglobals.*/,/\; End asmlist al_indirectglobals.*/d' %%A.s
-    sed -i '/File.*/d' %%A.s
-)
+%fpcx64% %fpcdst% %fpcsys2% %fpcsys1% -dwinexe     -FE%prjdir1%\tests\units %prjdir1%\sources\fpc-rtl\RTL_Utils.pas
 
-%asmx64% -o %prjdir1%\units\fpc-sys\system.o  %prjdir1%\units\fpc-sys\system.s
-%fpcx64% %fpcdst% %fpcsys1% -dwinexe -FE%prjdir1%\tests\units %prjdir1%\tests\test1.pas
-%strip% %prjdir2%/tests/units/test1.exe
+SET THEFILE=sysinit
+echo Assembling %THEFILE%
+E:\nasm\nasm.exe -f win64 -o ^
+E:\Projekte\fpc-qt\src\tests\units\sysinit.o -w-orphan-labels ^
+E:\Projekte\fpc-qt\src\tests\units\sysinit.s
 
+%fpcx64% %fpcdst% %fpcsys1% %fpcsys2% -dwinexe -FE%prjdir1%\tests\units %prjdir1%\tests\test1.pas
+
+echo Assembling %THEFILE%
+E:\nasm\nasm.exe -f win64 -o E:\Projekte\fpc-qt\src\tests\units\test1.o -w-orphan-labels  E:\Projekte\fpc-qt\src\tests\units\test1.s
+SET THEFILE=E:\Projekte\fpc-qt\src\tests\units\test1.exe
+echo Linking %THEFILE%
+SET THEFILE=E:\Projekte\fpc-qt\src\tests\units\test1.exe
+echo Linking %THEFILE%
+E:\FPC\3.2.0\bin\i386-win32\ld.exe -b pei-x86-64 -s  --entry=_mainCRTStartup -o ^
+E:\Projekte\fpc-qt\src\tests\units\test1.exe ^
+E:\Projekte\fpc-qt\src\tests\units\link.res
+::
+copy E:\Projekte\fpc-qt\src\tests\units\test1.exe E:\Projekte\fpc-qt\src\tests\test1.exe
 ::
 exit
 echo =[ create map              ]=

@@ -15,5 +15,5 @@ begin
 s1 := 'mufoLo';
 s2 := 'Hello World  --> ' + s1;
   MessageBox(0,s2,s1,0);
-  move(p1, p2, sizeof( char ));
+  //move(p1, p2, sizeof( char ));
 end.

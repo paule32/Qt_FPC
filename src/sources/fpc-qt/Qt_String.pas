@@ -8,14 +8,13 @@
 // only for non-profit usage !!!
 // ---------------------------------------------------------------------------
 {$ifdef windows_header}
-
 type
     QString  = class(QObject)
     protected
         FStringObject: QString;
         FString: String;
     public
-        constructor Create(other: QString); overload;
+        //constructor Create(other: QString); overload;
         constructor Create(str: String); overload;
         constructor Create; overload;
 
@@ -26,19 +25,35 @@ type
 
         function arg(a: QString; fieldWidth: Integer = 0; base: Integer = 10; fillChar: Char = ' '): QString;
     end;
+
+{$ifdef winexe}
+function QString_Create(s: QString): QString; stdcall; external rtl_dll name 'QString_CreateQString'; overload;
+function QString_Create            : QString; stdcall; external rtl_dll name 'QString_Create';        overload;
+{$endif}
+
 {$endif}
 
 {$ifdef windows_source}
+{$ifdef windll}
+function QString_Create(s: QString): QString; stdcall; overload; export; public name 'QString_CreateQString'; begin end;
+function QString_Create            : QString; stdcall; overload; export; public name 'QString_Create';
+begin
+  result := QString.Create;
+end;
+{$endif}
+
 constructor QString.Create;
 begin
     FStringObject := nil;
     //FStringObject.FString := '';
 end;
+
 constructor QString.Create(str: String);
 begin
     FStringObject := nil;
     //FStringObject.FString := str;
 end;
+(*
 constructor QString.Create(other: QString);
 begin
     if other <> nil then
@@ -46,7 +61,7 @@ begin
         FStringObject := other;
         //FStringObject.FString := other.FString;
     end;
-end;
+end;*)
 destructor QString.Destroy;
 begin
 //    FStringObject.Free;
@@ -76,4 +91,5 @@ function QString.arg(a: QString; fieldWidth: Integer = 0; base: Integer = 10; fi
 begin
     result := FStringObject;
 end;
+
 {$endif}

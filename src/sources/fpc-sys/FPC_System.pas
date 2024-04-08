@@ -43,12 +43,12 @@ procedure fpc_do_exit; compilerproc;
 
 procedure EmptyMethod; external name 'FPC_EMPTYMETHOD';
 
-{$ifdef windll}
-procedure move (const source; var dest; count: DWord); stdcall; export;
-{$endif}
 {$ifdef winexe}
-const rtl_dll = 'fpc_rtl.dll';
-procedure move(const source; var dest; count: DWord); stdcall; external rtl_dll name 'move';
+procedure move(const source; var dest; count: LongDWord); stdcall; external rtl_dll name '_SYSTEM_$$_MOVE$formal$formal$LONGDWORD';
+{$endif}
+
+{$ifdef windll}
+procedure move(const source; var dest; count: LongDWord); assembler; stdcall; public name '_SYSTEM_$$_MOVE$formal$formal$LONGDWORD';
 {$endif}
 
 {$endif}
@@ -251,7 +251,7 @@ procedure fpc_initializeunits;    [public, alias:'FPC_INITIALIZEUNITS']; compile
 procedure fpc_libinitializeunits; [public, alias:'FPC_LIBINITIALIZEUNITS']; compilerproc; begin end;
 
 {$ifdef windll}
-procedure move(const source; var dest; count: DWord); assembler; nostackframe; stdcall; [public, alias: 'move'];
+procedure move(const source; var dest; count: LongDWord); assembler; nostackframe; stdcall;
 asm
     mov    %r8, %rax
     sub    %rdx, %rcx            { rcx = src - dest }
