@@ -8,42 +8,79 @@
 ::@echo off
 setlocal enabledelayedexpansion
 
-set prjdir1=E:\Projekte\fpc-qt\src
-set prjdir2=E:/Projekte/fpc-qt/src
-
-set asmdir=E:\nasm
-set asmx32=%asmdir%\nasm -f win32
-set asmx64=%asmdir%\nasm -f win64
-
+:: -----------------------------------------------------------------
+:: fpcdir1/2 => location of fpc.exe compiler tools ...
+:: -----------------------------------------------------------------
 set fpcdir1=E:\FPC\3.2.0\bin\i386-win32
 set fpcdir2=E:\fpc\3.2.2\bin\i386-win32
 
-set gcc32=E:\msys64\mingw32\bin\gcc
-set gcc64=E:\msys64\mingw64\bin\gcc
-
-set strip=E:/msys64/mingw64/bin/strip
-
 set fpcdir=%fpcdir1%
+
+:: -----------------------------------------------------------------
+:: prjdir => location of the fpc-qt project ...
+:: -----------------------------------------------------------------
+set prjdir=E:\Projekte\fpc-qt\src
+
+:: -----------------------------------------------------------------
+:: location of nasm.exe (the netwide assembler)
+:: -----------------------------------------------------------------
+set asmdir=E:\nasm
+set asmx32=%asmdir%\nasm.exe -f win32
+set asmx64=%asmdir%\nasm.exe -f win64
+
+:: -----------------------------------------------------------------
+:: fpc32.exe is a copy of fpc 3.2 fpc.exe (32-Bit)
+:: fpc64.exe is a copy of fpc 3.2 fpc.exe (64-Bit)
+::
+:: the files was manualy copied from a 32-Bit, and 64-Bit Relase
+:: -----------------------------------------------------------------
 set fpcx32=%fpcdir%\fpc32.exe
 set fpcx64=%fpcdir%\fpc64.exe
 
-set fpcstr=%fpcdir1%\strip.exe
+:: -----------------------------------------------------------------
+:: ld32.exe is a copy of fpc 3.2 tool ld.exe (32-Bit)
+:: ld64.exe is a copy of fpc 3.2 tool ld.exe (64-Bit)
+::
+:: the files was manualy copied from a 32-Bit, and 64-Bit Relase
+:: -----------------------------------------------------------------
+set ld32=%fpcdir%\ld32.exe
+set ld64=%fpcdir%\ld64.exe
+
+:: -----------------------------------------------------------------
+:: strip32.exe is a copy of fpc 3.2 tool as.exe (32-Bit)
+:: strip64.exe is a copy of fpc 3.2 tool as.exe (64-Bit)
+::
+:: the files was manualy copied from a 32-Bit, and 64-Bit Relase
+:: -----------------------------------------------------------------
+set as32=%fpcdir%\as32.exe
+set as64=%fpcdir%\as64.exe
+
+:: -----------------------------------------------------------------
+:: strip32.exe is a copy of fpc 3.2 tool strip.exe (32-Bit)
+:: strip64.exe is a copy of fpc 3.2 tool strip.exe (64-Bit)
+::
+:: the files was manualy copied from a 32-Bit, and 64-Bit Relase
+:: -----------------------------------------------------------------
+set strip32=%fpcdir%\strip32.exe
+set strip64=%fpcdir%\strip64.exe
+
+set dlltool=%fpcdir%\dlltool.exe
 
 set fpcdst=-Twin64 -Mdelphi -dwindows -dwin64 -v0 ^
-    -Fi%prjdir1%\sources\fpc-win ^
-    -Fi%prjdir1%\sources\fpc-rtl ^
-    -Fi%prjdir1%\sources\fpc-gnu ^
-    -Fi%prjdir1%\sources\fpc-qt
+    -Fi%prjdir%\sources\fpc-win ^
+    -Fi%prjdir%\sources\fpc-rtl ^
+    -Fi%prjdir%\sources\fpc-gnu ^
+    -Fi%prjdir%\sources\fpc-qt
 
 set fpcasm=-Anasmwin64 -al
 
 set fpcsys1=^
-    -Fu%prjdir1%\sources\fpc-sys ^
-    -Fu%prjdir1%\sources\fpc-qt  ^
-    -Fu%prjdir1%\units\fpc-rtl ^
-    -Fu%prjdir1%\units\fpc-sys ^
-    -Fu%prjdir1%\units\fpc-win ^
-    -Fu%prjdir1%\units\fpc-qt
+    -Fu%prjdir%\sources\fpc-sys ^
+    -Fu%prjdir%\sources\fpc-qt  ^
+    -Fu%prjdir%\units\fpc-rtl ^
+    -Fu%prjdir%\units\fpc-sys ^
+    -Fu%prjdir%\units\fpc-win ^
+    -Fu%prjdir%\units\fpc-qt
 
 set fpcsys2=^
     -n ^
@@ -60,96 +97,80 @@ set fpcsys3=^
     -Xd -Xe  -XD -CX -XXs ^
     -sh -Ur
 
-cd %prjdir1%
+cd %prjdir%
 
 echo =[ clean up directories    ]=
-del   %prjdir1%\units       /F /S /Q
-del   %prjdir1%\tests\units /F /S /Q
+del   %prjdir%\units       /F /S /Q
+del   %prjdir%\tests\units /F /S /Q
 
-rmdir %prjdir1%\units       /S /Q
-rmdir %prjdir1%\tests\units /S /Q
+rmdir %prjdir%\units       /S /Q
+rmdir %prjdir%\tests\units /S /Q
 
-mkdir %prjdir1%\units
+mkdir %prjdir%\units
 
-cd %prjdir1%\units
+cd %prjdir%\units
 for %%A in (fpc-qt fpc-rtl fpc-sys fpc-win) do ( mkdir .\%%A )
-cd %prjdir1%
+cd %prjdir%
 
-mkdir %prjdir1%\tests\units
+mkdir %prjdir%\tests\units
 
 echo =[ begin compile stage     ]=
-%asmx64% -o%prjdir1%\units\fpc-sys\fpcinit.o %prjdir1%\sources\fpc-sys\fpcinit.asm
-%asmx64% -o%prjdir1%\units\fpc-sys\fpcdll.o  %prjdir1%\sources\fpc-sys\fpcdll.asm
+%asmx64% -o%prjdir%\units\fpc-sys\fpcinit.o %prjdir%\sources\fpc-sys\fpcinit.asm
 
-%fpcx64% %fpcdst% %fpcsys2% %fpcsys1% %fpcasm% -dwindll     -FE%prjdir1%\units\fpc-sys %prjdir1%\sources\fpc-sys\fpintres.pp
-%fpcx64% %fpcdst% %fpcsys2% %fpcsys1% %fpcasm% -dwindll -Us -FE%prjdir1%\units\fpc-sys %prjdir1%\sources\fpc-sys\system.pas
-%fpcx64% %fpcdst% %fpcsys2% %fpcsys1% %fpcasm% -dwindll     -FE%prjdir1%\units\fpc-sys %prjdir1%\sources\fpc-sys\sysinit.pas
+%fpcx64% %fpcdst% %fpcsys2% %fpcsys1% %fpcasm% -dwindll     -FE%prjdir%\units\fpc-sys %prjdir%\sources\fpc-sys\fpintres.pp
+%fpcx64% %fpcdst% %fpcsys2% %fpcsys1% %fpcasm% -dwindll -Us -FE%prjdir%\units\fpc-sys %prjdir%\sources\fpc-sys\system.pas
+%fpcx64% %fpcdst% %fpcsys2% %fpcsys1% %fpcasm% -dwindll     -FE%prjdir%\units\fpc-sys %prjdir%\sources\fpc-sys\sysinit.pas
 
-%fpcx64% %fpcdst% %fpcsys2% %fpcsys1% -dwindll -FE%prjdir1%\units\fpc-rtl %prjdir1%\sources\fpc-rtl\RTL_Utils.pas
-::%fpcx64% %fpcdst% %fpcsys2% %fpcsys1% -dwindll -FE%prjdir1%\units\fpc-qt  %prjdir1%\sources\fpc-qt\Qt_String.pas
+%fpcx64% %fpcdst% %fpcsys2% %fpcsys1% -dwindll -FE%prjdir%\units\fpc-rtl %prjdir%\sources\fpc-rtl\RTL_Utils.pas
 
 echo =[ build dll file...       ]=
 %fpcx64% %fpcdst% %fpcsys2% %fpcsys1% -dwindll ^
--Fu%prjdir1%\sources\fpc-qt ^
--FE%prjdir1%\tests\units %prjdir1%\tests\fpc_rtl.pas
+-Fu%prjdir%\sources\fpc-qt ^
+-FE%prjdir%\tests\units %prjdir%\tests\fpc_rtl.pas
 
-cd %prjdir1%\tests\units
+cd %prjdir%\tests\units
 SET THEFILE=system
 echo Assembling %THEFILE%
-E:\nasm\nasm.exe -f win64 -o ^
-E:\Projekte\fpc-qt\src\tests\units\system.o    -w-orphan-labels ^
-E:\Projekte\fpc-qt\src\tests\units\system.s
-SET THEFILE=qt_string
-echo Assembling %THEFILE%
-E:\nasm\nasm.exe -f win64 -o ^
-E:\Projekte\fpc-qt\src\tests\units\Qt_String.o -w-orphan-labels ^
-E:\Projekte\fpc-qt\src\tests\units\Qt_String.s
+%asmx64% -f win64 -o ^
+%prjdir%\tests\units\system.o    -w-orphan-labels %prjdir%\tests\units\system.s
 SET THEFILE=fpc_rtl
 echo Assembling %THEFILE%
-E:\nasm\nasm.exe -f win64 -o ^
-E:\Projekte\fpc-qt\src\tests\units\fpc_rtl.o   -w-orphan-labels ^
-E:\Projekte\fpc-qt\src\tests\units\fpc_rtl.s
-SET THEFILE=E:\Projekte\fpc-qt\src\tests\units\fpc_rtl.dll
+%asmx64% -f win64 -o ^
+%prjdir%\tests\units\fpc_rtl.o   -w-orphan-labels %prjdir%\tests\units\fpc_rtl.s
+SET THEFILE=%prjdir%\tests\units\fpc_rtl.dll
 echo Linking %THEFILE%
-E:\FPC\3.2.0\bin\i386-win32\ld.exe      -b pei-x86-64  -s --dll --entry _DLLMainCRTStartup -o ^
-E:\Projekte\fpc-qt\src\tests\units\fpc_rtl.dll ^
-E:\Projekte\fpc-qt\src\tests\units\link.res
-E:\FPC\3.2.0\bin\i386-win32\dlltool.exe -S     ^
-E:\FPC\3.2.0\bin\i386-win32\as.exe      -D     ^
-E:\Projekte\fpc-qt\src\tests\units\fpc_rtl.dll -e exp.$$$  -d ^
-E:\Projekte\fpc-qt\src\tests\units\fpc_rtl.def
-E:\FPC\3.2.0\bin\i386-win32\ld.exe      -b pei-x86-64  -s --dll  --entry _DLLMainCRTStartup -o ^
-E:\Projekte\fpc-qt\src\tests\units\fpc_rtl.dll ^
-E:\Projekte\fpc-qt\src\tests\units\link.res exp.$$$
+%ld64% -b pei-x86-64  -s --dll --entry _DLLMainCRTStartup -o ^
+%prjdir%\tests\units\fpc_rtl.dll ^
+%prjdir%\tests\units\link.res
 ::
-copy E:\Projekte\fpc-qt\src\tests\units\fpc_rtl.dll E:\Projekte\fpc-qt\src\tests\fpc_rtl.dll
+copy %prjdir%\tests\units\fpc_rtl.dll %prjdir%\tests\fpc_rtl.dll
 ::
 echo =[ build exe file...       ]=
-%fpcx64% %fpcdst% %fpcsys2% %fpcsys1% -dwinexe     -FE%prjdir1%\tests\units %prjdir1%\sources\fpc-sys\fpintres.pp
-%fpcx64% %fpcdst% %fpcsys2% %fpcsys1% -dwinexe -Us -FE%prjdir1%\tests\units %prjdir1%\sources\fpc-sys\system.pas
-%fpcx64% %fpcdst% %fpcsys2% %fpcsys1% -dwinexe     -FE%prjdir1%\tests\units %prjdir1%\sources\fpc-sys\sysinit.pas
+%fpcx64% %fpcdst% %fpcsys2% %fpcsys1% -dwinexe     -FE%prjdir%\tests\units %prjdir%\sources\fpc-sys\fpintres.pp
+%fpcx64% %fpcdst% %fpcsys2% %fpcsys1% -dwinexe -Us -FE%prjdir%\tests\units %prjdir%\sources\fpc-sys\system.pas
+%fpcx64% %fpcdst% %fpcsys2% %fpcsys1% -dwinexe     -FE%prjdir%\tests\units %prjdir%\sources\fpc-sys\sysinit.pas
 
-%fpcx64% %fpcdst% %fpcsys2% %fpcsys1% -dwinexe     -FE%prjdir1%\tests\units %prjdir1%\sources\fpc-rtl\RTL_Utils.pas
+%fpcx64% %fpcdst% %fpcsys2% %fpcsys1% -dwinexe     -FE%prjdir%\tests\units %prjdir%\sources\fpc-rtl\RTL_Utils.pas
 
 SET THEFILE=sysinit
 echo Assembling %THEFILE%
-E:\nasm\nasm.exe -f win64 -o ^
-E:\Projekte\fpc-qt\src\tests\units\sysinit.o -w-orphan-labels ^
-E:\Projekte\fpc-qt\src\tests\units\sysinit.s
+%asmx64% -f win64 -o ^
+%prjdir%\tests\units\sysinit.o -w-orphan-labels ^
+%prjdir%\tests\units\sysinit.s
 
-%fpcx64% %fpcdst% %fpcsys1% %fpcsys2% -dwinexe -FE%prjdir1%\tests\units %prjdir1%\tests\test1.pas
+%fpcx64% %fpcdst% %fpcsys1% %fpcsys2% -dwinexe -FE%prjdir%\tests\units %prjdir%\tests\test1.pas
 
 echo Assembling %THEFILE%
-E:\nasm\nasm.exe -f win64 -o E:\Projekte\fpc-qt\src\tests\units\test1.o -w-orphan-labels  E:\Projekte\fpc-qt\src\tests\units\test1.s
-SET THEFILE=E:\Projekte\fpc-qt\src\tests\units\test1.exe
+%asmx64% -f win64 -o %prjdir%\tests\units\test1.o -w-orphan-labels  %prjdir%\tests\units\test1.s
+SET THEFILE=%prjdir%\tests\units\test1.exe
 echo Linking %THEFILE%
-SET THEFILE=E:\Projekte\fpc-qt\src\tests\units\test1.exe
+SET THEFILE=%prjdir%\tests\units\test1.exe
 echo Linking %THEFILE%
-E:\FPC\3.2.0\bin\i386-win32\ld.exe -b pei-x86-64 -s  --entry=_mainCRTStartup -o ^
-E:\Projekte\fpc-qt\src\tests\units\test1.exe ^
-E:\Projekte\fpc-qt\src\tests\units\link.res
+%ld64% -b pei-x86-64 -s  --entry=_mainCRTStartup -o ^
+%prjdir%\tests\units\test1.exe ^
+%prjdir%\tests\units\link.res
 ::
-copy E:\Projekte\fpc-qt\src\tests\units\test1.exe E:\Projekte\fpc-qt\src\tests\test1.exe
+copy %prjdir%\tests\units\test1.exe %prjdir%\tests\test1.exe
 ::
 exit
 echo =[ create map              ]=
