@@ -7,6 +7,7 @@
 # ----------------------------------------------------------------------------
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
+Add-Type -AssemblyName System.IO;
 
 Add-Type -AssemblyName PresentationFramework
 
@@ -72,9 +73,9 @@ function Read-FolderBrowseDialog([string]$InitialDirectory)
 }
 
 # ----------------------------------------------------------------------------
-# start up point for our powershell script ...
+# start up function for our powershell script ...
 # ----------------------------------------------------------------------------
-function Main([string]$arg1,[string]$arg2,[string]$arg3)
+function Main([string]$arg1,[string]$arg2,[string]$arg3,[string]$arg4,[string]$arg5,[string]$arg6)
 {
     [System.Windows.Forms.Application]::EnableVisualStyles() | Out-Null
     
@@ -90,12 +91,15 @@ function Main([string]$arg1,[string]$arg2,[string]$arg3)
     
     $formGraphics = $form.createGraphics()
     $brush = new-Object System.Drawing.SolidBrush "gray"
+    
     $fontBrush1 = new-Object System.Drawing.SolidBrush "yellow"
     $fontBrush2 = new-Object System.Drawing.SolidBrush "white"
-    $pen = new-object System.Drawing.Pen black
-    $rect = new-object System.Drawing.Rectangle 308, 0, 110, 400
+    
+    $pen   = new-object System.Drawing.Pen black
+    $rect  = new-object System.Drawing.Rectangle 308, 0, 110, 400
     $font1 = new-object System.Drawing.Font("Arial Black",14,[System.Drawing.FontStyle]::Bold)
     $font2 = new-object System.Drawing.Font("Arial Black",11,[System.Drawing.FontStyle]::Bold)
+    
     $form.add_paint({
         $formGraphics.FillRectangle($brush, $rect)
         $pen.color = "red"
@@ -133,10 +137,17 @@ function Main([string]$arg1,[string]$arg2,[string]$arg3)
     $checkMSYS2.font = New-Object System.Drawing.Font("Wingdings 2",22,[System.Drawing.FontStyle]::Bold)
     $checkMSYS2.Size = New-Object System.Drawing.Size(20,20)
     $checkMSYS2.Text = [string][char]0x4f
+    #
+    $checkProgessBar = New-Object System.Windows.Forms.Label
+    $checkProgessBar.Location = New-Object System.Drawing.Point(275,325)
+    $checkProgessBar.font = New-Object System.Drawing.Font("Wingdings 2",22,[System.Drawing.FontStyle]::Bold)
+    $checkProgessBar.Size = New-Object System.Drawing.Size(20,20)
+    $checkProgessBar.Text = [string][char]0x4f
 
     $form.Controls.Add($checkFPC)
     $form.Controls.Add($checkNASM)
     $form.Controls.Add($checkMSYS2)
+    $form.Controls.Add($checkProgessBar)
 
     $searchButtonFPC = New-Object System.Windows.Forms.Button
     $searchButtonFPC.Location = New-Object System.Drawing.Point(10,75)
@@ -161,12 +172,28 @@ function Main([string]$arg1,[string]$arg2,[string]$arg3)
     $okButton.Size = New-Object System.Drawing.Size(75,23)
     $okButton.Text = 'OK'
     $okButton.DialogResult = [IntroDialogButton]::ok
+    #
+    $okButton.Add_Click({
+        $percent = 1
+        while ($percent -le 100) {
+            $progressBar.Value = $percent
+            [System.Threading.Thread]::Sleep(50)
+            $percent++;
+        }
+        $progressBar.Value = 1
+        $form.Dispose()
+        Main $textBoxTempFPC $textBoxTempNASM $textBoxTempMSYS2 $checkFPCText $checkNASMText $checkMSYS2Text
+    })
     
     $cancelButton = New-Object System.Windows.Forms.Button
     $cancelButton.Location = New-Object System.Drawing.Point(150,290)
     $cancelButton.Size = New-Object System.Drawing.Size(75,23)
     $cancelButton.Text = 'Cancel'
     $cancelButton.DialogResult = [IntroDialogButton]::cancel
+    #
+    $cancelButton.Add_Click({
+        $form.Dispose()
+    })
     
     $form.Controls.Add($searchButtonFPC)
     $form.Controls.Add($searchButtonNASM)
@@ -209,6 +236,14 @@ function Main([string]$arg1,[string]$arg2,[string]$arg3)
     $form.Controls.Add($textBoxFPC)
     $form.Controls.Add($textBoxNASM)
     $form.Controls.Add($textBoxMSYS2)
+    
+    $progressBar = New-Object System.Windows.Forms.ProgressBar
+    $progressBar.Location = new-object System.Drawing.Point(10,330)
+    $progressBar.Size = new-object System.Drawing.Size(260,21)
+    $progressBar.Minimum = 0
+    $progressBar.Maximum = 100
+    
+    $form.Controls.Add($progressBar)
 
     $textBoxFPC.Text   = $arg1
     $textBoxNASM.Text  = $arg2
@@ -217,36 +252,95 @@ function Main([string]$arg1,[string]$arg2,[string]$arg3)
     $textBoxTempFPC    = $arg1
     $textBoxTempNASM   = $arg2
     $textBoxTempMSYS2  = $arg3
+    #
+    $checkFPC.Text     = $arg4
+    $checkNASM.Text    = $arg5
+    $checkMSYS2.Text   = $arg6
+    #
+    $checkFPCText      = $arg4
+    $checkNASMText     = $arg5
+    $checkMSYS2Text    = $arg6
     
+    # ---------------------------------------------------
+    $res_path = [IO.Directory]::Exists($arg1)
+    $res_file = [IO.File]::Exists($arg1 + "\fpc.exe")
+    if ($res_path -and $res_file) {
+        $checkFPC.Text = [string][char]0x50
+    }   else {
+        $checkFPC.Text = [string][char]0x4f
+    }
+    # ---------------------------------------------------
+    $res_path = [IO.Directory]::Exists($arg2)
+    $res_file = [IO.File]::Exists($arg2 + "\nasm.exe")
+    if ($res_path -and $res_file) {
+        $checkNASM.Text = [string][char]0x50
+    }   else {
+        $checkNASM.Text = [string][char]0x4f
+    }
+    # ---------------------------------------------------
+    $res_path = [IO.Directory]::Exists($arg3)
+    $res_file = [IO.File]::Exists($arg3 + "\bin\gcc.exe")
+    if ($res_path -and $res_file) {
+        $checkMSYS2.Text = [string][char]0x50
+    }   else {
+        $checkMSYS2.Text = [string][char]0x4f
+    }
+    
+    # ---------------------------------------------------
+    # event listener ...
+    # ---------------------------------------------------
     $searchButtonFPC.Add_Click({
-        $res = Read-FolderBrowseDialog Desktop
-        $textBoxTempFPC = $res
+        $path = Read-FolderBrowseDialog Desktop
+        $textBoxTempFPC = $path
         $form.Dispose()
-        Main $textBoxTempFPC $textBoxTempNASM $textBoxTempMSYS2
+        
+        $res_path = [IO.Directory]::Exists($path)
+        $res_file = [IO.File]::Exists($path + "\fpc.exe")
+        
+        if ($res_path -and $res_file) {
+            $checkFPCText  = [string][char]0x50 } else {
+            $checkFPCText  = [string][char]0x4f }
+        Main $textBoxTempFPC $textBoxTempNASM $textBoxTempMSYS2 $checkFPCText $checkNASMText $checkMSYS2Text
     })
     $searchButtonNASM.Add_Click({
         $res = Read-FolderBrowseDialog Desktop
         $textBoxTempNASM = $res
         $form.Dispose()
-        Main $textBoxTempFPC $textBoxTempNASM $textBoxTempMSYS2
+        
+        $res_path = [IO.Directory]::Exists($path)
+        $res_file = [IO.File]::Exists($path + "\fpc.exe")
+        
+        if ($res_path -and $res_file) {
+            $checkNASMText = [string][char]0x50 } else {
+            $checkNASMText = [string][char]0x4f }
+        Main $textBoxTempFPC $textBoxTempNASM $textBoxTempMSYS2 $checkFPCText $checkNASMText $checkMSYS2Text
     })
     $searchButtonMSYS2.Add_Click({
         $res = Read-FolderBrowseDialog Desktop
         $textBoxTempMSYS2 = $res
         $form.Dispose()
-        Main $textBoxTempFPC $textBoxTempNASM $textBoxTempMSYS2
+        
+        $res_path = [IO.Directory]::Exists($path)
+        $res_file = [IO.File]::Exists($path + "\fpc.exe")
+        
+        if ($res_path -and $res_file) {
+            $checkMSYS2Text  = [string][char]0x50 } else {
+            $checkMSYS2Text  = [string][char]0x4f }
+        Main $textBoxTempFPC $textBoxTempNASM $textBoxTempMSYS2 $checkFPCText $checkNASMText $checkMSYS2Text
     })
     
+    $progressBar.Value = 25
     [void]$form.ResumeLayout()
 
     $result = $form.ShowDialog()
     $form.Dispose()
 }
 
-Main
+# ----------------------------------------------------------------------------
+# this is our entry point of script start ...
+# ----------------------------------------------------------------------------
+$arg4 = [string][char]0x4f
+$arg5 = [string][char]0x4f
+$arg6 = [string][char]0x4f
 
-# ----------------------------------------------------------------------------
-# fpcdir1/2 => location of fpc.exe compiler tools ...
-# ----------------------------------------------------------------------------
-#$fpcdir1 = E:\FPC\3.2.0\bin\i386-win32
-#$dpcdir2 = E:\FPC\3.2.2\bin\i386-win32
+Main "E:\FPC\3.2.0\bin\i386-win32" "E:\NASM" "E:\MSYS64\mingw32" $arg4 $arg5 $arg6
