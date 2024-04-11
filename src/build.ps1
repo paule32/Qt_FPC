@@ -175,8 +175,75 @@ function Main([string]$arg1,[string]$arg2,[string]$arg3,[string]$arg4,[string]$a
     #
     $okButton.Add_Click({
         $percent = 1
+        $fpcdir  = $textBoxFPC.Text
+        $asmdir  = $textBoxNASM.Text
+        
+        $prjdir  = Split-Path -Parent $PSCommandPath
+        
+        $asmx32  = $asmdir, "\nasm.exe -fwin32 "
+        $asmx64  = $asmdir, "\nasm.exe -fwin64 "
+        
+        # -------------------------------------------------
+        # copy the fpc.exe from the 64-Bit Version into the
+        # directory of the shared directory for win32 ...
+        # -------------------------------------------------
+        $fpcx32  = $fpcdir, "\bin\fpc32.exe   "   # todo !
+        $fpcx64  = $fpcdir, "\bin\fpc64.exe   "   # todo !
+        
+        $ld32    = $fpcdir, "\bin\ld32.exe    "   # todo !
+        $ld64    = $fpcdir, "\bin\ld64.exe    "   # todo !
+        
+        $as32    = $fpcdir, "\bin\as32.exe    "   # todo !
+        $as64    = $fpcdir, "\bin\as64.exe    "   # todo !
+        
+        $strip32 = $fpcdir, "\bin\strip32.exe "   # todo !
+        $strip64 = $fpcdir, "\bin\strip64.exe "   # todo !
+        
+        # -------------------------------------------------
+        # fpc command line options ...
+        # -------------------------------------------------
+        $fpcdst  = " ",
+        "-Twin64 -Mdelphi -dwindows -dwin64 -v0 ",
+        "-Fi", $prjdir, "\sources\fpc-win ",
+        "-Fi", $prjdir, "\sources\fpc-rtl ",
+        "-Fi", $prjdir, "\sources\fpc-gnu ",
+        "-F1", $prjdir, "\sources\fpc-qt  "
+        
+        $fpcasm  = "-Anasmwin64 -al "
+        
+        $fpcsys1 = " ",
+        "-Fu", $prjdir, "\sources\fpc-sys ",
+        "-Fu", $prjdir, "\sources\fpc-qt  ",
+        " "  ,
+        "-Fu", $prjdir, "\units\fpc-rtl ",
+        "-Fu", $prjdir, "\units\fpc-sys ",
+        "-Fu", $prjdir, "\units\fpc-win ",
+        "-Fu", $prjdir, "\units\fpc-qt  "
+        
+        $fpcsys2 = " ",
+        "-n ",
+        "-O3 -Op3 -Os ",
+        "-Si -Sc  -Sg ",
+        "-Xd -Xe  -XD -CX -XXs ",
+        "-sh -Ur      ",
+        "-WA -WD -WN  ", $fpcasm, " ",
+        "-vl "
+
+        $fpcsys3 = "  ",
+        "-n ",
+        "-O3 -Op3 -Os ",
+        "-Si -Sc  -Sg ",
+        "-Xd -Xe  -XD -CX -XXs ",
+        "-sh -Ur  "
+
+        Write-Host "=[ clean up directories    ]="
+        Write-Host "=[ build dll file...       ]="
+        Write-Host "=[ build exe file...       ]="
+        
         while ($percent -le 100) {
             $progressBar.Value = $percent
+            
+            
             [System.Threading.Thread]::Sleep(50)
             $percent++;
         }
