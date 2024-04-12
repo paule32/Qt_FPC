@@ -7,7 +7,7 @@
 # ----------------------------------------------------------------------------
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
-Add-Type -AssemblyName System.IO;
+Add-Type -AssemblyName System.IO
 
 Add-Type -AssemblyName PresentationFramework
 
@@ -29,6 +29,11 @@ $copyright = "",
     "This PowerShell Script help you by compile the FPC Qt Project.\n",
     "(c) 2024 by Jens Kallup - paule32\n",
     "all rights reserved."
+
+# ----------------------------------------------------------------------------
+# PowerShell specified options / stuff ...
+# ----------------------------------------------------------------------------
+$ErrorActionPreference = "SilentlyContinue"  # This will hide errors
 
 # ----------------------------------------------------------------------------
 # @brief  this function shows the user a message box.
@@ -82,7 +87,7 @@ function Main([string]$arg1,[string]$arg2,[string]$arg3,[string]$arg4,[string]$a
     $form = New-Object System.Windows.Forms.Form
     $form.Text = 'Setup Compililation Stage'
     $form.Font = New-Object System.Drawing.Font("Arial",10,[System.Drawing.FontStyle]::Regular)
-    $form.Size = New-Object System.Drawing.Size(360,410)
+    $form.Size = New-Object System.Drawing.Size(360,470)
     $form.Topmost = $true
     $form.MaximizeBox = $false
     $form.StartPosition = 'CenterScreen'
@@ -94,9 +99,10 @@ function Main([string]$arg1,[string]$arg2,[string]$arg3,[string]$arg4,[string]$a
     
     $fontBrush1 = new-Object System.Drawing.SolidBrush "yellow"
     $fontBrush2 = new-Object System.Drawing.SolidBrush "white"
+    $fontBrush3 = new-Object System.Drawing.SolidBrush "navy"
     
     $pen   = new-object System.Drawing.Pen black
-    $rect  = new-object System.Drawing.Rectangle 308, 0, 110, 400
+    $rect  = new-object System.Drawing.Rectangle 308, 0, 110, 470
     $font1 = new-object System.Drawing.Font("Arial Black",14,[System.Drawing.FontStyle]::Bold)
     $font2 = new-object System.Drawing.Font("Arial Black",11,[System.Drawing.FontStyle]::Bold)
     
@@ -118,6 +124,12 @@ function Main([string]$arg1,[string]$arg2,[string]$arg3,[string]$arg4,[string]$a
         $formGraphics.DrawString("c",$font2,$fontBrush2,300 + 19,290)
         $formGraphics.DrawString("a",$font2,$fontBrush2,300 + 19,310)
         $formGraphics.DrawString("l",$font2,$fontBrush2,300 + 22,330)
+        
+        $formGraphics.DrawString("3",$font2,$fontBrush3,300 + 22,360)
+        $formGraphics.DrawString(".",$font2,$fontBrush3,300 + 22,368)
+        $formGraphics.DrawString("2",$font2,$fontBrush3,300 + 22,383)
+        $formGraphics.DrawString(".",$font2,$fontBrush3,300 + 22,391)
+        $formGraphics.DrawString("0",$font2,$fontBrush3,300 + 22,406)
     })
 
     $checkFPC = New-Object System.Windows.Forms.Label
@@ -169,7 +181,7 @@ function Main([string]$arg1,[string]$arg2,[string]$arg3,[string]$arg4,[string]$a
     $searchButtonMSYS2.DialogResult = [IntroDialogButton]::selectFolderNASM
     
     $okButton = New-Object System.Windows.Forms.Button
-    $okButton.Location = New-Object System.Drawing.Point(10,285)
+    $okButton.Location = New-Object System.Drawing.Point(10,389)
     $okButton.Size = New-Object System.Drawing.Size(75,23)
     $okButton.Text = 'OK'
     $okButton.DialogResult = [IntroDialogButton]::ok
@@ -254,10 +266,6 @@ function Main([string]$arg1,[string]$arg2,[string]$arg3,[string]$arg4,[string]$a
         "-Xd -Xe  -XD -CX -XXs ",
         "-sh -Ur  "
         
-        Write-Host "=[ clean up directories    ]="
-        Write-Host "=[ build dll file...       ]="
-        Write-Host "=[ build exe file...       ]="
-        
         $progressBar.Value = 1
         $labelAction.Text = "=[ clean up directories    ]="
                 
@@ -269,7 +277,6 @@ function Main([string]$arg1,[string]$arg2,[string]$arg3,[string]$arg4,[string]$a
         Remove-Item "$prjdir\tests\fpc_rtl.dll"
         Remove-Item "$prjdir\tests\test1.exe"
         
-        New-Item "$prjdir\units"         -ItemType Directory
         New-Item "$prjdir\units\fpc-sys" -ItemType Directory
         New-Item "$prjdir\units\fpc-rtl" -ItemType Directory
         New-Item "$prjdir\units\fpc-win" -ItemType Directory
@@ -278,30 +285,18 @@ function Main([string]$arg1,[string]$arg2,[string]$arg3,[string]$arg4,[string]$a
         New-Item "$prjdir\tests\units"   -ItemType Directory
         
         $progressBar.Value = 10
-        $labelAction.Text = "=[ build dll file...       ]="
+        $labelAction.Text = "=[ build dll file... ]="
         
-        write-host $asmx64
-        write-host $fpcx64
-
-        $ars_00 = "$fpcdst $fpcsys2 $fpcsys1 $fpcasm -dwindll "
-        $ars_02 = "-FE$prjdir\units\fpc-sys $prjdir\sources\fpc-sys\fpintres.pp"
+        $prog = $textBoxUSER.Text + "\src\build.bat"
+        Start-Process -FilePath "$prog" -Wait
         
-        & $asmx64 "-f win64", "-o", "$prjdir\units\fpc-sys\fpcinit.o", "$prjdir\sources\fpc-sys\fpcinit.asm"
-        & $fpcx64 "$fpcdst", "$fpcsys2", "$fpcsys1", "$fpcasm", "-dwindll", "-Us", "-FE$prjdir\units\fpc-sys", "$prjdir\sources\fpc-sys\system.pas"
-        
-        #Start-Process -FilePath "$fpcx64" -Wait -WindowStyle Hidden -ArgumentList "$ars_00 -Us -FE$prjdir\units\fpc-sys $prjdir\sources\fpc-sys\system.pas"
-        #Start-Process -FilePath "$fpcx64" -Wait -WindowStyle Hidden -ArgumentList "$ars_00     -FE$prjdir\units\fpc-sys $prjdir\sources\fpc-sys\sysinit.pas"
-
-        #Start-Process -FilePath "$fpcx64" %fpcdst% %fpcsys2% %fpcsys1% -dwindll -FE%prjdir%\units\fpc-rtl %prjdir%\sources\fpc-rtl\RTL_Utils.pas
-
- 
         $progressBar.Value = 100
         $form.Dispose()
         Main $textBoxTempFPC $textBoxTempNASM $textBoxTempMSYS2 $checkFPCText $checkNASMText $checkMSYS2Text
     })
     
     $cancelButton = New-Object System.Windows.Forms.Button
-    $cancelButton.Location = New-Object System.Drawing.Point(150,285)
+    $cancelButton.Location = New-Object System.Drawing.Point(150,389)
     $cancelButton.Size = New-Object System.Drawing.Size(75,23)
     $cancelButton.Text = 'Cancel'
     $cancelButton.DialogResult = [IntroDialogButton]::cancel
@@ -332,9 +327,15 @@ function Main([string]$arg1,[string]$arg2,[string]$arg3,[string]$arg4,[string]$a
     $labelMSYS2.Size = New-Object System.Drawing.Size(270,20)
     $labelMSYS2.Text = 'Please enter the path of MSYS2 below:'
     
+    $labelUSER = New-Object System.Windows.Forms.Label
+    $labelUSER.Location = New-Object System.Drawing.Point(10,274)
+    $labelUSER.Size = New-Object System.Drawing.Size(270,20)
+    $labelUSER.Text = 'Please enter the project path below:'
+    
     $form.Controls.Add($labelFPC)
     $form.Controls.Add($labelNASM)
     $form.Controls.Add($labelMSYS2)
+    $form.Controls.Add($labelUSER)
 
     $textBoxFPC = New-Object System.Windows.Forms.TextBox
     $textBoxFPC.Location = New-Object System.Drawing.Point(10,40)
@@ -348,9 +349,15 @@ function Main([string]$arg1,[string]$arg2,[string]$arg3,[string]$arg4,[string]$a
     $textBoxMSYS2.Location = New-Object System.Drawing.Point(10,209)
     $textBoxMSYS2.Size = New-Object System.Drawing.Size(260,20)
     
+    $textBoxUSER = New-Object System.Windows.Forms.TextBox
+    $textBoxUSER.Location = New-Object System.Drawing.Point(10,296)
+    $textBoxUSER.Size = New-Object System.Drawing.Size(260,20)
+    $textBoxUSER.Text = "E:\Projekte\fpc-qt"
+    
     $form.Controls.Add($textBoxFPC)
     $form.Controls.Add($textBoxNASM)
     $form.Controls.Add($textBoxMSYS2)
+    $form.Controls.Add($textBoxUSER)
     
     $progressBar = New-Object System.Windows.Forms.ProgressBar
     $progressBar.Location = new-object System.Drawing.Point(10,340)
