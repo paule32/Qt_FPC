@@ -8,21 +8,16 @@
 {$mode delphi}
 library fpc_rtl;
 
-{$ifdef windll}
-procedure _FPC_DLLMainCRTStartup(
-    _hinstance : qword;
-    _dllreason : dword;
-    _dllparam:Pointer); stdcall; public name '_DLLMainCRTStartup';
+procedure TestTest; stdcall; export; public name 'TestTest';
 begin
- // MessageBox(0,'2222222','aaaaaa',0);
+  MessageBox(0,'hello','world',0);
 end;
-{$endif}
 
 // -----------------------------------------------------------------
 // export public function's/procedure's ...
 // -----------------------------------------------------------------
 exports
-  move;
+  move, TestTest;
 
 begin
 end.

@@ -11,13 +11,4 @@ interface
 
 implementation
 
-procedure PascalMain; external name 'PASCALMAIN';
-
-{$ifdef winexe}
-procedure Entry; [public, alias: '_mainCRTStartup'];
-begin
-  PascalMain;
-end;
-{$endif}
-
 end.

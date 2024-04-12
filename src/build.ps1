@@ -82,7 +82,7 @@ function Main([string]$arg1,[string]$arg2,[string]$arg3,[string]$arg4,[string]$a
     $form = New-Object System.Windows.Forms.Form
     $form.Text = 'Setup Compililation Stage'
     $form.Font = New-Object System.Drawing.Font("Arial",10,[System.Drawing.FontStyle]::Regular)
-    $form.Size = New-Object System.Drawing.Size(360,400)
+    $form.Size = New-Object System.Drawing.Size(360,410)
     $form.Topmost = $true
     $form.MaximizeBox = $false
     $form.StartPosition = 'CenterScreen'
@@ -139,7 +139,7 @@ function Main([string]$arg1,[string]$arg2,[string]$arg3,[string]$arg4,[string]$a
     $checkMSYS2.Text = [string][char]0x4f
     #
     $checkProgessBar = New-Object System.Windows.Forms.Label
-    $checkProgessBar.Location = New-Object System.Drawing.Point(275,325)
+    $checkProgessBar.Location = New-Object System.Drawing.Point(275,335)
     $checkProgessBar.font = New-Object System.Drawing.Font("Wingdings 2",22,[System.Drawing.FontStyle]::Bold)
     $checkProgessBar.Size = New-Object System.Drawing.Size(20,20)
     $checkProgessBar.Text = [string][char]0x4f
@@ -147,6 +147,7 @@ function Main([string]$arg1,[string]$arg2,[string]$arg3,[string]$arg4,[string]$a
     $form.Controls.Add($checkFPC)
     $form.Controls.Add($checkNASM)
     $form.Controls.Add($checkMSYS2)
+    #
     $form.Controls.Add($checkProgessBar)
 
     $searchButtonFPC = New-Object System.Windows.Forms.Button
@@ -168,57 +169,74 @@ function Main([string]$arg1,[string]$arg2,[string]$arg3,[string]$arg4,[string]$a
     $searchButtonMSYS2.DialogResult = [IntroDialogButton]::selectFolderNASM
     
     $okButton = New-Object System.Windows.Forms.Button
-    $okButton.Location = New-Object System.Drawing.Point(10,290)
+    $okButton.Location = New-Object System.Drawing.Point(10,285)
     $okButton.Size = New-Object System.Drawing.Size(75,23)
     $okButton.Text = 'OK'
     $okButton.DialogResult = [IntroDialogButton]::ok
     #
     $okButton.Add_Click({
-        $percent = 1
-        $fpcdir  = $textBoxFPC.Text
-        $asmdir  = $textBoxNASM.Text
+        # -------------------------------------------------
+        # to avoid multiple button-clicks, we disable it:
+        # -------------------------------------------------
+        $okButton.Enabled = $false
+        $okButton.BackColor = "#ee0000"
+        $okButton.ForeColor = "#ffffff"
+        $okButton.Font = New-Object System.Drawing.Font("Arial",11,[System.Drawing.FontStyle]::Bold)
+        $okButton.Location = New-Object System.Drawing.Point(10,280)
+        $okButton.Size = New-Object System.Drawing.Size(75,28)
+        
+        $labelAction = New-Object System.Windows.Forms.Label
+        $labelAction.Location = New-Object System.Drawing.Point(10,315)
+        $labelAction.Size = New-Object System.Drawing.Size(200,20)
+        $labelAction.Text = ""
+        #
+        $form.Controls.Add($labelAction)
+        
+        $fpcdir  = $textBoxFPC.Text.Trim()
+        $asmdir  = $textBoxNASM.Text.Trim()
         
         $prjdir  = Split-Path -Parent $PSCommandPath
+        $prjdir  = $prjdir.Trim()
         
-        $asmx32  = $asmdir, "\nasm.exe -fwin32 "
-        $asmx64  = $asmdir, "\nasm.exe -fwin64 "
+        $asmx32  = $asmdir + "\nasm.exe"
+        $asmx64  = $asmdir + "\nasm.exe"
         
         # -------------------------------------------------
         # copy the fpc.exe from the 64-Bit Version into the
         # directory of the shared directory for win32 ...
         # -------------------------------------------------
-        $fpcx32  = $fpcdir, "\bin\fpc32.exe   "   # todo !
-        $fpcx64  = $fpcdir, "\bin\fpc64.exe   "   # todo !
+        $fpcx32  = $fpcdir + "\fpc32.exe"     # todo !
+        $fpcx64  = $fpcdir + "\fpc64.exe"     # todo !
         
-        $ld32    = $fpcdir, "\bin\ld32.exe    "   # todo !
-        $ld64    = $fpcdir, "\bin\ld64.exe    "   # todo !
+        $ld32    = $fpcdir + "\ld32.exe"      # todo !
+        $ld64    = $fpcdir + "\ld64.exe"      # todo !
         
-        $as32    = $fpcdir, "\bin\as32.exe    "   # todo !
-        $as64    = $fpcdir, "\bin\as64.exe    "   # todo !
+        $as32    = $fpcdir + "\as32.exe"      # todo !
+        $as64    = $fpcdir + "\as64.exe"      # todo !
         
-        $strip32 = $fpcdir, "\bin\strip32.exe "   # todo !
-        $strip64 = $fpcdir, "\bin\strip64.exe "   # todo !
+        $strip32 = $fpcdir + "\strip32.exe"   # todo !
+        $strip64 = $fpcdir + "\strip64.exe"   # todo !
         
         # -------------------------------------------------
         # fpc command line options ...
         # -------------------------------------------------
         $fpcdst  = " ",
         "-Twin64 -Mdelphi -dwindows -dwin64 -v0 ",
-        "-Fi", $prjdir, "\sources\fpc-win ",
-        "-Fi", $prjdir, "\sources\fpc-rtl ",
-        "-Fi", $prjdir, "\sources\fpc-gnu ",
-        "-F1", $prjdir, "\sources\fpc-qt  "
+        "-Fi$prjdir\sources\fpc-win ",
+        "-Fi$prjdir\sources\fpc-rtl ",
+        "-Fi$prjdir\sources\fpc-gnu ",
+        "-F1$prjdir\sources\fpc-qt  "
         
         $fpcasm  = "-Anasmwin64 -al "
         
         $fpcsys1 = " ",
-        "-Fu", $prjdir, "\sources\fpc-sys ",
-        "-Fu", $prjdir, "\sources\fpc-qt  ",
+        "-Fu$prjdir\sources\fpc-sys ",
+        "-Fu$prjdir\sources\fpc-qt  ",
         " "  ,
-        "-Fu", $prjdir, "\units\fpc-rtl ",
-        "-Fu", $prjdir, "\units\fpc-sys ",
-        "-Fu", $prjdir, "\units\fpc-win ",
-        "-Fu", $prjdir, "\units\fpc-qt  "
+        "-Fu$prjdir\units\fpc-rtl ",
+        "-Fu$prjdir\units\fpc-sys ",
+        "-Fu$prjdir\units\fpc-win ",
+        "-Fu$prjdir\units\fpc-qt  "
         
         $fpcsys2 = " ",
         "-n ",
@@ -235,25 +253,55 @@ function Main([string]$arg1,[string]$arg2,[string]$arg3,[string]$arg4,[string]$a
         "-Si -Sc  -Sg ",
         "-Xd -Xe  -XD -CX -XXs ",
         "-sh -Ur  "
-
+        
         Write-Host "=[ clean up directories    ]="
         Write-Host "=[ build dll file...       ]="
         Write-Host "=[ build exe file...       ]="
         
-        while ($percent -le 100) {
-            $progressBar.Value = $percent
-            
-            
-            [System.Threading.Thread]::Sleep(50)
-            $percent++;
-        }
         $progressBar.Value = 1
+        $labelAction.Text = "=[ clean up directories    ]="
+                
+        Set-Location -Path $prjdir
+        
+        Remove-Item -Recurse "$prjdir\units"
+        Remove-Item -Recurse "$prjdir\tests\units"
+        
+        Remove-Item "$prjdir\tests\fpc_rtl.dll"
+        Remove-Item "$prjdir\tests\test1.exe"
+        
+        New-Item "$prjdir\units"         -ItemType Directory
+        New-Item "$prjdir\units\fpc-sys" -ItemType Directory
+        New-Item "$prjdir\units\fpc-rtl" -ItemType Directory
+        New-Item "$prjdir\units\fpc-win" -ItemType Directory
+        New-Item "$prjdir\units\fpc-qt"  -ItemType Directory
+        #
+        New-Item "$prjdir\tests\units"   -ItemType Directory
+        
+        $progressBar.Value = 10
+        $labelAction.Text = "=[ build dll file...       ]="
+        
+        write-host $asmx64
+        write-host $fpcx64
+
+        $ars_00 = "$fpcdst $fpcsys2 $fpcsys1 $fpcasm -dwindll "
+        $ars_02 = "-FE$prjdir\units\fpc-sys $prjdir\sources\fpc-sys\fpintres.pp"
+        
+        & $asmx64 "-f win64", "-o", "$prjdir\units\fpc-sys\fpcinit.o", "$prjdir\sources\fpc-sys\fpcinit.asm"
+        & $fpcx64 "$fpcdst", "$fpcsys2", "$fpcsys1", "$fpcasm", "-dwindll", "-Us", "-FE$prjdir\units\fpc-sys", "$prjdir\sources\fpc-sys\system.pas"
+        
+        #Start-Process -FilePath "$fpcx64" -Wait -WindowStyle Hidden -ArgumentList "$ars_00 -Us -FE$prjdir\units\fpc-sys $prjdir\sources\fpc-sys\system.pas"
+        #Start-Process -FilePath "$fpcx64" -Wait -WindowStyle Hidden -ArgumentList "$ars_00     -FE$prjdir\units\fpc-sys $prjdir\sources\fpc-sys\sysinit.pas"
+
+        #Start-Process -FilePath "$fpcx64" %fpcdst% %fpcsys2% %fpcsys1% -dwindll -FE%prjdir%\units\fpc-rtl %prjdir%\sources\fpc-rtl\RTL_Utils.pas
+
+ 
+        $progressBar.Value = 100
         $form.Dispose()
         Main $textBoxTempFPC $textBoxTempNASM $textBoxTempMSYS2 $checkFPCText $checkNASMText $checkMSYS2Text
     })
     
     $cancelButton = New-Object System.Windows.Forms.Button
-    $cancelButton.Location = New-Object System.Drawing.Point(150,290)
+    $cancelButton.Location = New-Object System.Drawing.Point(150,285)
     $cancelButton.Size = New-Object System.Drawing.Size(75,23)
     $cancelButton.Text = 'Cancel'
     $cancelButton.DialogResult = [IntroDialogButton]::cancel
@@ -305,11 +353,11 @@ function Main([string]$arg1,[string]$arg2,[string]$arg3,[string]$arg4,[string]$a
     $form.Controls.Add($textBoxMSYS2)
     
     $progressBar = New-Object System.Windows.Forms.ProgressBar
-    $progressBar.Location = new-object System.Drawing.Point(10,330)
+    $progressBar.Location = new-object System.Drawing.Point(10,340)
     $progressBar.Size = new-object System.Drawing.Size(260,21)
     $progressBar.Minimum = 0
     $progressBar.Maximum = 100
-    
+    #
     $form.Controls.Add($progressBar)
 
     $textBoxFPC.Text   = $arg1

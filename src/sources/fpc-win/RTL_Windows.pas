@@ -174,18 +174,6 @@ function MessageBox( _hwnd: HWND; lpText, lpCaption: LPCTSTR; uType: UINT): DWOR
 {$endif}
 
 {$ifdef windows_source}
-// ---------------------------------------------------------------------------
-// core Pascal entry point stuff:
-// ---------------------------------------------------------------------------
-procedure PascalMain; external name 'PASCALMAIN';
-{$ifdef winexe}
-procedure Entry; [public, alias: '_mainCRTstartup'];
-begin
-    PascalMain;
-    ExitProcess(0);
-end;
-{$endif}
-
 procedure FillChar(var Dest; Count: Integer; Value: Char);
 var
     I: Integer;
