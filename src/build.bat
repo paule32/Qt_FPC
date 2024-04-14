@@ -47,13 +47,12 @@ set gdbdir=%gccdir2%
 :: -----------------------------------------------------------------
 :: parameters for fpc.exe ...
 :: -----------------------------------------------------------------
-set fpcdst=-Twin64 -Mdelphi -dwindows -dwin64 -v0 ^
+set fpcdst=^
+    -Fi%prjdir%\sources\fpc-sys ^
     -Fi%prjdir%\sources\fpc-win ^
     -Fi%prjdir%\sources\fpc-rtl ^
     -Fi%prjdir%\sources\fpc-gnu ^
     -Fi%prjdir%\sources\fpc-qt
-
-set fpcasm=-Anasmwin64 -al
 
 set fpcsys1=^
     -Fu%prjdir%\sources\fpc-sys ^
@@ -64,19 +63,9 @@ set fpcsys1=^
     -Fu%prjdir%\units\fpc-qt
 
 set fpcsys2=^
-    -n ^
-    -O3 -Op3 -Os ^
-    -Si -Sc  -Sg ^
-    -Xd -Xe  -XD -CX -XXs ^
-    -sh -Ur  ^
-    -WA -WD -WN %fpcasm% -vl
+    -n -Mdelphi -Twin64 -dwindows -dwin64 -O1 -Anasmwin64 -a
 
-set fpcsys3=^
-    -n ^
-    -O3 -Op3 -Os ^
-    -Si -Sc  -Sg ^
-    -Xd -Xe  -XD -CX -XXs ^
-    -sh -Ur
+set fpcsys3=
 
 :: -----------------------------------------------------------------
 :: location of nasm.exe (the netwide assembler)
@@ -90,8 +79,9 @@ set asmx64=%asmdir%\nasm.exe -f win64 -w-orphan-labels
 ::
 :: the files was manualy copied from a 32-Bit, and 64-Bit Relase
 :: -----------------------------------------------------------------
-set fpcx32=%fpcdir%\fpc32.exe %fpcdst% %fpcsys2% %fpcsys1% %fpcasm%
-set fpcx64=%fpcdir%\fpc64.exe %fpcdst% %fpcsys2% %fpcsys1% %fpcasm%
+set fpcx32=%fpcdir%\fpc32.exe %fpcdst% %fpcsys2% %fpcsys1%
+set fpcx64=%fpcdir%\fpc64.exe %fpcdst% %fpcsys2% %fpcsys1%
+set fplx64=%fpcdir%\fpc64.exe %fpcdst% %fpcsys1%
 
 :: -----------------------------------------------------------------
 :: ld32.exe is a copy of fpc 3.2 tool ld.exe (32-Bit)
@@ -167,36 +157,30 @@ echo =[ begin compile stage    ]=
 for %%A in (fpcinit sysinit) do (
     %fpcx64% -dwindll %srcsys%\%%A.pas
 )
+
 %fpcx64% -dwindll %srcrtl%\rtl_utils.pas
 
 echo =[ build dll file...      ]=
-%fpcx64% -dwindll ^
--Fu%prjdir%\sources\fpc-qt ^
--FE%prjdir%\units\fpc-rtl %prjdir%\tests\fpc_rtl.pas
-if errorlevel 1 goto buildError
+%fpcx64% -dwindll -FE%prjdir%\units\fpc-rtl %prjdir%\tests\fpc_rtl.pas
 
 echo Assembling dll files ...
-copy %punits%\fpc-sys\fpcinit.s %sysrtl%\fpcinit.s
+::copy %punits%\fpc-sys\fpcinit.s %sysrtl%\fpcinit.s
 
 :: todo => sed
-for %%A in (system fpcinit rtl_utils fpc_rtl) do (
+for %%A in (system rtl_utils fpc_rtl) do (
     %asmx64% -o %sysrtl%\%%A.o %sysrtl%\%%A.s
 )
 echo Linking fpc_rtl.dll ...
 
-%gcc64% -nostdlib -shared -o %prjdir%\tests\fpc_rtl.dll ^
-%sysrtl%\system.o    ^
-%sysrtl%\fpcinit.o   ^
-%sysrtl%\fpc_rtl.o   ^
-%sysrtl%\rtl_utils.o ^
--L %sysrtl% -l impsystem
+::%gcc64% -shared -o %prjdir%\tests\fpc_rtl.dll ^
+::%sysrtl%\system.o    ^
+::%sysrtl%\fpc_rtl.o   ^
+::%sysrtl%\rtl_utils.o ^
+::-L %sysrtl% -l impsystem
 
-%ld64% --shared --dll --entry _DLLMainCRTStartup -o ^
-%prjdir%\tests\fpc_rtl.dll2 ^
+%ld64% --shared --dll --entry=_DLLMainCRTStartup -o ^
+%prjdir%\tests\fpc_rtl.dll ^
 %prjdir%\units\fpc-rtl\link.res
-
-::set PYTHONHOME=
-::%gdb32% %prjdir%\tests\fpc_rtl.dll
 
 echo =[ build exe file...      ]=
 ::
@@ -209,12 +193,15 @@ for %%A in (fpcinit sysinit) do (
 %fpcx64% -dwinexe %srcrtl%\rtl_utils.pas
 %fpcx64% -dwinexe -FE%prjdir%\tests\units %prjdir%\tests\test1.pas
 
+copy %prjdir%\tests\units\test1.exe     %prjdir%\tests\test1.exe
+copy %prjdir%\units\fpc-rtl\fpc_rtl.dll %prjdir%\tests\fpc_rtl.dll
+
 echo Assembling exe files ...
 
-copy %punits%\fpc-sys\fpcinit.s %sysrtl%\fpcinit.s
+::copy %punits%\fpc-sys\fpcinit.s %sysrtl%\fpcinit.s
 
 :: todo => sed
-for %%A in (system fpcinit rtl_utils fpc_rtl) do (
+for %%A in (system rtl_utils fpc_rtl) do (
     %asmx64% -o %sysrtl%\%%A.o %sysrtl%\%%A.s
 )
 %asmx64% -o %prjdir%\tests\units\system.o %prjdir%\tests\units\system.s
@@ -222,17 +209,19 @@ for %%A in (system fpcinit rtl_utils fpc_rtl) do (
 
 echo Linking test1.exe
 
-%gcc64% -nostdlib -o ^
+%gcc64% -nostartfiles -nostdlib -Wl,--entry=_mainCRTStartup -o ^
 %prjdir%\tests\test1.exe ^
 %prjdir%\tests\units\test1.o ^
 %sysrtl%\system.o    ^
-%sysrtl%\fpcinit.o   ^
 %sysrtl%\rtl_utils.o ^
 -L %prjdir%\tests\units -l impsystem -l imptest1
 
-%ld64% --entry _mainCRTStartup -o ^
-%prjdir%\tests\test2.exe ^
-%prjdir%\tests\units\link.res
+::%ld64% --entry=_mainCRTStartup -o ^
+::%prjdir%\tests\test1.exe ^
+::%prjdir%\tests\units\link.res
+
+::set PYTHONHOME=
+::%gdb64% %prjdir%\tests\test1.exe
 
 goto allok
 ::if errorlevel 1 goto linkError

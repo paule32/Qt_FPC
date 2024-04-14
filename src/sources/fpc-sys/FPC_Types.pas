@@ -23,6 +23,8 @@ type LongQWORD  =  0..18446744073709551615;
 type Integer  = QWord;
 type Cardinal = QWord;
 
+type SizeInt = LongInt;
+
 function sizeByte : Byte; inline; //  1
 function sizeChar : Byte; inline; //  2
 function sizeWord : Byte; inline; //  4

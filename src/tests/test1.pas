@@ -11,30 +11,20 @@ program test1;
 // ---------------------------------------------------------------------------
 // core Pascal entry point stuff:
 // ---------------------------------------------------------------------------
-procedure PascalMain; external name 'PASCALMAIN';
+procedure TestTest; stdcall; external 'fpc_rtl.dll';
 
-procedure TestTest; stdcall; external 'fpc_rtl.dll' name 'TestTest';
-
+procedure Entry; stdcall; public name '_mainCRTStartup';
 var
   s1, s2: String;
   p1, p2: PChar;
-
-procedure Entry; stdcall; public name '_mainCRTStartup';
 begin
-    s1 := 'mufo   Lo aa';
+    s1 := 'mufo   Lo aalo';
     s2 := 'Hello World  --> ' + s1;
     MessageBox(0,s2,s1,0);
 
-    PascalMain;
+    TestTest;
     ExitProcess(0);
 end;
 
 begin
-  s1 := 'mufoLo';
-  s2 := 'Hello World  --> ' + s1;
-  MessageBox(0,s2,s1,0);
-
-  TestTest;
-
-  //move(p1, p2, sizeof( char ));
 end.

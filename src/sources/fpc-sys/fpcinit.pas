@@ -8,23 +8,7 @@
 unit fpcinit;
 
 interface
-{$ifdef windll}
-procedure Entry(
-    _hinstance : qword;
-    _dllreason : dword;
-    _dllparam:Pointer); stdcall; export; public name '_DLLMainCRTStartup';
-{$endif}
 
 implementation
-
-{$ifdef windll}
-procedure Entry(
-    _hinstance : qword;
-    _dllreason : dword;
-    _dllparam:Pointer); stdcall; export;
-begin
-  MessageBox(0,'2222222','aaaaaa',0);
-end;
-{$endif}
 
 end.
