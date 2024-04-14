@@ -63,7 +63,7 @@ set fpcsys1=^
     -Fu%prjdir%\units\fpc-qt
 
 set fpcsys2=^
-    -n -Mdelphi -Twin64 -dwindows -dwin64 -O1 -Anasmwin64 -a
+    -n -Mdelphi -Twin64 -dwindows -dwin64 -O3 -Os -Anasmwin64 -a
 
 set fpcsys3=
 
@@ -209,16 +209,13 @@ for %%A in (system rtl_utils fpc_rtl) do (
 
 echo Linking test1.exe
 
-%gcc64% -nostartfiles -nostdlib -Wl,--entry=_mainCRTStartup -o ^
+%ld64% --entry=_mainCRTStartup -o ^
 %prjdir%\tests\test1.exe ^
-%prjdir%\tests\units\test1.o ^
-%sysrtl%\system.o    ^
-%sysrtl%\rtl_utils.o ^
--L %prjdir%\tests\units -l impsystem -l imptest1
+%prjdir%\tests\units\link.res
 
-::%ld64% --entry=_mainCRTStartup -o ^
-::%prjdir%\tests\test1.exe ^
-::%prjdir%\tests\units\link.res
+copy %prjdir%\tests\units\test1.exe %prjdir%\tests\test1.exe
+strip %prjdir%\tests\test1.exe
+strip %prjdir%\tests\fpc_rtl.dll
 
 ::set PYTHONHOME=
 ::%gdb64% %prjdir%\tests\test1.exe

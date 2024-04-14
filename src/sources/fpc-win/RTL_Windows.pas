@@ -163,9 +163,6 @@ procedure FillChar       ( var Dest; Count: Integer; Value: Char );
 procedure FreeMem        ( var p: Pointer );
 procedure GetMem         ( var p: Pointer; size: DWORD );
 
-procedure MemMove        ( var   dest;   var source; count: SizeInt); stdcall; external 'msvcrt.dll' name 'memmove';
-procedure    Move        ( source; var   dest;   count: SizeInt); stdcall;
-
 function  VirtualAlloc   ( lpAddress: PVOID; dwSize: SIZE_T; flAllocationType: DWORD; flProtect: DWORD): Pointer; stdcall; external DLL_STR_kernel32 name 'VirtualAlloc';
 function  VirtualFree    ( lpAddress: PVOID; dwSize: SIZE_T; dwFreeType: DWORD): BOOL; stdcall; external DLL_STR_kernel32 name 'VirtualAlloc';
 
@@ -177,13 +174,6 @@ function MessageBox( _hwnd: HWND; lpText, lpCaption: LPCTSTR; uType: UINT): DWOR
 {$endif}
 
 {$ifdef windows_source}
-procedure Move( source: PVOID; var dest; count: SizeInt);
-begin
-    MessageBox(0,'ooop','111',0);
-    MessageBox(0,'999999','1121212',0);
-    MemMove(dest, source, count);
-end;
-
 procedure FillChar(var Dest; Count: Integer; Value: Char);
 var
     I: Integer;

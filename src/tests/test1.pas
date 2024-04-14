@@ -22,7 +22,7 @@ begin
     s2 := 'Hello World  --> ' + s1;
     MessageBox(0,s2,s1,0);
 
-    TestTest;
+    //TestTest;
     ExitProcess(0);
 end;
 
