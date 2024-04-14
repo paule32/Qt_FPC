@@ -208,14 +208,36 @@ for %%A in (system rtl_utils fpc_rtl) do (
 %asmx64% -o %prjdir%\tests\units\test1.o  %prjdir%\tests\units\test1.s
 
 echo Linking test1.exe
+:: -----------------------------------------------------------------
+:: create 64-Bit import definition .def + library .a file ...
+:: -----------------------------------------------------------------
+set def=%prjdir%\tests\fpc_rtl.def
+::
+echo LIBRARY fpc_rtl.dll  > %def%
+echo DESCRIPTION "Qt5 Framework for FPC (c) 2024 Jens Kallup" >> %def%
+echo EXPORTS             >> %def%
+echo TestTest            >> %def%
 
-%ld64% --entry=_mainCRTStartup -o ^
+%gccdir2%\dlltool.exe --dllname ^
+%prjdir%\tests\units\fpc_rtl.dll --def ^
+%prjdir%\tests\fpc_rtl.def --output-lib ^
+%prjdir%\tests\units\fpc_rtl.a -k
+
+%gcc64% -nostartfiles -nostdlib -Wl,--entry=_mainCRTStartup -o ^
 %prjdir%\tests\test1.exe ^
-%prjdir%\tests\units\link.res
+%prjdir%\tests\units\test1.o ^
+%sysrtl%\system.o    ^
+%sysrtl%\rtl_utils.o ^
+-L %prjdir%\tests\units -l impsystem -l fpc_rtl
 
 copy %prjdir%\tests\units\test1.exe %prjdir%\tests\test1.exe
-strip %prjdir%\tests\test1.exe
-strip %prjdir%\tests\fpc_rtl.dll
+exit
+::%ld64% --entry=_mainCRTStartup -o ^
+::%prjdir%\tests\test1.exe ^
+::%prjdir%\tests\units\link.res
+
+::strip %prjdir%\tests\test1.exe
+::strip %prjdir%\tests\fpc_rtl.dll
 
 ::set PYTHONHOME=
 ::%gdb64% %prjdir%\tests\test1.exe

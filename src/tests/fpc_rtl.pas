@@ -20,7 +20,7 @@ end;
 
 procedure TestTest; stdcall; export;
 begin
-  MessageBox(0,'1abababab','blubp',0);
+  //MessageBox(0,'1abababab','blubp',0);
 end;
 
 // -----------------------------------------------------------------
