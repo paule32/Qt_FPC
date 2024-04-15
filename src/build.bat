@@ -135,33 +135,31 @@ set sysrtl=%punits%\fpc-rtl
 cd %prjdir%
 
 echo =[ clean up directories   ]=
-del   %prjdir%\units        /F /S /Q
-del   %prjdir%\tests\units  /F /S /Q
+del   %prjdir%\units              /F /S /Q
 del   %prjdir%\tests\fpc_rtl.dll  /F /S /Q
-del   %prjdir%\tests\test1,exe    /F /S /Q
+del   %prjdir%\tests\test1.exe    /F /S /Q
 
 rmdir %prjdir%\units /S /Q
 rmdir %prjdir%\units /S /Q
 
 mkdir %prjdir%\units
-mkdir %prjdir%\tests\units
 
 cd %prjdir%\units
 for %%A in (fpc-qt fpc-rtl fpc-sys fpc-win) do ( mkdir .\%%A )
 cd %prjdir%
 
 echo =[ begin compile stage    ]=
-%fpcx64% -dwindll -Us %srcsys%\system.pas
-%fpcx64% -dwindll     %srcsys%\fpintres.pp
+%fpcx64% -dwindll -CX -CD -WD -D -fPIC -st -Xe -XD -XX -Us %srcsys%\system.pas
+%fpcx64% -dwindll -CX -CD -WD -D -fPIC -st -Xe -XD -XX     %srcsys%\fpintres.pp
 ::
 for %%A in (fpcinit sysinit) do (
-    %fpcx64% -dwindll %srcsys%\%%A.pas
+    %fpcx64% -dwindll -CD -WD -CX -D -fPIC -st -Xe -XD -XX %srcsys%\%%A.pas
 )
 
-%fpcx64% -dwindll %srcrtl%\rtl_utils.pas
+%fpcx64% -dwindll -CX -CD -WD -D -fPIC -st -Xe -XD -XX %srcrtl%\rtl_utils.pas
 
 echo =[ build dll file...      ]=
-%fpcx64% -dwindll -FE%prjdir%\units\fpc-rtl %prjdir%\tests\fpc_rtl.pas
+%fpcx64% -dwindll -CX -CD -WD -D -fPIC -st -Xe -XD -XX -FE%prjdir%\units\fpc-rtl %prjdir%\tests\fpc_rtl.pas
 
 echo Assembling dll files ...
 ::copy %punits%\fpc-sys\fpcinit.s %sysrtl%\fpcinit.s
@@ -172,15 +170,9 @@ for %%A in (system rtl_utils fpc_rtl) do (
 )
 echo Linking fpc_rtl.dll ...
 
-::%gcc64% -shared -o %prjdir%\tests\fpc_rtl.dll ^
-::%sysrtl%\system.o    ^
-::%sysrtl%\fpc_rtl.o   ^
-::%sysrtl%\rtl_utils.o ^
-::-L %sysrtl% -l impsystem
-
 %ld64% --shared --dll --entry=_DLLMainCRTStartup -o ^
 %prjdir%\tests\fpc_rtl.dll ^
-%prjdir%\units\fpc-rtl\link.res
+%prjdir%\units\fpc-rtl\fpc_rtl_link.res
 
 echo =[ build exe file...      ]=
 ::
@@ -191,53 +183,32 @@ for %%A in (fpcinit sysinit) do (
     %fpcx64% -dwinexe %srcsys%\%%A.pas
 )
 %fpcx64% -dwinexe %srcrtl%\rtl_utils.pas
-%fpcx64% -dwinexe -FE%prjdir%\tests\units %prjdir%\tests\test1.pas
-
-copy %prjdir%\tests\units\test1.exe     %prjdir%\tests\test1.exe
-copy %prjdir%\units\fpc-rtl\fpc_rtl.dll %prjdir%\tests\fpc_rtl.dll
+%fpcx64% -dwinexe -FE%prjdir%\tests %prjdir%\tests\test1.pas
 
 echo Assembling exe files ...
-
-::copy %punits%\fpc-sys\fpcinit.s %sysrtl%\fpcinit.s
 
 :: todo => sed
 for %%A in (system rtl_utils fpc_rtl) do (
     %asmx64% -o %sysrtl%\%%A.o %sysrtl%\%%A.s
 )
-%asmx64% -o %prjdir%\tests\units\system.o %prjdir%\tests\units\system.s
-%asmx64% -o %prjdir%\tests\units\test1.o  %prjdir%\tests\units\test1.s
+%asmx64% -o %prjdir%\units\fpc-rtl\system.o %prjdir%\tests\system.s
+%asmx64% -o %prjdir%\tests\test1.o          %prjdir%\tests\test1.s
 
 echo Linking test1.exe
 :: -----------------------------------------------------------------
 :: create 64-Bit import definition .def + library .a file ...
 :: -----------------------------------------------------------------
-set def=%prjdir%\tests\fpc_rtl.def
-::
-echo LIBRARY fpc_rtl.dll  > %def%
-echo DESCRIPTION "Qt5 Framework for FPC (c) 2024 Jens Kallup" >> %def%
-echo EXPORTS             >> %def%
-echo TestTest            >> %def%
-
-%gccdir2%\dlltool.exe --dllname ^
-%prjdir%\tests\units\fpc_rtl.dll --def ^
-%prjdir%\tests\fpc_rtl.def --output-lib ^
-%prjdir%\tests\units\fpc_rtl.a -k
+%gccdir2%\dlltool.exe  --dllname ^
+%prjdir%\tests\fpc_rtl.dll --def ^
+%prjdir%\units\fpc-rtl\fpc_rtl.def --output-lib ^
+%prjdir%\tests\libimpfpc_rtl.a
 
 %gcc64% -nostartfiles -nostdlib -Wl,--entry=_mainCRTStartup -o ^
 %prjdir%\tests\test1.exe ^
-%prjdir%\tests\units\test1.o ^
-%sysrtl%\system.o    ^
-%sysrtl%\rtl_utils.o ^
--L %prjdir%\tests\units -l impsystem -l fpc_rtl
-
-copy %prjdir%\tests\units\test1.exe %prjdir%\tests\test1.exe
-exit
-::%ld64% --entry=_mainCRTStartup -o ^
-::%prjdir%\tests\test1.exe ^
-::%prjdir%\tests\units\link.res
-
-::strip %prjdir%\tests\test1.exe
-::strip %prjdir%\tests\fpc_rtl.dll
+%prjdir%\tests\test1.o   ^
+%prjdir%\tests\system.o  ^
+%prjdir%\units\fpc-rtl\rtl_utils.o ^
+-L %prjdir%\tests -l impsystem -l impfpc_rtl
 
 ::set PYTHONHOME=
 ::%gdb64% %prjdir%\tests\test1.exe

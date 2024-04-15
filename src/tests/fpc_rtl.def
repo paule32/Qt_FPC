@@ -1,4 +1,0 @@
-LIBRARY fpc_rtl.dll  
-DESCRIPTION "Qt5 Framework for FPC (c) 2024 Jens Kallup" 
-EXPORTS             
-TestTest            

@@ -18,9 +18,9 @@ begin
     //ExitProcess(0);
 end;
 
-procedure TestTest; stdcall; export; public name 'TestTest';
+procedure TestTest; stdcall; export; assembler;
 begin
-    MessageBox(0,'s2','s1',0);
+ret
 end;
 
 // -----------------------------------------------------------------

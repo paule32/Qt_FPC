@@ -17,7 +17,7 @@ program test1;
 //function GetProcAddress(modulname: HMODULE; lpProcName: LPCSTR): FARPROC; stdcall; external 'kernel32.dll' name 'GetProcAddress';
 
 type
-    TTestTest = procedure; stdcall;
+    TTestTest = procedure(); stdcall;
     
 procedure Entry; stdcall; public name '_mainCRTStartup';
 var
@@ -25,6 +25,7 @@ var
     p1, p2: PChar;
     hm: HMODULE;
     ap: TTestTest;
+    p : Pointer;
 begin
     s1 := 'mufo   Lo aalo';
     s2 := 'Hello World  --> ' + s1;
@@ -36,15 +37,16 @@ begin
         ExitProcess(0);
     end else begin
         MessageBox(0,'dll load ok','Information',0);
-        ap := GetProcAddress(@hm, 'TestTest');
-        MessageBox(0,'fufu','fafainfo',0);
-        if @ap = nil then begin
+        p := GetProcAddress(hm, 'P$FPC_RTL_$$_TESTTEST');
+        ap := @P;
+        if @p = nil then begin
             MessageBox(0,'getprocaddress error','Error',0);
             FreeLibrary(HM);
             ExitProcess(0);
         end else begin
-            MessageBox(0,'start','info',0);
+            MessageBox(0,'start22','info',0);
             ap;
+            MessageBox(0,'start2 1111 222','info',0);
         end;
     end;
     FreeLibrary(HM);
