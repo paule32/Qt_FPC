@@ -145,9 +145,10 @@ procedure ExitProcess    ( ExitCode: LongInt ); cdecl; external DLL_STR_kernel32
 // ---------------------------------------------------------------------------
 // win32api module kernel32.dll: dynamic library loader
 // ---------------------------------------------------------------------------
-function  FreeLibrary    ( hLibModule: HMODULE ): BOOL; cdecl; external DLL_STR_kernel32 name 'FreeLibrary';
-function  GetProcAddress ( hModule: HMODULE; lpProcName: LPCSTR): FARPROC; stdcall; external DLL_STR_kernel32 name 'GetProcAddress';
-function  LoadLibrary    ( lpLibFileName: LPCSTR ): HMODULE; stdcall; external DLL_STR_kernel32 name 'LoadLibraryA';
+function LoadLibrary( lpLibFileName: LPCSTR ): HMODULE; stdcall; external 'kernel32.dll' name 'LoadLibraryA';
+function FreeLibrary( hLibModule: HMODULE ): BOOL;      stdcall; external 'kernel32.dll' name 'FreeLibrary';
+
+function GetProcAddress(modulname: HMODULE; lpProcName: LPCSTR): FARPROC; stdcall; external 'kernel32.dll' name 'GetProcAddress';
 
 // ---------------------------------------------------------------------------
 // win32api module kernel32.dll: Heap

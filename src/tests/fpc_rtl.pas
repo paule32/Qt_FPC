@@ -13,14 +13,14 @@ function Entry(
     _dllreason : dword;
     _dllparam:Pointer): Boolean; stdcall; export; public name '_DLLMainCRTStartup';
 begin
-    MessageBox(0,'hello','world',0);
-    result := true;
+    MessageBox(0,'hel  lo','world',0);
+    result := false;
     //ExitProcess(0);
 end;
 
-procedure TestTest; stdcall; export;
+procedure TestTest; stdcall; export; public name 'TestTest';
 begin
-  //MessageBox(0,'1abababab','blubp',0);
+    MessageBox(0,'s2','s1',0);
 end;
 
 // -----------------------------------------------------------------

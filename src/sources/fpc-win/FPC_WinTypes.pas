@@ -38,8 +38,11 @@ type ATOM      = LongDWord;     // local/global atom index for a string
 
 type HGLOBAL   = THandle;       // a globally memory allocated handle
 
-type LPCSTR    = String;
-type LPCWSTR   = String;
+type LPCSTR    = PAnsiString;
+type LPCWSTR   = PAnsiString;
+
+type FARPROC   = Pointer;
+
 
 {$ifdef UNICODE}
 type LPCTSTR   = LPCWSTR;
