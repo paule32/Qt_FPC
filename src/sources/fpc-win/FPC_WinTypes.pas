@@ -10,6 +10,8 @@
 // ---------------------------------------------------------------------------
 // win32api constants, and variables ...
 // ---------------------------------------------------------------------------
+{$ifndef __WINDOWS_HDR__}
+{$define __WINDOWS_HDR__}
 type BOOL      = Integer;       // true or false
 
 type PVOID     = Pointer;
@@ -50,4 +52,5 @@ type LPCTSTR   = LPCWSTR;
 type LPCTSTR   = LPCSTR;
 {$endif}
 
-{$endif}
+{$endif}    // __WINDOWS_HDR__
+{$endif}    // windows_header

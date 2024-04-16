@@ -188,14 +188,14 @@ function  VirtualFree    ( lpAddress: PVOID; dwSize: SIZE_T; dwFreeType: DWORD):
 // ---------------------------------------------------------------------------
 // win32api RTL error & codes ...
 // ---------------------------------------------------------------------------
+type  NTSTATUS       = LONG;
+const STATUS_SUCCESS = $00000000;
+
 function RtlNtStatusToDosError( status: NTSTATUS ): ULONG; cdecl; external 'ntdll.dll' name 'RtlNtStatusToDosError';
 
 procedure SetLastError(dwErrCode: DWORD); cdecl; external 'kernel32.dll' name 'SetLastError';
 
 const STATUS_INVALID_PARAMETER_1 = $c00000EF;
-
-type  NTSTATUS       = LONG;
-const STATUS_SUCCESS = $00000000;
 
 {$endif}
 

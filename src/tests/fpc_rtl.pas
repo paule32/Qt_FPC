@@ -9,20 +9,27 @@
 library fpc_rtl;
 
 {$define windows_header}
-{$I fpc_types.pas}
-{$I fpc_wintypes.pas}
+{$define uses_ntstatus}
+{$define uses_bool}
+{$define uses_status_success}
+
+{ $ I f pc_types.pas}
 
 type NTSTATUS  = LONG;
 
 var
-    LdrpInLdrInit: BOOL = FALSE;
+    LdrpInLdrInit: BOOL = 0;
     LibraryHdl: HINSTANCE;
+
+{$if declared(STATUS_SUCCESS)}
+{$info ssffsdsf}
+{$endif}
 
 function NT_SUCCESS(status: NTSTATUS): BOOL; inline;
 begin
-    result := FALSE;
+    result := 0;
     if status >= 0 then begin
-        result := TRUE;
+        result := 1;
         exit;
     end
 end;
@@ -37,8 +44,6 @@ begin
 end;
 
 function RtlEnterCriticalSection(): NTSTATUS;
-var
-    
 begin
 end;
 
@@ -46,10 +51,11 @@ function LdrLockLoaderLock(
     flags      : ULONG;
     disposition: PULONG;
     cookie     : PULONG_PTR): NTSTATUS;
-var
+(*var
     status: NTSTATUS = STATUS_SUCCESS;
-    inInit: BOOL     = LdrpInLdrInit;
+    inInit: BOOL     = LdrpInLdrInit;*)
 begin
+(*
     // zero out the outputs
     if disposition then disposition := LDR_LOCK_LOADER_LOCK_DISPOSITION_INVALID;
     if cookie      then cookie      := 0;
@@ -117,7 +123,7 @@ begin
             cookie      := LdrpMakeCookie;
         end;
     end else begin
-    end;
+    end;*)
 end;
 
 function LdrDisableThreadCalloutsForDll( baseAddress: PVOID ): NTSTATUS;
@@ -126,6 +132,7 @@ var
     lockHeld: BOOL;
     cookie: ULONG_PTR;
 begin
+(*
     // don't do it during shutdown
     if LdrpShutdownInProgress then begin
         result := STATUS_SUCCESS;
@@ -162,13 +169,14 @@ begin
     
     // return the status
     result := status;
+    *)
 end;
 
 function DisableThreadLibraryCalls( hLibModule: HMODULE ): BOOL;
 var
     status: NTSTATUS;
 begin
-    // disable thread library calls
+    (*// disable thread library calls
     status := LdrDisableThreadCalloutsForDll(hLibModule);
     
     // if it wasn't success - see last error and return failure
@@ -178,7 +186,7 @@ begin
         exit;
     end;
     
-    // return success
+    // return success*)
     result := TRUE;
 end;
 
