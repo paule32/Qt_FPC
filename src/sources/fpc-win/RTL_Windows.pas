@@ -9,6 +9,11 @@
 // ---------------------------------------------------------------------------
 // win32api constants, and variables ...
 // ---------------------------------------------------------------------------
+const DLL_PROCESS_ATTACH = 1;
+const DLL_PROCESS_DETACH = 0;
+
+const DLL_THREAD_ATTACH  = 2;
+const DLL_THREAD_DETACH  = 3;
 
 // ---------------------------------------------------------------------------
 // win32api - MessageBox:
@@ -60,6 +65,11 @@ const IDYES      =  $6;
 const IDNO       =  $7;
 const IDTRYAGAIN = $10;
 const IDCONTINUE = $11;
+
+// ---------------------------------------------------------------------------
+// win32api module user32.dll:
+// ---------------------------------------------------------------------------
+function MessageBox( _hwnd: HWND; lpText, lpCaption: LPCTSTR; uType: UINT): DWORD; stdcall external DLL_STR_user32 name 'MessageBoxA';
 
 // ---------------------------------------------------------------------------
 // win32api VirtualAlloc:
@@ -140,7 +150,7 @@ function TSystemCodePage: DWORD;
 // ---------------------------------------------------------------------------
 // win32api module kernel32.dll:
 // ---------------------------------------------------------------------------
-procedure ExitProcess    ( ExitCode: LongInt ); cdecl; external DLL_STR_kernel32 name 'ExitProcess';
+procedure ExitProcess    ( ExitCode: LongInt ); stdcall; external 'kernel32.dll' name 'ExitProcess';
 
 // ---------------------------------------------------------------------------
 // win32api module kernel32.dll: dynamic library loader
@@ -148,7 +158,15 @@ procedure ExitProcess    ( ExitCode: LongInt ); cdecl; external DLL_STR_kernel32
 function LoadLibrary( lpLibFileName: LPCSTR ): HMODULE; stdcall; external 'kernel32.dll' name 'LoadLibraryA';
 function FreeLibrary( hLibModule: HMODULE ): BOOL;      stdcall; external 'kernel32.dll' name 'FreeLibrary';
 
+function GetModuleHandle(lpModuleName: LPCSTR ): HMODULE; stdcall; external 'kernel32.dll' name 'GetModuleHandleA';
 function GetProcAddress(modulname: HMODULE; lpProcName: LPCSTR): FARPROC; stdcall; external 'kernel32.dll' name 'GetProcAddress';
+
+const LDR_LOCK_LOADER_LOCK_DISPOSITION_INVALID           = 0;
+const LDR_LOCK_LOADER_LOCK_DISPOSITION_LOCK_ACQUIRED     = 1;
+const LDR_LOCK_LOADER_LOCK_DISPOSITION_LOCK_NOT_ACQUIRED = 2;
+
+const LDR_LOCK_LOADER_LOCK_FLAG_RAISE_ON_ERRORS  = $00000001;
+const LDR_LOCK_LOADER_LOCK_FLAG_TRY_ONLY         = $00000002;
 
 // ---------------------------------------------------------------------------
 // win32api module kernel32.dll: Heap
@@ -168,9 +186,16 @@ function  VirtualAlloc   ( lpAddress: PVOID; dwSize: SIZE_T; flAllocationType: D
 function  VirtualFree    ( lpAddress: PVOID; dwSize: SIZE_T; dwFreeType: DWORD): BOOL; stdcall; external DLL_STR_kernel32 name 'VirtualAlloc';
 
 // ---------------------------------------------------------------------------
-// win32api module user32.dll:
+// win32api RTL error & codes ...
 // ---------------------------------------------------------------------------
-function MessageBox( _hwnd: HWND; lpText, lpCaption: LPCTSTR; uType: UINT): DWORD; stdcall external DLL_STR_user32 name 'MessageBoxA';
+function RtlNtStatusToDosError( status: NTSTATUS ): ULONG; cdecl; external 'ntdll.dll' name 'RtlNtStatusToDosError';
+
+procedure SetLastError(dwErrCode: DWORD); cdecl; external 'kernel32.dll' name 'SetLastError';
+
+const STATUS_INVALID_PARAMETER_1 = $c00000EF;
+
+type  NTSTATUS       = LONG;
+const STATUS_SUCCESS = $00000000;
 
 {$endif}
 

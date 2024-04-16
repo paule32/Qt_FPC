@@ -13,6 +13,7 @@
 type BOOL      = Integer;       // true or false
 
 type PVOID     = Pointer;
+type LPVOID    = ^PVOID;
 
 type HANDLE    = PVOID;
 type FARPROC   = PVOID;
@@ -42,7 +43,6 @@ type LPCSTR    = PAnsiString;
 type LPCWSTR   = PAnsiString;
 
 type FARPROC   = Pointer;
-
 
 {$ifdef UNICODE}
 type LPCTSTR   = LPCWSTR;

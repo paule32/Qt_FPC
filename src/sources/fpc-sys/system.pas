@@ -17,6 +17,7 @@ const rtl_dll = 'fpc_rtl.dll';
 // FPC core ...
 // ---------------------------------------------------------------------------
 {$I FPC_Types.pas}
+{$I FPC_Types2.pas}
 {$I FPC_WinTypes.pas}
 {$I FPC_System.pas}
 

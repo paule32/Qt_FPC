@@ -160,7 +160,7 @@ for %%A in (fpcinit sysinit) do (
 
 echo =[ build dll file...      ]=
 %fpcx64% -dwindll -CX -CD -WD -D -fPIC -st -Xe -XD -XX -FE%prjdir%\units\fpc-rtl %prjdir%\tests\fpc_rtl.pas
-
+exit
 echo Assembling dll files ...
 ::copy %punits%\fpc-sys\fpcinit.s %sysrtl%\fpcinit.s
 
@@ -208,11 +208,14 @@ echo Linking test1.exe
 %prjdir%\tests\test1.o   ^
 %prjdir%\tests\system.o  ^
 %prjdir%\units\fpc-rtl\rtl_utils.o ^
--L %prjdir%\tests -l impsystem -l impfpc_rtl
+-L %prjdir%\tests -l impsystem -l impfpc_rtl -l imptest1
 
 ::set PYTHONHOME=
 ::%gdb64% %prjdir%\tests\test1.exe
 
+%prjdir%\tests\test1.exe
+echo %errorlevel%
+if errorlevel 4 ( goto linkError )
 goto allok
 ::if errorlevel 1 goto linkError
 ::goto allok
