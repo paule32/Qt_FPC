@@ -21,7 +21,7 @@
 :: or other fees.
 :: !!! YOU USE IT AT YOUR OWN RISK !!!
 :: -----------------------------------------------------------------
-::@echo off
+@echo off
 setlocal enabledelayedexpansion
 
 :: -----------------------------------------------------------------
@@ -135,64 +135,90 @@ set sysrtl=%punits%\fpc-rtl
 cd %prjdir%
 
 echo =[ clean up directories   ]=
-del   %prjdir%\units              /F /S /Q
-del   %prjdir%\tests\fpc_rtl.dll  /F /S /Q
-del   %prjdir%\tests\test1.exe    /F /S /Q
+:: -----------------------------------------------------------------
+:: delete old crap ...
+:: -----------------------------------------------------------------
+del %prjdir%\units              /F /S /Q >nul: 2>nul:
+del %prjdir%\tests\fpc_rtl.dll  /F /S /Q >nul: 2>nul:
+del %prjdir%\tests\test1.exe    /F /S /Q >nul: 2>nul:
 
-rmdir %prjdir%\units /S /Q
-rmdir %prjdir%\units /S /Q
+rmdir %prjdir%\units /S /Q >nul
 
 mkdir %prjdir%\units
+if errorlevel 1 (goto buildError)
 
 cd %prjdir%\units
-for %%A in (fpc-qt fpc-rtl fpc-sys fpc-win) do ( mkdir .\%%A )
+for %%A in (fpc-qt fpc-rtl fpc-sys fpc-win) do (
+    mkdir .\%%A
+    if errorlevel 1 (goto buildError)
+)
 cd %prjdir%
 
 echo =[ begin compile stage    ]=
 %fpcx64% -dwindll -CX -CD -WD -D -fPIC -st -Xe -XD -XX -Us %srcsys%\system.pas
+if errorlevel 1 (goto buildError)
+
 %fpcx64% -dwindll -CX -CD -WD -D -fPIC -st -Xe -XD -XX     %srcsys%\fpintres.pp
+if errorlevel 1 (goto buildError)
 ::
 for %%A in (fpcinit sysinit) do (
     %fpcx64% -dwindll -CD -WD -CX -D -fPIC -st -Xe -XD -XX %srcsys%\%%A.pas
+    if errorlevel 1 (goto buildError)
 )
 
 %fpcx64% -dwindll -CX -CD -WD -D -fPIC -st -Xe -XD -XX %srcrtl%\rtl_utils.pas
+if errorlevel 1 (goto buildError)
 
 echo =[ build dll file...      ]=
 %fpcx64% -dwindll -CX -CD -WD -D -fPIC -st -Xe -XD -XX -FE%prjdir%\units\fpc-rtl %prjdir%\tests\fpc_rtl.pas
-exit
+if errorlevel 1 (goto buildError)
+
 echo Assembling dll files ...
 ::copy %punits%\fpc-sys\fpcinit.s %sysrtl%\fpcinit.s
 
 :: todo => sed
 for %%A in (system rtl_utils fpc_rtl) do (
     %asmx64% -o %sysrtl%\%%A.o %sysrtl%\%%A.s
+    if errorlevel 1 (goto buildError)
 )
 echo Linking fpc_rtl.dll ...
 
 %ld64% --shared --dll --entry=_DLLMainCRTStartup -o ^
 %prjdir%\tests\fpc_rtl.dll ^
 %prjdir%\units\fpc-rtl\fpc_rtl_link.res
+if errorlevel 1 (goto buildError)
 
 echo =[ build exe file...      ]=
 ::
 %fpcx64% -dwinexe -Us %srcsys%\system.pas
+if errorlevel 1 (goto buildError)
+
 %fpcx64% -dwinexe     %srcsys%\fpintres.pp
+if errorlevel 1 (goto buildError)
+
 ::
 for %%A in (fpcinit sysinit) do (
     %fpcx64% -dwinexe %srcsys%\%%A.pas
+    if errorlevel 1 (goto buildError)
 )
 %fpcx64% -dwinexe %srcrtl%\rtl_utils.pas
+if errorlevel 1 (goto buildError)
+
 %fpcx64% -dwinexe -FE%prjdir%\tests %prjdir%\tests\test1.pas
+if errorlevel 1 (goto buildError)
 
 echo Assembling exe files ...
 
 :: todo => sed
 for %%A in (system rtl_utils fpc_rtl) do (
     %asmx64% -o %sysrtl%\%%A.o %sysrtl%\%%A.s
+    if errorlevel 1 (goto buildError)
 )
 %asmx64% -o %prjdir%\units\fpc-rtl\system.o %prjdir%\tests\system.s
+if errorlevel 1 (goto buildError)
+
 %asmx64% -o %prjdir%\tests\test1.o          %prjdir%\tests\test1.s
+if errorlevel 1 (goto buildError)
 
 echo Linking test1.exe
 :: -----------------------------------------------------------------
@@ -202,6 +228,7 @@ echo Linking test1.exe
 %prjdir%\tests\fpc_rtl.dll --def ^
 %prjdir%\units\fpc-rtl\fpc_rtl.def --output-lib ^
 %prjdir%\tests\libimpfpc_rtl.a
+if errorlevel 1 (goto buildError)
 
 %gcc64% -nostartfiles -nostdlib -Wl,--entry=_mainCRTStartup -o ^
 %prjdir%\tests\test1.exe ^
@@ -209,6 +236,7 @@ echo Linking test1.exe
 %prjdir%\tests\system.o  ^
 %prjdir%\units\fpc-rtl\rtl_utils.o ^
 -L %prjdir%\tests -l impsystem -l impfpc_rtl -l imptest1
+if errorlevel 1 (goto buildError)
 
 ::set PYTHONHOME=
 ::%gdb64% %prjdir%\tests\test1.exe
@@ -221,8 +249,20 @@ goto allok
 ::goto allok
 ::echo =[ create map ]=
 ::grep "FPC_move" map.txt | awk '{print $1}'
+
 :buildError
 echo =[ build error ]=
+:: -----------------------------------------------------------------
+:: delete old crap ...
+:: -----------------------------------------------------------------
+del %prjdir%\tests\fpc_rtl.dll  /F /S /Q >nul: 2>nul:
+del %prjdir%\tests\fpc_rtl.exe  /F /S /Q >nul: 2>nul:
+
+del %prjdir%\tests\*.ppu /F /S /Q >nul: 2>nul:
+del %prjdir%\tests\*.a   /F /S /Q >nul: 2>nul:
+del %prjdir%\tests\*.o   /F /S /Q >nul: 2>nul:
+del %prjdir%\tests\*.s   /F /S /Q >nul: 2>nul:
+
 goto eof
 :linkError
 echo =[ link error ]=
