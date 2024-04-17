@@ -12,11 +12,11 @@
 // ---------------------------------------------------------------------------
 {$ifndef __WINDOWS_TYPES_HDR__}
 {$define __WINDOWS_TYPES_HDR__}
-
 type BOOL      = Integer;       // true or false
 
 type PVOID     = Pointer;
 type LPVOID    = ^PVOID;
+type LPCVOID   = ^LPVOID;
 
 type HANDLE    = PVOID;
 type FARPROC   = PVOID;
@@ -58,6 +58,39 @@ type PLONC_PTR = ^LONG_PTR;
 
 type WPARAM = UINT;
 type LPARAM = LONG;
+
+{$if declared(POINT) = false}
+type
+    PPoint = ^POINT;
+    POINT = record
+        x: LONG;
+        y: LONG;
+    end;
+{$endif}
+{$if declared(TMessage) = false}
+type
+    PMessage = ^TMessage;
+    TMessage = record
+        hwnd     : HWND;
+        _message : DWORD;
+        wParam   : WPARAM;
+        lParam   : LPARAM;
+        time     : DWORD;
+        pt       : POINT;
+        lPrivate : DWORD;
+    end;
+{$endif}
+// ---------------------------------------------------------------------------
+// security structures ...
+// ---------------------------------------------------------------------------
+    PSECURITY_ATTRIBUTES  = ^TSECURITY_ATTRIBUTES;
+    LPSECURITY_ATTRIBUTES = ^TSECURITY_ATTRIBUTES;
+    
+    TSECURITY_ATTRIBUTES  = record
+        nLength              : DWORD ;
+        lpSecurityDescriptor : LPVOID;
+        bInheritedHandle     : BOOL  ;
+    end;
 
 {$endif}    // __WINDOWS_TYPES_HDR__
 {$endif}    // windows_header

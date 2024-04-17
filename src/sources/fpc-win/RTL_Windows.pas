@@ -5,27 +5,58 @@
 //
 // only for education, and non-profit usage !
 // ---------------------------------------------------------------------------
-{$if declared(TMessage)}
-{$else}
 {$ifdef windows_header}
+{$ifndef __RTL_WINDOWS__PAS_}
+{$define __RTL_WINDOWS__PAS_}
+{$if declared(PVOID) = false}
+type PVOID     = Pointer;
+{$endif}
+{$if declared(LPVOID) = false}
+type LPVOID    = ^PVOID;
+type LPCVOID   = ^LPVOID;
+{$endif}
+{$if declared(POINT) = false}
 type
     PPoint = ^POINT;
     POINT = record
         x: LONG;
         y: LONG;
     end;
-
+{$endif}
+{$if declared(TMessage) = false}
 type
     PMessage = ^TMessage;
     TMessage = record
         hwnd     : HWND;
-        _message : DWORD;
+        message  : DWORD;
         wParam   : WPARAM;
         lParam   : LPARAM;
         time     : DWORD;
         pt       : POINT;
         lPrivate : DWORD;
     end;
+{$endif}
+// ---------------------------------------------------------------------------
+// security structures ...
+// ---------------------------------------------------------------------------
+{$if declared(TSECURITY_ATTRIBUTES) = false}
+type
+    PSECURITY_ATTRIBUTES  = ^TSECURITY_ATTRIBUTES;
+    LPSECURITY_ATTRIBUTES = ^TSECURITY_ATTRIBUTES;
+    
+    TSECURITY_ATTRIBUTES  = record
+        nLength              : DWORD ;
+        lpSecurityDescriptor : LPVOID;
+        bInheritedHandle     : BOOL  ;
+    end;
+{$endif}
+// ---------------------------------------------------------------------------
+function GetLastError: DWORD; stdcall; external 'kernel32.dll' name 'GetLastError';
+
+const GENERIC_ALL     = $10000000;
+const GENERIC_EXECUTE = $20000000;
+const GENERIC_WRITE   = $40000000;
+const GENERIC_READ    = $80000000;
 
 // ---------------------------------------------------------------------------
 // win32api constants, and variables ...
@@ -35,6 +66,62 @@ const DLL_PROCESS_DETACH = 0;
 
 const DLL_THREAD_ATTACH  = 2;
 const DLL_THREAD_DETACH  = 3;
+
+// ---------------------------------------------------------------------------
+// win32api file operations ...
+// ---------------------------------------------------------------------------
+const FILE_SHARE_READ   = $00000001;
+const FILE_SHARE_WRITE  = $00000002;
+const FILE_SHARE_DELETE = $00000004;
+// ---------------------------------------------------------------------------
+const CREATE_ALWAYS     = 2;
+const CREATE_NEW        = 1;
+const OPEN_ALWAYS       = 4;
+const OPEN_EXISTING     = 3;
+const TRUNCATE_EXISTING = 5;
+// ---------------------------------------------------------------------------
+const FILE_ATTRIBUTE_ARCHIVE       = $20;
+const FILE_ATTRIBUTE_ENCRYPTED     = $4000;
+const FILE_ATTRIBUTE_HIDDEN        = $2;
+const FILE_ATTRIBUTE_NORMAL        = $80;
+const FILE_ATTRIBUTE_OFFLINE       = $1000;
+const FILE_ATTRIBUTE_READONLY      = 1;
+const FILE_ATTRIBUTE_SYSTEM        = $4;
+const FILE_ATTRIBUTE_TEMPORARY     = $100;
+// ---------------------------------------------------------------------------
+const FILE_FLAG_BACKUP_SEMANTICS   = $02000000;
+const FILE_FLAG_DELETE_ON_CLOSE    = $04000000;
+const FILE_FLAG_NO_BUFFERING       = $20000000;
+const FILE_FLAG_OPEN_NO_RECALL     = $00100000;
+const FILE_FLAG_OPEN_REPARSE_POINT = $00200000;
+const FILE_FLAG_OVERLAPPED         = $40000000;
+const FILE_FLAG_POSIX_SEMANTICS    = $01000000;
+const FILE_FLAG_RANDOM_ACCESS      = $10000000;
+const FILE_FLAG_SESSION_AWARE      = $00800000;
+const FILE_FLAG_SEQUENTIAL_SCAN    = $08000000;
+const FILE_FLAG_WRITE_THROUGH      = $80000000;
+// ---------------------------------------------------------------------------
+function CreateFile(
+    lpFileName            : LPCSTR;
+    dwDesiredAccess       : DWORD;
+    dwShareMode           : DWORD;
+    lpSecurityAttributes  : LPSECURITY_ATTRIBUTES;
+    dwCreationDisposition : DWORD;
+    dwFlagsAndAttributes  : DWORD;
+    hTemplateFile         : DWORD): HANDLE;
+    stdcall; external 'kernel32.dll' name 'CreateFileA';
+
+function WriteFile(
+    hFile         : HANDLE;
+    lpBuffer      : LPCVOID;
+    nBytesToWrite : DWORD;
+    nBytesWritten : DWORD;
+    lpOverlapped  : DWORD): BOOL;
+    stdcall; external 'kernel32.dll' name 'WriteFile';
+    
+function CloseHandle(
+    hObject: HANDLE): BOOL;
+    stdcall; external 'kernel32.dll' name 'CloseHandle';
 
 // ---------------------------------------------------------------------------
 // win32api - MessageBox:
