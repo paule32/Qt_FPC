@@ -10,8 +10,9 @@
 // ---------------------------------------------------------------------------
 // win32api constants, and variables ...
 // ---------------------------------------------------------------------------
-{$ifndef __WINDOWS_HDR__}
-{$define __WINDOWS_HDR__}
+{$ifndef __WINDOWS_TYPES_HDR__}
+{$define __WINDOWS_TYPES_HDR__}
+
 type BOOL      = Integer;       // true or false
 
 type PVOID     = Pointer;
@@ -52,5 +53,11 @@ type LPCTSTR   = LPCWSTR;
 type LPCTSTR   = LPCSTR;
 {$endif}
 
-{$endif}    // __WINDOWS_HDR__
+type LONG_PTR  = UInt64;
+type PLONC_PTR = ^LONG_PTR;
+
+type WPARAM = UINT;
+type LPARAM = LONG;
+
+{$endif}    // __WINDOWS_TYPES_HDR__
 {$endif}    // windows_header

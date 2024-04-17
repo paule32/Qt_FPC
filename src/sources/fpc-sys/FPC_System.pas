@@ -9,6 +9,12 @@
 // ---------------------------------------------------------------------------
 {$ifdef windows_header}
 
+{$if declared(PText)}
+{$else}
+type
+	PText = ^Text;
+{$endif}
+
 procedure fpc_ansistr_decr_ref (Var S : Pointer); compilerproc;
 procedure fpc_AnsiStr_Incr_Ref (    S : Pointer); compilerproc; inline;
 
@@ -32,6 +38,7 @@ procedure fpc_help_destructor  (_self,              _vmt: pointer;  vmt_pos: car
 
 procedure fpc_doneexception; compilerproc;
 
+procedure fpc_specific_handler;
 procedure fpc_ReRaise; compilerproc;
 
 procedure fpc_initializeunits; compilerproc;
@@ -52,6 +59,10 @@ function sizeChar : Byte; inline; begin result :=  2; end;
 function sizeWord : Byte; inline; begin result :=  4; end;
 function sizeDWord: Byte; inline; begin result :=  8; end;
 function sizeQWord: Byte; inline; begin result := 16; end;
+
+procedure fpc_specific_handler; [public, alias: '__FPC_specific_handler'];
+begin
+end;
 
 procedure fpc_doneexception; [public, alias: 'FPC_DONEEXCEPTION'] compilerproc;
 begin

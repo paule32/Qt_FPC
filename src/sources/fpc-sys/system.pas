@@ -16,11 +16,9 @@ const rtl_dll = 'fpc_rtl.dll';
 // ---------------------------------------------------------------------------
 // FPC core ...
 // ---------------------------------------------------------------------------
-{$ifndef __WINDOWS_HDR__}
-{$define __WINDOWS_HDR__}
+{$ifndef __WINDOWS_TYPES_HDR__}
 {$I FPC_Types.pas}
 {$I FPC_Types2.pas}
-{$I FPC_WinTypes.pas}
 {$endif}
 
 {$I FPC_System.pas}

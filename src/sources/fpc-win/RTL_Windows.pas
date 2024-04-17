@@ -5,7 +5,28 @@
 //
 // only for education, and non-profit usage !
 // ---------------------------------------------------------------------------
+{$if declared(TMessage)}
+{$else}
 {$ifdef windows_header}
+type
+    PPoint = ^POINT;
+    POINT = record
+        x: LONG;
+        y: LONG;
+    end;
+
+type
+    PMessage = ^TMessage;
+    TMessage = record
+        hwnd     : HWND;
+        _message : DWORD;
+        wParam   : WPARAM;
+        lParam   : LPARAM;
+        time     : DWORD;
+        pt       : POINT;
+        lPrivate : DWORD;
+    end;
+
 // ---------------------------------------------------------------------------
 // win32api constants, and variables ...
 // ---------------------------------------------------------------------------
@@ -150,16 +171,43 @@ function TSystemCodePage: DWORD;
 // ---------------------------------------------------------------------------
 // win32api module kernel32.dll:
 // ---------------------------------------------------------------------------
-procedure ExitProcess    ( ExitCode: LongInt ); stdcall; external 'kernel32.dll' name 'ExitProcess';
+procedure ExitProcess(
+    ExitCode: LongInt);
+    stdcall; external 'kernel32.dll' name 'ExitProcess';
 
 // ---------------------------------------------------------------------------
 // win32api module kernel32.dll: dynamic library loader
 // ---------------------------------------------------------------------------
-function LoadLibrary( lpLibFileName: LPCSTR ): HMODULE; stdcall; external 'kernel32.dll' name 'LoadLibraryA';
-function FreeLibrary( hLibModule: HMODULE ): BOOL;      stdcall; external 'kernel32.dll' name 'FreeLibrary';
+function LoadLibrary(
+    lpLibFileName: LPCSTR): HMODULE;
+    stdcall; external 'kernel32.dll' name 'LoadLibraryA';
+    
+function FreeLibrary(
+    hLibModule: HMODULE): BOOL;
+    stdcall; external 'kernel32.dll' name 'FreeLibrary';
 
-function GetModuleHandle(lpModuleName: LPCSTR ): HMODULE; stdcall; external 'kernel32.dll' name 'GetModuleHandleA';
-function GetProcAddress(modulname: HMODULE; lpProcName: LPCSTR): FARPROC; stdcall; external 'kernel32.dll' name 'GetProcAddress';
+function DispatchMessage(
+    const msg: TMessage): LRESULT;
+    stdcall; external 'user32.dll'   name 'DispatchMessageA';
+    
+function GetMessage(
+    msg      : TMessage; _hwnd:
+    HWND     ; filterMin: UINT;
+    filterMax: UINT): BOOL;
+    stdcall; external 'user32.dll'   name 'GetMessageA';
+
+function GetModuleHandle(
+    lpModuleName: LPCSTR ): HMODULE;
+    stdcall; external 'kernel32.dll' name 'GetModuleHandleA';
+    
+function GetProcAddress(
+    modulname : HMODULE;
+    lpProcName: LPCSTR): FARPROC;
+    stdcall; external 'kernel32.dll' name 'GetProcAddress';
+
+function TranslateMessage(
+    const message: TMessage): BOOL;
+    stdcall; external 'user32.dll'   name 'TranslateMessage';
 
 const LDR_LOCK_LOADER_LOCK_DISPOSITION_INVALID           = 0;
 const LDR_LOCK_LOADER_LOCK_DISPOSITION_LOCK_ACQUIRED     = 1;
@@ -171,9 +219,20 @@ const LDR_LOCK_LOADER_LOCK_FLAG_TRY_ONLY         = $00000002;
 // ---------------------------------------------------------------------------
 // win32api module kernel32.dll: Heap
 // ---------------------------------------------------------------------------
-function  HeapCreate     ( flOptions: DWORD; dwInitialSize, dwMaximumSize: SIZE_T ): HANDLE; cdecl; external DLL_STR_kernel32 name 'HeapCreate';
-function  LocalAlloc     ( uFlags: UINT; uBytes: SIZE_T): UINT; cdecl; external DLL_STR_kernel32 name 'LocalAlloc';
-function  LocalFree      ( hMem: HLOCAL): HLOCAL; cdecl; external DLL_STR_kernel32 name 'LocalFree';
+function  HeapCreate(
+    flOptions: DWORD;
+    dwInitialSize,
+    dwMaximumSize: SIZE_T ): HANDLE;
+    cdecl; external DLL_STR_kernel32 name 'HeapCreate';
+    
+function  LocalAlloc(
+    uFlags: UINT;
+    uBytes: SIZE_T): UINT;
+    cdecl; external DLL_STR_kernel32 name 'LocalAlloc';
+    
+function  LocalFree(
+    hMem: HLOCAL): HLOCAL;
+    cdecl; external DLL_STR_kernel32 name 'LocalFree';
 
 // ---------------------------------------------------------------------------
 // win32api module kernel32.dll: virtual memory
@@ -182,8 +241,18 @@ procedure FillChar       ( var Dest; Count: Integer; Value: Char );
 procedure FreeMem        ( var p: Pointer );
 procedure GetMem         ( var p: Pointer; size: DWORD );
 
-function  VirtualAlloc   ( lpAddress: PVOID; dwSize: SIZE_T; flAllocationType: DWORD; flProtect: DWORD): Pointer; stdcall; external DLL_STR_kernel32 name 'VirtualAlloc';
-function  VirtualFree    ( lpAddress: PVOID; dwSize: SIZE_T; dwFreeType: DWORD): BOOL; stdcall; external DLL_STR_kernel32 name 'VirtualAlloc';
+function  VirtualAlloc(
+    lpAddress       : PVOID;
+    dwSize          : SIZE_T;
+    flAllocationType: DWORD;
+    flProtect       : DWORD): Pointer;
+    stdcall; external DLL_STR_kernel32 name 'VirtualAlloc';
+    
+function  VirtualFree(
+    lpAddress : PVOID;
+    dwSize    : SIZE_T;
+    dwFreeType: DWORD): BOOL;
+    stdcall; external DLL_STR_kernel32 name 'VirtualAlloc';
 
 // ---------------------------------------------------------------------------
 // win32api RTL error & codes ...
@@ -191,12 +260,16 @@ function  VirtualFree    ( lpAddress: PVOID; dwSize: SIZE_T; dwFreeType: DWORD):
 type  NTSTATUS       = LONG;
 const STATUS_SUCCESS = $00000000;
 
-function RtlNtStatusToDosError( status: NTSTATUS ): ULONG; cdecl; external 'ntdll.dll' name 'RtlNtStatusToDosError';
+function RtlNtStatusToDosError(
+    status: NTSTATUS): ULONG;
+    cdecl; external 'ntdll.dll'    name 'RtlNtStatusToDosError';
 
-procedure SetLastError(dwErrCode: DWORD); cdecl; external 'kernel32.dll' name 'SetLastError';
+procedure SetLastError(dwErrCode: DWORD);
+    cdecl; external 'kernel32.dll' name 'SetLastError';
 
 const STATUS_INVALID_PARAMETER_1 = $c00000EF;
 
+{$endif}
 {$endif}
 
 {$ifdef windows_source}

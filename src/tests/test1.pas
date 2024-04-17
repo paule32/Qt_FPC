@@ -9,37 +9,28 @@
 program test1;
 
 type
-    TTestTest = procedure(); stdcall;
-    
+    TTestTest = procedure;
+
 procedure Entry; stdcall; public name '_mainCRTStartup';
 var
     s1, s2: String;
     p1, p2: PChar;
     hm: HMODULE;
-    ap: TTestTest;
+    ap: procedure;
     p : Pointer;
 begin
     s1 := 'mufo   Lo aalo';
     s2 := 'Hello World  --> ' + s1;
     MessageBox(0,s2,s1,0);
 
-    HM := LoadLibrary(LPCSTR('fpc_rtl.dll'));
-    if HM < 1 then begin
+    HM := LoadLibrary('fpc_rtl.dll');
+    if HM = nil then begin
         MessageBox(0,'dll error','Error',0);
         ExitProcess(4);
     end else begin
         MessageBox(0,'dll load ok','Information',0);
-        ap := GetProcAddress(hm, 'TestTest');
-        ExitProcess(ap);
-        if ap < 1 then begin
-            MessageBox(0,'getprocaddress error','Error',0);
-            FreeLibrary(HM);
-            ExitProcess(0);
-        end else begin
-            MessageBox(0,'start 11122','info',0);
-            //ap;
-            //MessageBox(0,'start2 1111 222','info',0);
-        end;
+        ap := GetProcAddress(hm, 'TestTest' ); //'P$FPC_RTL_$$_TESTTEST');
+        MessageBox(0,'start2 1111 222','info',0);
     end;
     FreeLibrary(HM);
     

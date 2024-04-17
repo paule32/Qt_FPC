@@ -134,7 +134,7 @@ set sysrtl=%punits%\fpc-rtl
 
 cd %prjdir%
 
-echo =[ clean up directories   ]=
+echo =[ clean up directories    ]=
 :: -----------------------------------------------------------------
 :: delete old crap ...
 :: -----------------------------------------------------------------
@@ -152,48 +152,116 @@ for %%A in (fpc-qt fpc-rtl fpc-sys fpc-win) do (
     mkdir .\%%A
     if errorlevel 1 (goto buildError)
 )
+echo =[ build settings...       ]=
+echo Project   : %prjdir%
+echo FPC 3.2.0 : %fpcdir%\fpc64.exe
+echo NASM      : %asmx64%
+echo.
 cd %prjdir%
 
-echo =[ begin compile stage    ]=
-%fpcx64% -dwindll -CX -CD -WD -D -fPIC -st -Xe -XD -XX -Us %srcsys%\system.pas
+:: -----------------------------------------------------------------
+:: create .dll file ...
+:: -----------------------------------------------------------------
+echo =[ begin compile stage     ]=
+%fpcx64% -dwindll -CX -CD -WD -D -fPIC -st -Xe -XD -Us %srcsys%\system.pas
 if errorlevel 1 (goto buildError)
 
-%fpcx64% -dwindll -CX -CD -WD -D -fPIC -st -Xe -XD -XX     %srcsys%\fpintres.pp
+%fpcx64% -dwindll -CX -CD -WD -D -fPIC -st -Xe -XD %srcsys%\fpintres.pp
 if errorlevel 1 (goto buildError)
 ::
 for %%A in (fpcinit sysinit) do (
-    %fpcx64% -dwindll -CD -WD -CX -D -fPIC -st -Xe -XD -XX %srcsys%\%%A.pas
+    %fpcx64% -dwindll -CD -WD -CX -D -fPIC -st -Xe -XD  %srcsys%\%%A.pas
     if errorlevel 1 (goto buildError)
 )
-
-%fpcx64% -dwindll -CX -CD -WD -D -fPIC -st -Xe -XD -XX %srcrtl%\rtl_utils.pas
+%fpcx64% -dwindll -CX -CD -WD -D -fPIC -st -Xe -XD %srcrtl%\rtl_utils.pas
 if errorlevel 1 (goto buildError)
 
-echo =[ build dll file...      ]=
-%fpcx64% -dwindll -CX -CD -WD -D -fPIC -st -Xe -XD -XX -FE%prjdir%\units\fpc-rtl %prjdir%\tests\fpc_rtl.pas
+echo =[ build asm file...       ]=
+%fpcx64% -dwindll -CX -CD -WD -D -fPIC -st -Xe -XD -FE%prjdir%\units\fpc-rtl %prjdir%\tests\fpc_rtl.pas
 if errorlevel 1 (goto buildError)
 
-echo Assembling dll files ...
+echo =[ assembling asm files... ]=
 ::copy %punits%\fpc-sys\fpcinit.s %sysrtl%\fpcinit.s
 
 :: todo => sed
+copy %punits%\fpc-sys\..\fpc-rtl\fpc_rtl.s   %punits%\fpc-sys\fpc_rtl.s   > nul
+copy %punits%\fpc-sys\..\fpc-rtl\rtl_utils.s %punits%\fpc-sys\rtl_utils.s > nul
+
+:: -----------------------------------------------------------------
+:: remove not wanted rtti information's ...
+:: -----------------------------------------------------------------
 for %%A in (system rtl_utils fpc_rtl) do (
-    %asmx64% -o %sysrtl%\%%A.o %sysrtl%\%%A.s
+    sed -i '/\; Begin asmlist al_rtti/,/\; End asmlist al_rtti/d' %punits%\fpc-sys\%%A.s
+    if errorlevel 1 (goto buildError)
+    sed -i '/\; Begin asmlist al_dwarf_frame.*/,/\; End asmlist al_dwarf_frame.*/d' %punits%\fpc-sys\%%A.s
+    if errorlevel 1 (goto buildError)
+    sed -i '/\.\.\@.*strlab\:/,+3d' %punits%\fpc-sys\%%A.s
+    if errorlevel 1 (goto buildError)
+    sed -i '/\; Begin asmlist al_indirectglobals.*/,/\; End asmlist al_indirectglobals.*/d' %punits%\fpc-sys\%%A.s
+    if errorlevel 1 (goto buildError)
+    sed -i '/\; Begin asmlist al_globals.*/,/\; End asmlist al_globals.*/d' %punits%\fpc-sys\%%A.s
     if errorlevel 1 (goto buildError)
 )
-echo Linking fpc_rtl.dll ...
+:: -----------------------------------------------------------------
+:: add removed symbols by sed ...
+:: -----------------------------------------------------------------
+echo SECTION .data                     >> %punits%\fpc-sys\system.s
+echo global VMT_$$SYSTEM_$$_QSTRING    >> %punits%\fpc-sys\system.s
+echo VMT_$SYSTEM_$$_QSTRING:           >> %punits%\fpc-sys\system.s
+echo dq 0                              >> %punits%\fpc-sys\system.s
+
+echo SECTION .data                     >> %punits%\fpc-sys\fpc_rtl.s
+echo global U_$P$FPC_RTL_$$_LIBRARYHDL >> %punits%\fpc-sys\fpc_rtl.s
+echo U_$P$FPC_RTL_$$_LIBRARYHDL:       >> %punits%\fpc-sys\fpc_rtl.s
+echo dq 0                              >> %punits%\fpc-sys\fpc_rtl.s
+
+:: -----------------------------------------------------------------
+:: assemble all new files for this build ...
+:: -----------------------------------------------------------------
+for %%A in (system rtl_utils fpc_rtl) do (
+    %asmx64% -o %punits%\fpc-sys\%%A.o %punits%\fpc-sys\%%A.s
+    if errorlevel 1 (goto buildError)
+)
+for %%A in (system fpc_rtl) do (
+    copy %punits%\fpc-sys\%%A.o %punits%\fpc-rtl\%%A.o > nul
+    if errorlevel 1 (goto buildError)
+)
+
+:: -----------------------------------------------------------------
+:: finally, build/link the .dll file ...
+:: -----------------------------------------------------------------
+echo =[ Linking fpc_rtl.dll ... ]=
 
 %ld64% --shared --dll --entry=_DLLMainCRTStartup -o ^
 %prjdir%\tests\fpc_rtl.dll ^
 %prjdir%\units\fpc-rtl\fpc_rtl_link.res
 if errorlevel 1 (goto buildError)
 
-echo =[ build exe file...      ]=
+:: -----------------------------------------------------------------
+:: discards all debug symbols - todo !
+:: -----------------------------------------------------------------
+strip %prjdir%\tests\fpc_rtl.dll
+if errorlevel 1 (goto buildError)
+
+:: -----------------------------------------------------------------
+:: create the .exe file ...
+:: -----------------------------------------------------------------
+echo =[ build exe file...       ]=
 ::
 %fpcx64% -dwinexe -Us %srcsys%\system.pas
 if errorlevel 1 (goto buildError)
 
-%fpcx64% -dwinexe     %srcsys%\fpintres.pp
+%fpcx64% -dwindll     %srcsys%\fpintres.pp
+if errorlevel 1 (goto buildError)
+::
+for %%A in (fpcinit sysinit) do (
+    %fpcx64% -dwinexe %srcsys%\%%A.pas
+    if errorlevel 1 (goto buildError)
+)
+%fpcx64% -dwinexe %srcrtl%\rtl_utils.pas
+if errorlevel 1 (goto buildError)
+
+%fpcx64% -dwinexe -FE%prjdir%\tests %prjdir%\tests\test1.pas
 if errorlevel 1 (goto buildError)
 
 ::
@@ -207,20 +275,34 @@ if errorlevel 1 (goto buildError)
 %fpcx64% -dwinexe -FE%prjdir%\tests %prjdir%\tests\test1.pas
 if errorlevel 1 (goto buildError)
 
-echo Assembling exe files ...
-
-:: todo => sed
+echo =[ sed .asm files...       ]=
+:: -----------------------------------------------------------------
+:: remove not wanted rtti information's ...
+:: -----------------------------------------------------------------
+for %%A in (system test1) do (
+    sed -i '/\; Begin asmlist al_rtti/,/\; End asmlist al_rtti/d' %prjdir%\tests\%%A.s
+    if errorlevel 1 (goto buildError)
+    sed -i '/\; Begin asmlist al_dwarf_frame.*/,/\; End asmlist al_dwarf_frame.*/d' %prjdir%\tests\\%%A.s
+    if errorlevel 1 (goto buildError)
+    sed -i '/\.\.\@.*strlab\:/,+3d' %prjdir%\tests\%%A.s
+    if errorlevel 1 (goto buildError)
+    sed -i '/\; Begin asmlist al_indirectglobals.*/,/\; End asmlist al_indirectglobals.*/d' %prjdir%\tests\%%A.s
+    if errorlevel 1 (goto buildError)
+    sed -i '/\; Begin asmlist al_globals.*/,/\; End asmlist al_globals.*/d' %prjdir%\tests\%%A.s
+    if errorlevel 1 (goto buildError)
+)
 for %%A in (system rtl_utils fpc_rtl) do (
     %asmx64% -o %sysrtl%\%%A.o %sysrtl%\%%A.s
     if errorlevel 1 (goto buildError)
 )
-%asmx64% -o %prjdir%\units\fpc-rtl\system.o %prjdir%\tests\system.s
-if errorlevel 1 (goto buildError)
 
-%asmx64% -o %prjdir%\tests\test1.o          %prjdir%\tests\test1.s
-if errorlevel 1 (goto buildError)
+echo =[ Assembling exe files... ]=
+for %%A in (system test1) do (
+    %asmx64% -o %prjdir%\tests\%%A.o %prjdir%\tests\%%A.s
+    if errorlevel 1 (goto buildError)
+)
 
-echo Linking test1.exe
+echo =[ linking test1.exe...    ]=
 :: -----------------------------------------------------------------
 :: create 64-Bit import definition .def + library .a file ...
 :: -----------------------------------------------------------------
@@ -234,12 +316,28 @@ if errorlevel 1 (goto buildError)
 %prjdir%\tests\test1.exe ^
 %prjdir%\tests\test1.o   ^
 %prjdir%\tests\system.o  ^
-%prjdir%\units\fpc-rtl\rtl_utils.o ^
--L %prjdir%\tests -l impsystem -l impfpc_rtl -l imptest1
+%prjdir%\units\fpc-rtl\rtl_utils.o -L ^
+%prjdir%\tests -l impsystem -l impfpc_rtl
 if errorlevel 1 (goto buildError)
 
+:: -----------------------------------------------------------------
+:: for debugger luurkers ...
+:: -----------------------------------------------------------------
 ::set PYTHONHOME=
 ::%gdb64% %prjdir%\tests\test1.exe
+
+:: -----------------------------------------------------------------
+:: discards all debug symbols - todo !
+:: -----------------------------------------------------------------
+strip %prjdir%\tests\test1.exe >nul: 2>nul:
+if errorlevel 1 (goto buildError)
+
+:: -----------------------------------------------------------------
+:: delete all build files, except the dll and exe file ...
+:: -----------------------------------------------------------------
+for %%A in (a o s ppu) do (
+    del %prjdir%\tests\*.%%A   /F /S /Q >nul: 2>nul:
+)
 
 %prjdir%\tests\test1.exe
 echo %errorlevel%
