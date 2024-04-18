@@ -33,13 +33,24 @@ type DWORD  = LongDWORD;
 type UINT   = LongDWORD;
 type SIZE_T = LongDWORD;
 
+type PByte  = ^Byte;
+
 type CodePointer  = Pointer;
 
 type PChar        = ^Char;
 type PShortString = ^ShortString;
 
+type AnsiChar     = Pointer;
+
+type PAnsiChar    = ^AnsiChar;
+type PAnsiString  = ^AnsiString;
+
+type RawByteString = type AnsiString;
+
 type ULONG     = LongDWORD;
 type ULONG_PTR = ^ULONG;
+
+type PLONG = ^LONG;
 
 type
 	TMsgStrTable = record

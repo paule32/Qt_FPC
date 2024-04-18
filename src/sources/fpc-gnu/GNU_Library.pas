@@ -12,7 +12,7 @@
 function malloc (    s: DWORD                  ): PVOID ; cdecl; external 'ucrtbase.dll'   name 'malloc';
 function strcat (var d: LPCSTR; const s: LPCSTR): LPCSTR; cdecl; external 'ucrtbase.dll'   name 'strcat';
 function strcpy (var d: LPCSTR; const s: LPCSTR): LPCSTR; cdecl; external 'ucrtbase.dll'   name 'strcpy';
-function strlen (               const s: LPCSTR): DWORD ; cdecl; external DLL_STR_kernel32 name 'lstrlenA';
+function strlen (               const s: PAnsiString): DWORD ; cdecl; external DLL_STR_kernel32 name 'lstrlenA';
 
 {$endif}
 

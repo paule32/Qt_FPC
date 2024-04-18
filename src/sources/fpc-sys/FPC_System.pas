@@ -9,8 +9,7 @@
 // ---------------------------------------------------------------------------
 {$ifdef windows_header}
 
-{$if declared(PText)}
-{$else}
+{$if declared(PText) = false}
 type
 	PText = ^Text;
 {$endif}
@@ -141,7 +140,7 @@ procedure fpc_ansistr_assign(var DestS: Pointer; S2: Pointer); [public, alias: '
 var
     SLen: SIZE_T;
 begin
-    SLen  := strlen( LPCSTR( S2 ) );
+    SLen  := strlen( PAnsiString( S2 ) );
     GetMem( DestS, SLen );
 
     if (not (DestS = nil)) then
@@ -163,8 +162,8 @@ var
     DestS: Pointer;
 begin
 
-    S1Len := strlen( LPCSTR( S1 ) );
-    S2Len := strlen( LPCSTR( S2 ) );
+    S1Len := strlen( PAnsiString( S1 ) );
+    S2Len := strlen( PAnsiString( S2 ) );
     
     S3Len := S1Len + S2Len + 1;
     GetMem( DestS, S3Len );
@@ -193,8 +192,8 @@ begin
         exit;
     end;
     
-    maxi := strlen( S1 );
-    temp := strlen( S2 );
+    maxi := strlen( PAnsiString( S1 ) );
+    temp := strlen( PAnsiString( S2 ) );
     
     result := maxi - temp;
     

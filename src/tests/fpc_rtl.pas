@@ -18,6 +18,91 @@ type NTSTATUS  = LONG;
 var
     LibraryHdl: LongDWORD;
 
+function PutToFile(const AFileName: String; AData: PAnsiString): Boolean;
+var
+    hFile    : HANDLE  ;
+    count    : DWORD;
+    dataSize : Integer ;
+    buffer   : PChar;
+    
+    overlap  : POverlapped;
+    dummy    : DWORD;
+    error    : DWORD;
+begin
+    result   := false;
+    dataSize := strlen(AData);
+
+    hFile := CreateFile(
+        AFileName,              // name of the file
+        GENERIC_WRITE,          // open for writing
+        FILE_SHARE_READ or FILE_SHARE_WRITE,
+        nil,                    // default security
+        OPEN_EXISTING,
+        FILE_ATTRIBUTE_NORMAL,  // normal file
+        0);
+
+    if THandle(hFile) = INVALID_HANDLE_VALUE then
+        hFile := CreateFile(
+        AFileName,
+        GENERIC_WRITE,
+        FILE_SHARE_READ or FILE_SHARE_WRITE,
+        nil,
+        CREATE_NEW,
+        FILE_ATTRIBUTE_NORMAL,
+        0);
+
+    if THandle(hFile) = INVALID_HANDLE_VALUE then begin
+        MessageBox(0,
+        'file: fpc_rtl.$$$ could not be write.',
+        'Error', 0);
+        ExitProcess(1);
+    end else begin
+        MessageBox(0,
+        'CreateFile() success',
+        'Information', 0);
+        
+        dummy := SetFilePointer(THandle(hFile), 0, nil, FILE_END);
+        error := GetLastError;
+        
+        if ((dummy = INVALID_SET_FILE_POINTER) and (error <> NO_ERROR)) then begin
+            MessageBox(0,
+            'SetFilePointer() failed.',
+            'Information', 0);
+            ExitProcess(1);
+        end else begin
+            MessageBox(0,
+            'SetFilePointer() success.',
+            'Information', 0);
+            
+            buffer := PChar('hhuuhhh');
+            dummy := WriteFile(THandle(hFile), buffer^, sizeof(buffer)-1, dword(nil^), nil);
+            error := GetLastError;
+            
+            if error <> NO_ERROR then begin
+                MessageBox(0,
+                'WriteFile() failed.',
+                'Information', 0);
+                ExitProcess(1);
+            end else begin
+                MessageBox(0,
+                'WriteFile() success.',
+                'Information', 0);
+            end;
+        end;
+    end;
+    if CloseHandle(THandle(hFile)) = 0 then begin
+        MessageBox(0,
+        'CloseHandle() failed.',
+        'Information', 0);
+        ExitProcess(1);
+    end else begin
+        MessageBox(0,
+        'CloseHandle() success.',
+        'Information', 0);
+    end;
+    result := true;
+end;
+
 function Entry(
     hModule    : HANDLE;
     dwReason   : DWORD ;
@@ -34,46 +119,7 @@ begin
         DLL_PROCESS_ATTACH: begin
             // save our HANDLE
             LibraryHdl := LongDWORD(hModule);
-            
-            hFile := CreateFile(
-            'fpc_rtl.$$$',          // name of the file
-            GENERIC_WRITE,          // open for writing
-            FILE_SHARE_READ or FILE_SHARE_WRITE,
-            nil,                    // default security
-            OPEN_EXISTING,
-            FILE_ATTRIBUTE_NORMAL,  // normal file
-            0);
-            
-            if hFile = INVALID_HANDLE_VALUE then
-            hFile := CreateFile(
-            'fpc_rtl.$$$',
-            GENERIC_WRITE,
-            FILE_SHARE_READ or FILE_SHARE_WRITE,
-            nil,
-            CREATE_NEW,
-            FILE_ATTRIBUTE_NORMAL,
-            0);
-            
-            if hFile = INVALID_HANDLE_VALUE then begin
-                MessageBox(0,
-                'file: fpc_rtl.$$$ could not be write.',
-                'Error', 0);
-                ExitProcess(1);
-            end;
-            
-            SetFilePointer(hFile, 0, nil, FILE_BEGIN);
-            
-            dataSize := 5;
-            buffer   := PChar('buffer');
-            
-            MessageBox(0,'xxxx','dsddd',0);
-            
-            SetFilePointer(hFile, 0, nil, FILE_BEGIN);
-            WriteFile(hFile, buffer^, dataSize, count, nil);
-            
-            MessageBox(0,'xxxx','dsddd',0);
-
-            CloseHandle(hFile);
+            PutToFile('fpc_rtl.txt', PAnsiString('Ein Test'));
         end;
     end;
     

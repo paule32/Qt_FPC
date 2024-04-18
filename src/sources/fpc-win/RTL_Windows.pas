@@ -15,6 +15,14 @@ type PVOID     = Pointer;
 type LPVOID    = ^PVOID;
 type LPCVOID   = ^LPVOID;
 {$endif}
+{$if declared(LPCTSTR) = false}
+    {$ifdef UNICODE}
+    type LPCTSTR   = LPCWSTR;
+    {$else}
+    type LPCTSTR   = LPCSTR;
+    {$endif}
+{$endif}
+
 {$if declared(POINT) = false}
 type
     PPoint = ^POINT;
@@ -41,14 +49,17 @@ type
 // ---------------------------------------------------------------------------
 {$if declared(TSECURITY_ATTRIBUTES) = false}
 type
-    PSECURITY_ATTRIBUTES = ^TSecurityAttributes;
-    PSecurityAttributes  = ^TSecurityAttributes;
-    _SECURITY_ATTRIBUTES = record
-        nLength              : DWORD  ;
-        lpSecurityDescriptor : Pointer;
-        bInheritHandle       : BOOL   ;
+     PSECURITY_ATTRIBUTES  = ^TSecurityAttributes;
+    LPSECURITY_ATTRIBUTES  = ^TSecurityAttributes;
+    
+    PSecurityAttributes = ^TSecurityAttributes;
+    SECURITY_ATTRIBUTES = record
+        nLength              : DWORD ;
+        lpSecurityDescriptor : LPVOID;
+        bInheritHandle       : BOOL  ;
     end;
-    TSecurityAttributes = _SECURITY_ATTRIBUTES;
+    TSecurityAttributes = SECURITY_ATTRIBUTES;
+
 {$endif}
 {$if declared(TOverlapped) = false}
 type
@@ -62,11 +73,14 @@ type
     end;
     TOverlapped = _OVERLAPPED;
 {$endif}
-
 // ---------------------------------------------------------------------------
-function GetLastError: DWORD; stdcall; external 'kernel32.dll' name 'GetLastError';
+function GetLastError: DWORD;
+    stdcall; external 'kernel32.dll' name 'GetLastError';
 
-const INVALID_HANDLE_VALUE  = THandle(-1);
+const INVALID_HANDLE_VALUE     = THandle(-1);
+const INVALID_SET_FILE_POINTER = DWORD  (-1);
+
+const NO_ERROR = 0;
 
 const FILE_BEGIN      = 0;
 const FILE_CURRENT    = 1;
@@ -124,26 +138,33 @@ function CreateFile(
     lpFileName            : LPCSTR;
     dwDesiredAccess       : DWORD;
     dwShareMode           : DWORD;
-    lpSecurityAttributes  : PSECURITY_ATTRIBUTES;
+    lpSecurityAttributes  : LPSECURITY_ATTRIBUTES;
     dwCreationDisposition : DWORD;
     dwFlagsAndAttributes  : DWORD;
-    hTemplateFile         : THandle): THANDLE;
+    hTemplateFile         : HANDLE): HANDLE;
     stdcall; external 'kernel32.dll' name 'CreateFileA';
 
 function SetFilePointer(
     hFile                : THandle;
-    lDistanceToMove      : Longint;
-    lpDistanceToMoveHigh : Pointer;
-    dwMoveMethod         : DWORD): DWORD;
+    lDistanceToMove      : LONG   ;
+    lpDistanceToMoveHigh : PLONG  ;
+    dwMoveMethod         : DWORD) : DWORD;
     stdcall; external 'kernel32.dll' name 'SetFilePointer';
-    
+
+function WriteFile(
+    hFile: THandle;
+    const Buffer; nNumberOfBytesToWrite: DWORD;
+    var lpNumberOfBytesWritten: DWORD;
+    lpOverlapped: POverlapped): BOOL;
+    stdcall; external 'kernel32.dll' name 'WriteFile';
+(*
 function WriteFile(
     hFile          : THANDLE;
-    const lpBuffer ;
+    lpBuffer       : Pointer;
     nBytesToWrite  : DWORD;
     nBytesWritten  : DWORD;
-    lpOverlapped   : POverlapped): BOOL;
-    stdcall; external 'kernel32.dll' name 'WriteFile';
+    lpOverlapped   : Pointer): BOOL;
+    stdcall; external 'kernel32.dll' name 'WriteFile';*)
     
 function CloseHandle(
     hObject: THANDLE): BOOL;
