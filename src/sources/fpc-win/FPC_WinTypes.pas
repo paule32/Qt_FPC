@@ -12,7 +12,7 @@
 // ---------------------------------------------------------------------------
 {$ifndef __WINDOWS_TYPES_HDR__}
 {$define __WINDOWS_TYPES_HDR__}
-type BOOL      = Integer;       // true or false
+type BOOL      = LongBool;       // true or false
 
 type PVOID     = Pointer;
 type LPVOID    = ^PVOID;
@@ -21,7 +21,7 @@ type LPCVOID   = ^LPVOID;
 type HANDLE    = PVOID;
 type FARPROC   = PVOID;
 
-type THANDLE   =  LongWord;     // onject handle
+type THANDLE   =  Uint64;       // onject handle
 type PHandle   = ^THANDLE;
 
 type LCID      = LongDWord;     // a local identifier
@@ -83,14 +83,26 @@ type
 // ---------------------------------------------------------------------------
 // security structures ...
 // ---------------------------------------------------------------------------
+type
+    POverlapped = ^TOverlapped;
+    _OVERLAPPED = record
+        Internal      : ULONG_PTR;
+        InternalHigh  : ULONG_PTR;
+        Offset        : DWORD    ;
+        OffsetHigh    : DWORD    ;
+        hEvent        : THandle  ;
+    end;
+    TOverlapped = _OVERLAPPED;
+
     PSECURITY_ATTRIBUTES  = ^TSECURITY_ATTRIBUTES;
     LPSECURITY_ATTRIBUTES = ^TSECURITY_ATTRIBUTES;
-    
-    TSECURITY_ATTRIBUTES  = record
-        nLength              : DWORD ;
-        lpSecurityDescriptor : LPVOID;
-        bInheritedHandle     : BOOL  ;
+    PSecurityAttributes   = ^TSecurityAttributes;
+    _SECURITY_ATTRIBUTES  = record
+        nLength              : DWORD  ;
+        lpSecurityDescriptor : Pointer;
+        bInheritHandle       : BOOL   ;
     end;
+    TSecurityAttributes = _SECURITY_ATTRIBUTES;
 
 {$endif}    // __WINDOWS_TYPES_HDR__
 {$endif}    // windows_header
