@@ -266,10 +266,12 @@ for %%B in (system.o fpc_rtl.o ..\merge\*.o) do (
 
     for /f "usebackq delims=" %%A in ("%prjdir%\units\func.tx2") do (
         set "string2=!counter!"
-        if not "%%A"=="fpc_libinitializeunits" if not "%%A"=="fpc_ansistr_decr_ref" if not "%%A"=="_DLLMainCRTStartup" if not "%%A"=="FPC_EMPTYCHAR" (
-            printf "%%A \\x!string1!\\x!string2!\n" >> "%prjdir%\units\func.map"
-            set /a counter+=1
-    )   )
+        if not "%%A"=="fpc_libinitializeunits" (
+        if not "%%A"=="fpc_ansistr_decr_ref" (
+        if not "%%A"=="_DLLMainCRTStartup" if not "%%A"=="FPC_EMPTYCHAR" (
+        printf "%%A \\x!string1!\\x!string2!\n" >> "%prjdir%\units\func.map" ^
+        && set /a counter+=1
+    )   )   )   )
     del %prjdir%\units\func.tx1 /F /S /Q >nul 2>nul
     del %prjdir%\units\func.tx2 /F /S /Q >nul 2>nul
 
