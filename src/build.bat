@@ -266,7 +266,7 @@ for %%B in (system.o fpc_rtl.o ..\merge\*.o) do (
 
     for /f "usebackq delims=" %%A in ("%prjdir%\units\func.tx2") do (
         set "string2=!counter!"
-        if not "%%A"=="fpc_libinitializeunits" if not "%%A"=="_DLLMainCRTStartup" (
+        if not "%%A"=="fpc_libinitializeunits" if not "%%A"=="fpc_ansistr_decr_ref" if not "%%A"=="_DLLMainCRTStartup" if not "%%A"=="FPC_EMPTYCHAR" (
             printf "%%A \\x!string1!\\x!string2!\n" >> "%prjdir%\units\func.map"
             set /a counter+=1
     )   )
@@ -391,6 +391,10 @@ for %%A in (a o s ppu) do (
     del %prjdir%\tests\*.%%A   /F /S /Q >nul: 2>nul:
 )
 :: -----------------------------------------------------------------
+:: finally shrink the EXE file again with upx.exe  ...
+:: -----------------------------------------------------------------
+upx32.exe %prjdir%\tests\test1.exe >nul 2>nul
+:: -----------------------------------------------------------------
 :: bundle a zip file for upload on my github.com account ...
 :: -----------------------------------------------------------------
 echo =[ build bundle zip file...]=   80 %%  done
@@ -403,16 +407,11 @@ if errorlevel 1 ( goto linkError )
 cd  %prjdir%
 
 :: -----------------------------------------------------------------
-:: finally shrink the EXE file again with upx.exe  ...
-:: -----------------------------------------------------------------
-upx32.exe %prjdir%\tests\test1.exe >nul 2>nul
-
-:: -----------------------------------------------------------------
 :: delete old crap ...
 :: -----------------------------------------------------------------
-::echo =[ clean up dev files...   ]=   90 %%  done
-::rmdir %prjdir%\units /S /Q >nul 2>nul
-::if errorlevel 1 (goto buildError)
+echo =[ clean up dev files...   ]=   90 %%  done
+rmdir %prjdir%\units /S /Q >nul 2>nul
+if errorlevel 1 (goto buildError)
 
 echo =[ start test1.exe...      ]=  100 %%  done
 %prjdir%\tests\test1.exe
