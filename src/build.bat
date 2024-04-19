@@ -132,19 +132,25 @@ set srcrtl=-FE%punits%\fpc-rtl %sunits%\fpc-rtl
 
 set sysrtl=%punits%\fpc-rtl
 
+:: -----------------------------------------------------------------
+:: counter for the iteration
+:: -----------------------------------------------------------------
+set /a counter=0
+
 cd %prjdir%
 
 echo =[ clean up directories    ]=
 :: -----------------------------------------------------------------
 :: delete old crap ...
 :: -----------------------------------------------------------------
-del %prjdir%\units              /F /S /Q >nul: 2>nul:
-del %prjdir%\tests\fpc_rtl.dll  /F /S /Q >nul: 2>nul:
-del %prjdir%\tests\test1.exe    /F /S /Q >nul: 2>nul:
+del %prjdir%\units              /F /S /Q >nul 2>nul
+del %prjdir%\tests\fpc_rtl.dll  /F /S /Q >nul 2>nul
+del %prjdir%\tests\test1.exe    /F /S /Q >nul 2>nul
 
-rmdir %prjdir%\units /S /Q >nul
+rmdir %prjdir%\units /S /Q >nul: 2>nul:
+if errorlevel 1 (goto buildError)
 
-mkdir %prjdir%\units
+mkdir %prjdir%\units >nul: 2>nul:
 if errorlevel 1 (goto buildError)
 
 cd %prjdir%\units
@@ -153,10 +159,12 @@ for %%A in (fpc-qt fpc-rtl fpc-sys fpc-win) do (
     if errorlevel 1 (goto buildError)
 )
 echo =[ build settings...       ]=
+echo.
 echo Project   : %prjdir%
 echo FPC 3.2.0 : %fpcdir%\fpc64.exe
 echo NASM      : %asmx64%
 echo.
+
 cd %prjdir%
 
 :: -----------------------------------------------------------------
@@ -226,6 +234,39 @@ for %%A in (system fpc_rtl) do (
     copy %punits%\fpc-sys\%%A.o %punits%\fpc-rtl\%%A.o > nul
     if errorlevel 1 (goto buildError)
 )
+
+:: -----------------------------------------------------------------
+:: rename big symbols to small names, to save storage space ...
+:: you need msys64 "printf" !!!
+:: -----------------------------------------------------------------
+echo =[ re-mapping symbols...   ]=
+
+del %prjdir%\units\func.tx1 /F /S /Q >nul 2>nul
+del %prjdir%\units\func.tx2 /F /S /Q >nul 2>nul
+del %prjdir%\units\func.map /F /S /Q >nul 2>nul
+
+nm %prjdir%\units\fpc-rtl\system.o > %prjdir%\units\func.tx1
+grep ".* T .*" %prjdir%\units\func.tx1 | awk '{print $3}' > %prjdir%\units\func.tx2
+
+set decimal1=4f
+set /a hex1=0x4f
+set /a counter=21
+set "string1=%hex1%
+
+for /f "usebackq delims=" %%A in ("%prjdir%\units\func.tx2") do (
+    set "string2=!counter!"
+    if not "%%A"=="fpc_libinitializeunits" (
+        printf "%%A \\x!string1!\\x!string2!\n" >> "%prjdir%\units\func.map"
+        set /a counter+=1
+    )
+)
+
+del %prjdir%\units\func.tx1 /F /S /Q >nul 2>nul
+del %prjdir%\units\func.tx2 /F /S /Q >nul 2>nul
+
+objcopy --redefine-syms=%prjdir%\units\func.map %prjdir%\units\fpc-rtl\system.o
+
+del %prjdir%\units\func.map /F /S /Q >nul 2>nul
 
 :: -----------------------------------------------------------------
 :: finally, build/link the .dll file ...
