@@ -135,7 +135,7 @@ const FILE_FLAG_SEQUENTIAL_SCAN    = $08000000;
 const FILE_FLAG_WRITE_THROUGH      = $80000000;
 // ---------------------------------------------------------------------------
 function CreateFile(
-    lpFileName            : LPCSTR;
+    lpFileName            : PChar;
     dwDesiredAccess       : DWORD;
     dwShareMode           : DWORD;
     lpSecurityAttributes  : LPSECURITY_ATTRIBUTES;
@@ -144,6 +144,14 @@ function CreateFile(
     hTemplateFile         : HANDLE): HANDLE;
     stdcall; external 'kernel32.dll' name 'CreateFileA';
 
+function DeleteFileA(
+    lpFileName: PChar): BOOL;
+    stdcall; external 'kernel32.dll' name 'DeleteFileA';
+    
+function PathFileExistsA(
+    pszPath: PChar ): BOOL;
+    stdcall; external 'shlwapi.dll' name 'PathFileExistsA';
+    
 function SetFilePointer(
     hFile                : THandle;
     lDistanceToMove      : LONG   ;
@@ -152,8 +160,9 @@ function SetFilePointer(
     stdcall; external 'kernel32.dll' name 'SetFilePointer';
 
 function WriteFile(
-    hFile: THandle;
-    const Buffer; nNumberOfBytesToWrite: DWORD;
+    hFile                     : THandle;
+    const Buffer;
+    nNumberOfBytesToWrite     : DWORD;
     var lpNumberOfBytesWritten: DWORD;
     lpOverlapped: POverlapped): BOOL;
     stdcall; external 'kernel32.dll' name 'WriteFile';
@@ -169,6 +178,10 @@ function WriteFile(
 function CloseHandle(
     hObject: THANDLE): BOOL;
     stdcall; external 'kernel32.dll' name 'CloseHandle';
+
+// ---------------------------------------------------------------------------
+// win32api - windows sockets ...
+// ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
 // win32api - MessageBox:
@@ -224,7 +237,7 @@ const IDCONTINUE = $11;
 // ---------------------------------------------------------------------------
 // win32api module user32.dll:
 // ---------------------------------------------------------------------------
-function MessageBox( _hwnd: HWND; lpText, lpCaption: LPCTSTR; uType: UINT): DWORD; stdcall external DLL_STR_user32 name 'MessageBoxA';
+function MessageBox( _hwnd: HWND; lpText, lpCaption: PChar; uType: UINT): DWORD; stdcall external DLL_STR_user32 name 'MessageBoxA';
 
 // ---------------------------------------------------------------------------
 // win32api VirtualAlloc:
@@ -331,7 +344,7 @@ function GetMessage(
     stdcall; external 'user32.dll'   name 'GetMessageA';
 
 function GetModuleHandle(
-    lpModuleName: LPCSTR ): HMODULE;
+    lpModuleName: PChar ): HMODULE;
     stdcall; external 'kernel32.dll' name 'GetModuleHandleA';
     
 function GetProcAddress(

@@ -139,7 +139,7 @@ set /a counter=0
 
 cd %prjdir%
 
-echo =[ clean up directories    ]=
+echo =[ clean up directories    ]=    1 %%  done
 :: -----------------------------------------------------------------
 :: delete old crap ...
 :: -----------------------------------------------------------------
@@ -158,7 +158,7 @@ for %%A in (fpc-qt fpc-rtl fpc-sys fpc-win) do (
     mkdir .\%%A
     if errorlevel 1 (goto buildError)
 )
-echo =[ build settings...       ]=
+echo =[ build settings...       ]=    2 %%  done
 echo.
 echo Project   : %prjdir%
 echo FPC 3.2.0 : %fpcdir%\fpc64.exe
@@ -170,7 +170,7 @@ cd %prjdir%
 :: -----------------------------------------------------------------
 :: create .dll file ...
 :: -----------------------------------------------------------------
-echo =[ begin compile stage     ]=
+echo =[ begin compile stage     ]=    4 %%  done
 %fpcx64% -dwindll -CX -CD -WD -D -fPIC -st -Xe -XD -Us %srcsys%\system.pas
 if errorlevel 1 (goto buildError)
 
@@ -184,11 +184,11 @@ for %%A in (fpcinit sysinit) do (
 %fpcx64% -dwindll -CX -CD -WD -D -fPIC -st -Xe -XD %srcrtl%\rtl_utils.pas
 if errorlevel 1 (goto buildError)
 
-echo =[ build asm file...       ]=
+echo =[ build asm file...       ]=    5 %%  done
 %fpcx64% -dwindll -CX -CD -WD -D -fPIC -st -Xe -XD -FE%prjdir%\units\fpc-rtl %prjdir%\tests\fpc_rtl.pas
 if errorlevel 1 (goto buildError)
 
-echo =[ assembling asm files... ]=
+echo =[ assembling asm files... ]=   10 %%  done
 ::copy %punits%\fpc-sys\fpcinit.s %sysrtl%\fpcinit.s
 
 :: todo => sed
@@ -239,43 +239,54 @@ for %%A in (system fpc_rtl) do (
 :: rename big symbols to small names, to save storage space ...
 :: you need msys64 "printf" !!!
 :: -----------------------------------------------------------------
-echo =[ re-mapping symbols...   ]=
+echo =[ re-mapping symbols...   ]=   20 %%  done
 
-del %prjdir%\units\func.tx1 /F /S /Q >nul 2>nul
-del %prjdir%\units\func.tx2 /F /S /Q >nul 2>nul
-del %prjdir%\units\func.map /F /S /Q >nul 2>nul
+:: -----------------------------------------------------------------
+:: shrink ,a archive file files, which is created by FPC ...
+:: -----------------------------------------------------------------
+rmdir -rf %prjdir%\units\merge >nul 2>nul
+mkdir     %prjdir%\units\merge >nul 2>nul
+cd        %prjdir%\units\merge
+ar x      %prjdir%\units\fpc-rtl\libimpsystem.a
 
-nm %prjdir%\units\fpc-rtl\system.o > %prjdir%\units\func.tx1
-grep ".* T .*" %prjdir%\units\func.tx1 | awk '{print $3}' > %prjdir%\units\func.tx2
+cd %prjdir%
 
 set decimal1=4f
 set /a hex1=0x4f
 set /a counter=21
 set "string1=%hex1%
 
-for /f "usebackq delims=" %%A in ("%prjdir%\units\func.tx2") do (
-    set "string2=!counter!"
-    if not "%%A"=="fpc_libinitializeunits" (
-        printf "%%A \\x!string1!\\x!string2!\n" >> "%prjdir%\units\func.map"
-        set /a counter+=1
-    )
+for %%B in (system.o fpc_rtl.o ..\merge\*.o) do (
+    del %prjdir%\units\func.tx1 /F /S /Q >nul 2>nul
+    del %prjdir%\units\func.tx2 /F /S /Q >nul 2>nul
+    del %prjdir%\units\func.map /F /S /Q >nul 2>nul
+
+    nm %prjdir%\units\fpc-rtl\%%B > %prjdir%\units\func.tx1
+    grep ".* T .*" %prjdir%\units\func.tx1 | awk '{print $3}' > %prjdir%\units\func.tx2
+
+    for /f "usebackq delims=" %%A in ("%prjdir%\units\func.tx2") do (
+        set "string2=!counter!"
+        if not "%%A"=="fpc_libinitializeunits" if not "%%A"=="_DLLMainCRTStartup" (
+            printf "%%A \\x!string1!\\x!string2!\n" >> "%prjdir%\units\func.map"
+            set /a counter+=1
+    )   )
+    del %prjdir%\units\func.tx1 /F /S /Q >nul 2>nul
+    del %prjdir%\units\func.tx2 /F /S /Q >nul 2>nul
+
+    objcopy --redefine-syms=%prjdir%\units\func.map %prjdir%\units\fpc-rtl\%%B
+    del %prjdir%\units\func.map /F /S /Q >nul 2>nul
 )
-
-del %prjdir%\units\func.tx1 /F /S /Q >nul 2>nul
-del %prjdir%\units\func.tx2 /F /S /Q >nul 2>nul
-
-objcopy --redefine-syms=%prjdir%\units\func.map %prjdir%\units\fpc-rtl\system.o
-
-del %prjdir%\units\func.map /F /S /Q >nul 2>nul
 
 :: -----------------------------------------------------------------
 :: finally, build/link the .dll file ...
 :: -----------------------------------------------------------------
-echo =[ Linking fpc_rtl.dll ... ]=
+echo =[ Linking fpc_rtl.dll ... ]=   30 %%  done
 
 %ld64% --shared --dll --entry=_DLLMainCRTStartup -o ^
-%prjdir%\tests\fpc_rtl.dll ^
-%prjdir%\units\fpc-rtl\fpc_rtl_link.res
+%prjdir%\tests\fpc_rtl.dll       ^
+%prjdir%\units\fpc-rtl\system.o  ^
+%prjdir%\units\fpc-rtl\fpc_rtl.o ^
+%prjdir%\units\merge\*.o
 if errorlevel 1 (goto buildError)
 
 :: -----------------------------------------------------------------
@@ -287,7 +298,7 @@ if errorlevel 1 (goto buildError)
 :: -----------------------------------------------------------------
 :: create the .exe file ...
 :: -----------------------------------------------------------------
-echo =[ build exe file...       ]=
+echo =[ build exe file...       ]=   40 %%  done
 ::
 %fpcx64% -dwinexe -Us %srcsys%\system.pas
 if errorlevel 1 (goto buildError)
@@ -316,7 +327,7 @@ if errorlevel 1 (goto buildError)
 %fpcx64% -dwinexe -FE%prjdir%\tests %prjdir%\tests\test1.pas
 if errorlevel 1 (goto buildError)
 
-echo =[ sed .asm files...       ]=
+echo =[ sed .asm files...       ]=   50 %%  done
 :: -----------------------------------------------------------------
 :: remove not wanted rtti information's ...
 :: -----------------------------------------------------------------
@@ -337,20 +348,20 @@ for %%A in (system rtl_utils fpc_rtl) do (
     if errorlevel 1 (goto buildError)
 )
 
-echo =[ Assembling exe files... ]=
+echo =[ Assembling exe files... ]=   60 %%  done
 for %%A in (system test1) do (
     %asmx64% -o %prjdir%\tests\%%A.o %prjdir%\tests\%%A.s
     if errorlevel 1 (goto buildError)
 )
 
-echo =[ linking test1.exe...    ]=
+echo =[ linking test1.exe...    ]=   70 %%  done
 :: -----------------------------------------------------------------
 :: create 64-Bit import definition .def + library .a file ...
 :: -----------------------------------------------------------------
 %gccdir2%\dlltool.exe  --dllname ^
 %prjdir%\tests\fpc_rtl.dll --def ^
 %prjdir%\units\fpc-rtl\fpc_rtl.def --output-lib ^
-%prjdir%\tests\libimpfpc_rtl.a
+%prjdir%\tests\libimpfpc_rtl.a  >nul: 2>nul:
 if errorlevel 1 (goto buildError)
 
 %gcc64% -nostartfiles -nostdlib -Wl,--entry=_mainCRTStartup -o ^
@@ -379,15 +390,35 @@ if errorlevel 1 (goto buildError)
 for %%A in (a o s ppu) do (
     del %prjdir%\tests\*.%%A   /F /S /Q >nul: 2>nul:
 )
+:: -----------------------------------------------------------------
+:: bundle a zip file for upload on my github.com account ...
+:: -----------------------------------------------------------------
+echo =[ build bundle zip file...]=   80 %%  done
 
+del %prjdir%\tests\packed.zip  /F /S /Q >nul: 2>nul:
+cd  %prjdir%\tests\
+
+zip -9 -v packed.zip test1.exe fpc_rtl.dll >nul: 2>nul:
+if errorlevel 1 ( goto linkError )
+cd  %prjdir%
+
+:: -----------------------------------------------------------------
+:: finally shrink the EXE file again with upx.exe  ...
+:: -----------------------------------------------------------------
+upx32.exe %prjdir%\tests\test1.exe >nul 2>nul
+
+:: -----------------------------------------------------------------
+:: delete old crap ...
+:: -----------------------------------------------------------------
+::echo =[ clean up dev files...   ]=   90 %%  done
+::rmdir %prjdir%\units /S /Q >nul 2>nul
+::if errorlevel 1 (goto buildError)
+
+echo =[ start test1.exe...      ]=  100 %%  done
 %prjdir%\tests\test1.exe
-echo %errorlevel%
+::echo %errorlevel%
 if errorlevel 4 ( goto linkError )
 goto allok
-::if errorlevel 1 goto linkError
-::goto allok
-::echo =[ create map ]=
-::grep "FPC_move" map.txt | awk '{print $1}'
 
 :buildError
 echo =[ build error ]=

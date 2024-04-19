@@ -16,32 +16,60 @@ library fpc_rtl;
 type NTSTATUS  = LONG;
 
 var
-    LibraryHdl: LongDWORD;
+    LibraryHdl: HMODULE;
 
-function PutToFile(const AFileName: String; AData: PAnsiString): Boolean;
+function PutToFile(const AFileName: PChar; AData: PChar): Boolean;
 var
     hFile    : HANDLE  ;
     count    : DWORD;
-    dataSize : Integer ;
+    dataSize : DWORD;
     buffer   : PChar;
+    p1,p2,p3,
+    p4       : PChar;
     
     overlap  : POverlapped;
     dummy    : DWORD;
     error    : DWORD;
 begin
     result   := false;
-    dataSize := strlen(AData);
+    dataSize := strlen( AData );
 
-    hFile := CreateFile(
-        AFileName,              // name of the file
-        GENERIC_WRITE,          // open for writing
-        FILE_SHARE_READ or FILE_SHARE_WRITE,
-        nil,                    // default security
-        OPEN_EXISTING,
-        FILE_ATTRIBUTE_NORMAL,  // normal file
-        0);
-
-    if THandle(hFile) = INVALID_HANDLE_VALUE then
+    // --------------------------------------------
+    // first look, if we can find the lock file ...
+    // --------------------------------------------
+    dummy := PathFileExistsA( AFileName );
+    if dummy = 1 then begin
+        buffer := malloc(200);
+        MessageBox(0,'sssss','xxxxxx',0);
+        strcpy(buffer, PChar('File: "'));
+        strcat(buffer, PChar(AFileName));
+        strcat(buffer, PChar('" already exists.\n'));
+        strcat(buffer, PChar('Would you like override it ?'));
+        dummy := MessageBox(0,
+        buffer,
+        'Information',
+        MB_YESNO);
+        if dummy = IDYES then begin
+            DeleteFileA( AFileName );
+            hFile := CreateFile(
+            AFileName,
+            GENERIC_WRITE,
+            FILE_SHARE_READ or FILE_SHARE_WRITE,
+            nil,
+            CREATE_NEW,
+            FILE_ATTRIBUTE_NORMAL,
+            0);
+        end else begin
+            hFile := CreateFile(
+            AFileName,
+            GENERIC_WRITE,
+            FILE_SHARE_READ or FILE_SHARE_WRITE,
+            nil,
+            OPEN_EXISTING,
+            FILE_ATTRIBUTE_NORMAL,
+            0);
+        end;
+    end else begin
         hFile := CreateFile(
         AFileName,
         GENERIC_WRITE,
@@ -50,56 +78,80 @@ begin
         CREATE_NEW,
         FILE_ATTRIBUTE_NORMAL,
         0);
-
-    if THandle(hFile) = INVALID_HANDLE_VALUE then begin
-        MessageBox(0,
-        'file: fpc_rtl.$$$ could not be write.',
-        'Error', 0);
-        ExitProcess(1);
-    end else begin
-        MessageBox(0,
-        'CreateFile() success',
-        'Information', 0);
-        
-        dummy := SetFilePointer(THandle(hFile), 0, nil, FILE_END);
-        error := GetLastError;
-        
-        if ((dummy = INVALID_SET_FILE_POINTER) and (error <> NO_ERROR)) then begin
-            MessageBox(0,
-            'SetFilePointer() failed.',
-            'Information', 0);
-            ExitProcess(1);
-        end else begin
-            MessageBox(0,
-            'SetFilePointer() success.',
-            'Information', 0);
-            
-            buffer := PChar('hhuuhhh');
-            dummy := WriteFile(THandle(hFile), buffer^, sizeof(buffer)-1, dword(nil^), nil);
-            error := GetLastError;
-            
-            if error <> NO_ERROR then begin
-                MessageBox(0,
-                'WriteFile() failed.',
-                'Information', 0);
-                ExitProcess(1);
-            end else begin
-                MessageBox(0,
-                'WriteFile() success.',
-                'Information', 0);
-            end;
-        end;
     end;
+    if THandle(hFile) = INVALID_HANDLE_VALUE then begin
+        buffer := malloc(200);
+        strcpy(buffer, PChar('file: "'));
+        strcat(buffer, PChar(AFileName));
+        strcat(buffer, PChar('" could not be write.'));
+        
+        MessageBox(0,
+        buffer,
+        PChar('Error'),
+        MB_ICONWARNING);
+        ExitProcess(GetLastError);
+    end;
+    
+    MessageBox(0,
+    'CreateFile() success',
+    'Information',
+    MB_ICONINFORMATION);
+
+    // --------------------------------------------------
+    // set file pointer to the end - all needed data will
+    // be write/read backwards ...
+    // --------------------------------------------------
+    dummy := SetFilePointer(THandle(hFile), 0, nil, FILE_END);
+    error := GetLastError;
+        
+    if ((dummy =  INVALID_SET_FILE_POINTER)
+    and (error <> NO_ERROR)) then begin
+        MessageBox(0,
+        'SetFilePointer() failed.',
+        'Information',
+        MB_ICONWARNING);
+        ExitProcess(error);
+    end;
+
+    MessageBox(0,
+    'SetFilePointer() success.',
+    'Information',
+    MB_ICONINFORMATION);
+    
+    dummy := WriteFile(
+        THandle(hFile),
+        LibraryHdl,
+        sizeof( int64 ),
+        dword(nil^),
+        nil);
+    error := GetLastError;
+    
+    if error <> NO_ERROR then begin
+        MessageBox(0,
+        'WriteFile() failed.',
+        'Error',
+        MB_ICONWARNING);
+        ExitProcess(error);
+    end;
+    
+    MessageBox(0,
+    'WriteFile() success.',
+    'Information',
+    MB_ICONINFORMATION);
+    
     if CloseHandle(THandle(hFile)) = 0 then begin
         MessageBox(0,
         'CloseHandle() failed.',
-        'Information', 0);
-        ExitProcess(1);
-    end else begin
-        MessageBox(0,
-        'CloseHandle() success.',
-        'Information', 0);
+        'Error',
+        MB_ICONWARNING);
+        ExitProcess(GetLastError);
     end;
+    
+    MessageBox(0,
+    'CloseHandle() success.',
+    'Information',
+    MB_ICONINFORMATION);
+
     result := true;
 end;
 
@@ -118,14 +170,15 @@ begin
     case dwReason of
         DLL_PROCESS_ATTACH: begin
             // save our HANDLE
-            LibraryHdl := LongDWORD(hModule);
-            PutToFile('fpc_rtl.txt', PAnsiString('Ein Test'));
+            LibraryHdl := GetModuleHandle(nil);
+            PutToFile('fpc_rtl.txt', 'Ein Test');
         end;
     end;
     
     MessageBox(0,'hel ---- lo','world',0);
     ExitProcess(0);
-    while (GetMessage(msg, LibraryHdl, 0, 0) > 0) do begin
+    while (GetMessage(msg, LongWord( LibraryHdl ), 0, 0) > 0) do
+    begin
         case msg.message of
             $10001: begin
                 break;

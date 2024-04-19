@@ -13,14 +13,12 @@ type
 
 procedure Entry; stdcall; public name '_mainCRTStartup';
 var
-    s1, s2: String;
-    p1, p2: PChar;
+    s1, s2: PChar;
     hm: HMODULE;
     ap: procedure;
-    p : Pointer;
 begin
     s1 := 'mufo   Lo aalo';
-    s2 := 'Hello World  --> ' + s1;
+    s2 := 'Hello World  --> ';
     MessageBox(0,s2,s1,0);
 
     HM := LoadLibrary('fpc_rtl.dll');
