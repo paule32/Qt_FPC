@@ -18,7 +18,7 @@ var
     ap: procedure;
 begin
     s1 := 'mufo   Lo aalo';
-    s2 := 'Hello World  --> ';
+    s2 := 'Hello World  --> ' + 'hiho';
     MessageBox(0,s2,s1,0);
 
     HM := LoadLibrary('fpc_rtl.dll');
@@ -27,11 +27,10 @@ begin
         ExitProcess(4);
     end else begin
         MessageBox(0,'dll load ok','Information',0);
-        ap := GetProcAddress(hm, 'TestTest' ); //'P$FPC_RTL_$$_TESTTEST');
-        MessageBox(0,'start2 1111 222','info',0);
+        // todo !!!
     end;
+
     FreeLibrary(HM);
-    
     ExitProcess(0);
 end;
 

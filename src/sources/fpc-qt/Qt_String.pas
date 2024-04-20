@@ -8,88 +8,63 @@
 // only for non-profit usage !!!
 // ---------------------------------------------------------------------------
 {$ifdef windows_header}
+
+{$ifdef windll}
 type
     QString  = class(QObject)
     protected
-        FStringObject: QString;
-        FString: String;
+        //FStringObject: QString;
+        //FString: String;
     public
         //constructor Create(other: QString); overload;
-        constructor Create(str: String); overload;
+        //constructor Create(str: AnsiString); overload;
         constructor Create; overload;
 
         destructor Destroy; virtual;
 
-        function append(str: String): QString; overload;
-        function append(other: QString): QString; overload;
+        //function append(str: String): QString; overload;
+        //function append(other: QString): QString; overload;
 
-        function arg(a: QString; fieldWidth: Integer = 0; base: Integer = 10; fillChar: Char = ' '): QString;
+        //function arg(a: QString; fieldWidth: Integer = 0; base: Integer = 10; fillChar: Char = ' '): QString;
     end;
+{$endif windll}
 
 {$ifdef winexe}
-function QString_Create(s: QString): QString; stdcall; external rtl_dll name 'QString_CreateQString'; overload;
-function QString_Create            : QString; stdcall; external rtl_dll name 'QString_Create';        overload;
-{$endif}
+//function QString_Create(s: QString): QString; stdcall; external rtl_dll name 'QString_CreateQString'; overload;
+//function QString_Create            : QString; stdcall; external rtl_dll name 'QString_Create';        overload;
+{$endif winexe}
 
-{$endif}
+{$endif windows_header}
 
 {$ifdef windows_source}
+
 {$ifdef windll}
-function QString_Create(s: QString): QString; stdcall; overload; export; public name 'QString_CreateQString'; begin end;
-function QString_Create            : QString; stdcall; overload; export; public name 'QString_Create';
-begin
-  result := QString.Create;
+// ---------------------------------------------------------------------------
+// dummy deklaration for the FPC Compiler - patched later, so dummy ...
+// ---------------------------------------------------------------------------
+constructor QString.Create ; begin end;
+ destructor QString.Destroy; begin end;
+
+// ---------------------------------------------------------------------------
+// dummy replacements ...
+// ---------------------------------------------------------------------------
+procedure QString_Create; assembler;
+{$asmmode intel}
+asm
+    push    rbp             { save current stack value }
+    mov     rbp, rsp        { update rbp to show to new function body }
+    sub     rsp, 8 * 3      { reserve 24 (8 * 3) Bytes }
+    
+    nop
+    nop
+    int 3
+    nop
+    
+    add     rsp, 8 * 3      { reset the stack }
+    mov     rsp, rbp        { set rsp value to rbp to reset stack }
+    pop     rbp             { get the last value of rbp }
+    ret                     { return to caller }
 end;
-{$endif}
-
-constructor QString.Create;
-begin
-    FStringObject := nil;
-    //FStringObject.FString := '';
-end;
-
-constructor QString.Create(str: String);
-begin
-    FStringObject := nil;
-    //FStringObject.FString := str;
-end;
-(*
-constructor QString.Create(other: QString);
-begin
-    if other <> nil then
-    begin
-        FStringObject := other;
-        //FStringObject.FString := other.FString;
-    end;
-end;*)
-destructor QString.Destroy;
-begin
-//    FStringObject.Free;
-end;
-
-function QString.append(str: String): QString;
-begin
-    if FStringObject = nil then
-    FStringObject := self;
-
-//    FStringObject.FString := FStringObject.FString + str;
-    result := FStringObject;
-end;
-
-function QString.append(other: QString): QString;
-begin
-    if other = nil then
-    other := self;
-
-    FStringObject := other;
-//    FStringObject.FString := other.FString;
-
-    result := FStringObject;
-end;
-
-function QString.arg(a: QString; fieldWidth: Integer = 0; base: Integer = 10; fillChar: Char = ' '): QString;
-begin
-    result := FStringObject;
-end;
+{$endif windll}
 
 {$endif}

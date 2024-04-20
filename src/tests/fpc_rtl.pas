@@ -15,8 +15,8 @@ library fpc_rtl;
 
 type NTSTATUS  = LONG;
 
-var
-    LibraryHdl: HMODULE;
+
+procedure TestTest; forward;
 
 function PutToFile(const AFileName: PChar; AData: PChar): Boolean;
 var
@@ -33,6 +33,8 @@ var
 begin
     result   := false;
     dataSize := strlen( AData );
+
+MessageBox(0,'sssss','xxxxxx',0);
 
     // --------------------------------------------
     // first look, if we can find the lock file ...
@@ -120,7 +122,8 @@ begin
     
     dummy := WriteFile(
         THandle(hFile),
-        LibraryHdl,
+        //LibraryHdl,
+        hFile,
         sizeof( int64 ),
         dword(nil^),
         nil);
@@ -155,6 +158,8 @@ begin
     result := true;
 end;
 
+procedure QString_Create; external 'QString_Create';
+
 function Entry(
     hModule    : HANDLE;
     dwReason   : DWORD ;
@@ -166,7 +171,26 @@ var
     count    : Cardinal;
     buffer   : PChar;
     dataSize : Integer;
+    
+    s1: QString;
+var
+    LibraryHdl: HMODULE;
 begin
+    s1 := QString.Create;
+    (* $ asmmode intel
+    asm
+        sub  rsp, 24        { reserve 24 Bytes }
+        
+        mov  rcx, 42        { first parameter (Windows ABI) }
+        mov  rdx, 75        { second parameter ... }
+        mov  r8, 100        { third parameter  ... }
+        
+        call QString_Create
+        
+        add  rsp, 24
+    end;*)
+    TestTest;
+    
     case dwReason of
         DLL_PROCESS_ATTACH: begin
             // save our HANDLE

@@ -132,7 +132,7 @@ type
 	PPVmt = ^PVmt;
 	PVmt  = ^TVmt;
 	TVmt = record
-	vInstanceSize     : LongDWord;
+        vInstanceSize     : LongDWord;
        	vInstanceSize2    : LongDWord;
        	vParentRef        : PPVmt;
        	vClassName        : PShortString;
