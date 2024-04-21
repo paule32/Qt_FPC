@@ -5,7 +5,6 @@
 //
 // only for education, and non-profit usage !
 // -----------------------------------------------------------------
-{$mode delphi}
 unit RTL;
 
 interface

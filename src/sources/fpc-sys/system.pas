@@ -7,7 +7,7 @@
 // (c) Copyright 2024 Jens Kallup - paule32
 // only for non-profit usage !!!
 // ---------------------------------------------------------------------------
-{$mode delphi}{$H+}
+{$mode objfpc}{$H+}{$modeswitch advancedrecords}
 unit system;
 
 interface
@@ -33,6 +33,7 @@ const rtl_dll = 'fpc_rtl.dll';
 // ---------------------------------------------------------------------------
 {$I RTL_Windows.pas}
 {$I FPC_WinErrors.pas}
+{$I FPC_SysUtils.pas}
 
 // ---------------------------------------------------------------------------
 // TObject Framework - win32api ...
@@ -61,6 +62,7 @@ implementation
 // win32api:
 // ---------------------------------------------------------------------------
 {$I RTL_Windows.pas}
+{$I FPC_SysUtils.pas}
 
 {$I RTL_Object.pas}
 { $ I R T L_Queue.pas}

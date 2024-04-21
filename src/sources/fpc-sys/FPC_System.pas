@@ -19,7 +19,7 @@ function  fpc_AnsiStr_Unique (var   S     : Pointer):              Pointer;     
 function  fpc_AnsiStr_Compare_Equal (const S1, S2: Pointer): BOOL compilerproc;
 
 function  fpc_char_to_ansistr (c :  char): AnsiString; compilerproc;
-function  fpc_pchar_to_ansistr(const p : PAnsiChar): AnsiString; compilerproc;
+function  fpc_pchar_to_ansistr(const p : PAnsiChar): AnsiString; compilerproc; overload;
 
 procedure fpc_EmptyChar( var DestS: Pointer); compilerproc;
 
@@ -135,7 +135,7 @@ begin
     result[i] := charPointer[i - 1];
 end;
 
-function fpc_pchar_to_ansistr(const p: PAnsiChar): AnsiString; compilerproc;
+function fpc_pchar_to_ansistr(const p: PAnsiChar): AnsiString;
 var
     i, len: Integer;
     s: PChar;
@@ -153,6 +153,7 @@ begin
     a := AnsiString( @s );
     result := a;
 end;
+
 
 procedure fpc_ansistr_assign(var DestS: Pointer; S2: Pointer); [public, alias: 'FPC_ANSISTR_ASSIGN']; compilerproc;
 var

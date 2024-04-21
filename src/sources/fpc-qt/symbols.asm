@@ -1,3 +1,12 @@
+; ---------------------------------------------------------------------------
+; File:   symbols.asm
+; Author: Jens Kallup - paule32
+;
+; This file is part of Qt RTL.
+;
+; (c) Copyright 2024 Jens Kallup - paule32
+; only for non-profit usage !!!
+; ---------------------------------------------------------------------------
 
 section .text
 

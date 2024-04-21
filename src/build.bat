@@ -184,7 +184,7 @@ for %%A in (fpcinit sysinit) do (
 %fpcx64% -dwindll -CX -CD -WD -D -fPIC -st -Xe -XD %srcrtl%\rtl_utils.pas
 if errorlevel 1 (goto buildError)
 
-echo =[ build asm file...       ]=    5 %%  done
+echo =[ build asm files...      ]=    5 %%  done
 %fpcx64% -dwindll -CX -CD -WD -D -fPIC -st -Xe -XD -FE%prjdir%\units\fpc-rtl %prjdir%\tests\fpc_rtl.pas
 if errorlevel 1 (goto buildError)
 
@@ -236,7 +236,15 @@ echo dq 0                              >> %punits%\fpc-rtl\fpc_rtl.s
 :: -----------------------------------------------------------------
 :: patch with assembly code ...
 :: -----------------------------------------------------------------
-sed -i '/.*GLOBAL SYSTEM$\_\$QSTRING\_\$\_\_\$\$\_CREATE\$\$QSTRING/,/SECTION \.text/d' %punits%\fpc-rtl\system.s
+sed -i '/.*GLOBAL SYSTEM\$\_\$QSTRING\_\$\_\_\$\$\_CREATE\$\$QSTRING/,/SECTION \.text/d' %punits%\fpc-rtl\system.s
+sed -i '/.*GLOBAL SYSTEM\$\_\$QOBJECT\_\$\_\_\$\$\_CREATE$$QOBJECT/,/SECTION \.text/d'   %punits%\fpc-rtl\system.s
+sed -i '/.*GLOBAL SYSTEM\$\_\$QOBJECT\_\$\_\_\$\$\_DESTROY/,/SECTION \.text/d'           %punits%\fpc-rtl\system.s
+sed -i '/.*GLOBAL SYSTEM\$\_\$TOBJECT\_\$\_\_\$\$_AFTERCONSTRUCTION/,/SECTION \.text/d'  %punits%\fpc-rtl\system.s
+sed -i '/.*GLOBAL SYSTEM\$\_\$TOBJECT\_\$\_\_\$\$\_BEFOREDESTRUCTION/,/SECTION \.text/d' %punits%\fpc-rtl\system.s
+sed -i '/.*GLOBAL SYSTEM\$\_\$TOBJECT\_\$\_\_\$\$\_FREE/,/SECTION \.text/d'              %punits%\fpc-rtl\system.s
+sed -i '/.*GLOBAL SYSTEM\$\_\$TOBJECT\_\$\_\_\$\$\_FREEINSTANCE/,/SECTION \.text/d'      %punits%\fpc-rtl\system.s
+sed -i '/.*GLOBAL SYSTEM\$\_\$TOBJECT\_\$\_\_\$\$\_SAFECALLEXCEPTION$TOBJECT\$POINTER\$\$SHORTDWORD/,/SECTION \.text/d' %punits%\fpc-rtl\system.s
+sed -i '/.*GLOBAL SYSTEM\$\_\$TOBJECT\_\$\_\_\$\$\_DEFAULTHANDLER\$formal/,/SECTION \.text/d' %punits%\fpc-rtl\system.s
 
 ::echo section .text                                 >> %punits%\fpc-rtl\system.s
 ::echo global SYSTEM$_$QSTRING_$__$$_CREATE$$QSTRING >> %punits%\fpc-rtl\system.s
@@ -344,11 +352,32 @@ for %%B in (system.o fpc_rtl.o) do (
         set "string2=!counter!"
         set flagged="F"
         if "%%A"=="VMT_$SYSTEM_$$_QSTRING"          ( set flagged="T" )
-        if "%%A"=="SYSTEM$_$QSTRING_$__$_QSTRING"   ( set flagged="T" )
+        if "%%A"=="FPC_EMPTYCHAR"                   ( set flagged="T" )
         if "%%A"=="fpc_libinitializeunits"          ( set flagged="T" )
         if "%%A"=="fpc_ansistr_decr_ref"            ( set flagged="T" )
         if "%%A"=="_DLLMainCRTStartup"              ( set flagged="T" )
-        if "%%A"=="FPC_EMPTYCHAR"                   ( set flagged="T" )
+        
+        if "%%A"=="SYSTEM$_$QSTRING_$__$_QSTRING"   ( set flagged="T" )
+        
+        if "%%A"=="SYSTEM_$$_FREEMEM$POINTER"          ( set flagged="T" )
+        if "%%A"=="SYSTEM_$$_GETMEM$POINTER$LONGDWORD" ( set flagged="T" )
+        
+        if "%%A"=="SYSTEM_$$_SHOWMESSAGE$PCHAR"     ( set flagged="T" )
+        if "%%A"=="SYSTEM_$$_SHOWINFO$PCHAR"        ( set flagged="T" )
+        if "%%A"=="SYSTEM_$$_SHOWWARN$PCHAR"        ( set flagged="T" )
+        if "%%A"=="SYSTEM_$$_SHOWERROR$PCHAR"       ( set flagged="T" )
+        
+        if "%%A"=="SYSTEM_$$_WRITEFILE$LONGWORD$PCHAR$$BOOLEAN"  ( set flagged="T" )
+        if "%%A"=="SYSTEM_$$_WRITEFILE$LONGWORD$PCHAR$$QWORD"    ( set flagged="T" )
+        if "%%A"=="SYSTEM_$$_WRITEFILE$LONGWORD$formal$$QWORD"   ( set flagged="T" )
+        
+        
+        if "%%A"=="SYSTEM_$$_WRITEFILE$POINTER$PCHAR$$BOOLEAN"   ( set flagged="T" )
+        
+        if "%%A"=="SYSTEM_$$_FILEDELETE$PCHAR$$BOOLEAN"          ( set flagged="T" )
+        if "%%A"=="SYSTEM_$$_FILECREATE$PCHAR$BOOLEAN$$LONGWORD" ( set flagged="T" )
+        if "%%A"=="SYSTEM_$$_FILECREATE$PCHAR$BOOLEAN$$POINTER"  ( set flagged="T" )
+        
         if !flagged!=="F" (
             printf "%%A \\x!string1!\\x!string2!\n" >> "%prjdir%\units\func.map" ^
             && set /a counter+=1
@@ -498,7 +527,7 @@ echo =[ clean up dev files...   ]=   90 %%  done
 
 echo =[ start test1.exe...      ]=  100 %%  done
 %prjdir%\tests\test1.exe
-::echo %errorlevel%
+echo %errorlevel%
 if errorlevel 4 ( goto linkError )
 goto allok
 

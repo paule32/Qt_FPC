@@ -10,17 +10,13 @@ library fpc_rtl;
 
 {$define windows_header}
 
-{$define uses_ntstatus}
-{$define uses_bool}
-{$define uses_status_success}
-
 type NTSTATUS  = LONG;
 
 procedure TestTest; forward;
 
 function PutToFile(const AFileName: PChar; AData: PChar): Boolean;
 var
-    hFile    : HANDLE  ;
+    hFile    : Handle;
     count    : DWORD;
     dataSize : DWORD;
     buffer   : PChar;
@@ -41,51 +37,35 @@ begin
     // --------------------------------------------
     dummy := PathFileExistsA( AFileName );
     if dummy = 1 then begin
-        buffer := malloc(200);
-        MessageBox(0,'sssss','xxxxxx',0);
-        strcpy(buffer, PChar('File: "'));
-        strcat(buffer, PChar(AFileName));
-        strcat(buffer, PChar('" already exists.\n'));
-        strcat(buffer, PChar('Would you like override it ?'));
-        dummy := MessageBox(0,
-        buffer,
+        GetMem(buffer, 255);
+
+        strcpy( buffer, PChar('File: "'));
+        strcat( buffer, PChar(AFileName));
+        strcat( buffer, PChar('" already exists.\n'));
+        strcat( buffer, PChar('Would you like override it ?'));
+        
+        dummy := MessageBox(0, buffer,
         'Information',
         MB_YESNO);
         if dummy = IDYES then begin
-            DeleteFileA( AFileName );
-            hFile := CreateFile(
-            AFileName,
-            GENERIC_WRITE,
-            FILE_SHARE_READ or FILE_SHARE_WRITE,
-            nil,
-            CREATE_NEW,
-            FILE_ATTRIBUTE_NORMAL,
-            0);
+            FileDelete( AFileName );
+            hFile := FileCreate( AFileName, true );
+            error := GetLastError;
         end else begin
-            hFile := CreateFile(
-            AFileName,
-            GENERIC_WRITE,
-            FILE_SHARE_READ or FILE_SHARE_WRITE,
-            nil,
-            OPEN_EXISTING,
-            FILE_ATTRIBUTE_NORMAL,
-            0);
+            hFile := FileCreate( AFileName );
+            error := GetLastError;
         end;
+        FreeMem( buffer );
     end else begin
-        hFile := CreateFile(
-        AFileName,
-        GENERIC_WRITE,
-        FILE_SHARE_READ or FILE_SHARE_WRITE,
-        nil,
-        CREATE_NEW,
-        FILE_ATTRIBUTE_NORMAL,
-        0);
+        hFile := FileCreate( AFileName, true );
+        error := GetLastError;
     end;
     if THandle(hFile) = INVALID_HANDLE_VALUE then begin
         buffer := malloc(200);
-        strcpy(buffer, PChar('file: "'));
-        strcat(buffer, PChar(AFileName));
-        strcat(buffer, PChar('" could not be write.'));
+        
+        strcpy( buffer, PChar('file: "'));
+        strcat( buffer, PChar(AFileName));
+        strcat( buffer, PChar('" could not be write.'));
         
         ShowError( buffer );
         ExitProcess(GetLastError);
@@ -108,14 +88,9 @@ begin
 
     ShowInfo('SetFilePointer() success.');
     
-    dummy := WriteFile(
-        THandle(hFile),
-        //LibraryHdl,
-        hFile,
-        sizeof( int64 ),
-        dword(nil^),
-        nil);
+    WriteFile(THandle(hfile), 'Meiner Tester');
     error := GetLastError;
+    FreeMem(buffer);
     
     if error <> NO_ERROR then begin
         ShowError('WriteFile() failed.');

@@ -1,4 +1,3 @@
-{$mode objfpc}
 unit fpintres;
 
 interface
