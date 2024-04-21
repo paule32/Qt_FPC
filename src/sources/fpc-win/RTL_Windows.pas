@@ -237,7 +237,19 @@ const IDCONTINUE = $11;
 // ---------------------------------------------------------------------------
 // win32api module user32.dll:
 // ---------------------------------------------------------------------------
-function MessageBox( _hwnd: HWND; lpText, lpCaption: PChar; uType: UINT): DWORD; stdcall external DLL_STR_user32 name 'MessageBoxA';
+function MessageBox(
+    _hwnd     : HWND;
+    lpText    : PChar;
+    lpCaption : PChar;
+    uType     : UINT): DWORD;
+    stdcall external DLL_STR_user32 name 'MessageBoxA';
+
+{$ifdef  windll}
+procedure ShowMessage( lpText: PChar );
+procedure ShowWarn   ( lpText: PChar );
+procedure ShowError  ( lpText: PChar );
+procedure ShowInfo   ( lpText: PChar );
+{$endif windll}
 
 // ---------------------------------------------------------------------------
 // win32api VirtualAlloc:
@@ -420,6 +432,13 @@ const STATUS_INVALID_PARAMETER_1 = $c00000EF;
 {$endif}
 
 {$ifdef windows_source}
+{$ifdef windll}
+procedure ShowMessage( lpText: PChar ); begin MessageBox(0,lpText,'Information', MB_ICONINFORMATION); end;
+procedure ShowWarn   ( lpText: PChar ); begin MessageBox(0,lpText,'Warning'    , MB_ICONWARNING    ); end;
+procedure ShowError  ( lpText: PChar ); begin MessageBox(0,lpText,'Error'      , MB_ICONEXCLAMATION); end;
+procedure ShowInfo   ( lpText: PChar ); begin ShowMessage(lpText); end;
+{$endif}
+
 procedure FillChar(var Dest; Count: Integer; Value: Char);
 var
     I: Integer;

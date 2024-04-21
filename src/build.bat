@@ -201,27 +201,47 @@ copy %punits%\fpc-sys\..\fpc-rtl\rtl_utils.s %punits%\fpc-sys\rtl_utils.s > nul
 for %%A in (system rtl_utils fpc_rtl) do (
     sed -i '/\; Begin asmlist al_rtti/,/\; End asmlist al_rtti/d' %punits%\fpc-sys\%%A.s
     if errorlevel 1 (goto buildError)
+    sed -i '/\; Begin asmlist al_rtti/,/\; End asmlist al_rtti/d' %punits%\fpc-rtl\%%A.s
+    if errorlevel 1 (goto buildError)
     sed -i '/\; Begin asmlist al_dwarf_frame.*/,/\; End asmlist al_dwarf_frame.*/d' %punits%\fpc-sys\%%A.s
+    if errorlevel 1 (goto buildError)
+    sed -i '/\; Begin asmlist al_dwarf_frame.*/,/\; End asmlist al_dwarf_frame.*/d' %punits%\fpc-rtl\%%A.s
     if errorlevel 1 (goto buildError)
     sed -i '/\.\.\@.*strlab\:/,+3d' %punits%\fpc-sys\%%A.s
     if errorlevel 1 (goto buildError)
+    sed -i '/\.\.\@.*strlab\:/,+3d' %punits%\fpc-rtl\%%A.s
+    if errorlevel 1 (goto buildError)
     sed -i '/\; Begin asmlist al_indirectglobals.*/,/\; End asmlist al_indirectglobals.*/d' %punits%\fpc-sys\%%A.s
     if errorlevel 1 (goto buildError)
+    sed -i '/\; Begin asmlist al_indirectglobals.*/,/\; End asmlist al_indirectglobals.*/d' %punits%\fpc-rtl\%%A.s
+    if errorlevel 1 (goto buildError)
     sed -i '/\; Begin asmlist al_globals.*/,/\; End asmlist al_globals.*/d' %punits%\fpc-sys\%%A.s
+    if errorlevel 1 (goto buildError)
+    sed -i '/\; Begin asmlist al_globals.*/,/\; End asmlist al_globals.*/d' %punits%\fpc-rtl\%%A.s
     if errorlevel 1 (goto buildError)
 )
 :: -----------------------------------------------------------------
 :: add removed symbols by sed ...
 :: -----------------------------------------------------------------
 echo SECTION .data                     >> %punits%\fpc-sys\system.s
-echo global VMT_$$SYSTEM_$$_QSTRING    >> %punits%\fpc-sys\system.s
+echo global VMT_$SYSTEM_$$_QSTRING     >> %punits%\fpc-sys\system.s
 echo VMT_$SYSTEM_$$_QSTRING:           >> %punits%\fpc-sys\system.s
 echo dq 0                              >> %punits%\fpc-sys\system.s
 
-echo SECTION .data                     >> %punits%\fpc-sys\fpc_rtl.s
-echo global U_$P$FPC_RTL_$$_LIBRARYHDL >> %punits%\fpc-sys\fpc_rtl.s
-echo U_$P$FPC_RTL_$$_LIBRARYHDL:       >> %punits%\fpc-sys\fpc_rtl.s
-echo dq 0                              >> %punits%\fpc-sys\fpc_rtl.s
+echo SECTION .data                     >> %punits%\fpc-rtl\fpc_rtl.s
+echo global U_$P$FPC_RTL_$$_LIBRARYHDL >> %punits%\fpc-rtl\fpc_rtl.s
+echo U_$P$FPC_RTL_$$_LIBRARYHDL:       >> %punits%\fpc-rtl\fpc_rtl.s
+echo dq 0                              >> %punits%\fpc-rtl\fpc_rtl.s
+
+:: -----------------------------------------------------------------
+:: patch with assembly code ...
+:: -----------------------------------------------------------------
+sed -i '/.*GLOBAL SYSTEM$\_\$QSTRING\_\$\_\_\$\$\_CREATE\$\$QSTRING/,/SECTION \.text/d' %punits%\fpc-rtl\system.s
+
+::echo section .text                                 >> %punits%\fpc-rtl\system.s
+::echo global SYSTEM$_$QSTRING_$__$$_CREATE$$QSTRING >> %punits%\fpc-rtl\system.s
+::echo SYSTEM$_$QSTRING_$__$$_CREATE$$QSTRING:       >> %punits%\fpc-rtl\system.s
+::echo ret >> %punits%\fpc-rtl\system.s
 
 :: -----------------------------------------------------------------
 :: assemble all new files for this build ...
@@ -239,44 +259,104 @@ for %%A in (system fpc_rtl) do (
 :: rename big symbols to small names, to save storage space ...
 :: you need msys64 "printf" !!!
 :: -----------------------------------------------------------------
-echo =[ re-mapping symbols...   ]=   20 %%  done
+echo =[ re-mapping symbols...   ]=
 
 :: -----------------------------------------------------------------
 :: shrink ,a archive file files, which is created by FPC ...
+:: -----------------------------------------------------------------
+set decimal1=4f
+set /a hex1=0x5a
+set /a counter=21
+set "string1=%hex1%
+
+echo =[ patching lib symbols... ]=
+
+:: -----------------------------------------------------------------
+:: remove previous libimpsystem.a archive .o files
 :: -----------------------------------------------------------------
 rmdir -rf %prjdir%\units\merge >nul 2>nul
 mkdir     %prjdir%\units\merge >nul 2>nul
 cd        %prjdir%\units\merge
 ar x      %prjdir%\units\fpc-rtl\libimpsystem.a
 
+del import_funcs.map /Q /S /F >nul 2>nul
+
+:: -----------------------------------------------------------------
+:: collect file informations fron the import archive .o files ...
+:: -----------------------------------------------------------------
+nm *.o | grep ".* T .*" | awk '{print $3}' > import.tx2
+for /f "usebackq delims=" %%A in (import.tx2) do (
+    set "string2=!counter!"
+    printf "%%A \\x!string1!\\x!string2!\n" >> import_funcs.map
+    set /a counter+=1
+)
+:: -----------------------------------------------------------------
+:: patch the de-packed object files ...
+:: -----------------------------------------------------------------
+dir /b *.o > importFileList.txt
+for /f "tokens=*" %%i in (importFileList.txt) do (
+    objcopy --redefine-syms=import_funcs.map %%i )
+
+:: -----------------------------------------------------------------
+:: patch the project library files import data ...
+:: -----------------------------------------------------------------
+for %%B in (%prjdir%\units\fpc-rtl\system.o %prjdir%\units\fpc-rtl\fpc_rtl.o) do (
+    objcopy --redefine-syms=import_funcs.map %%B
+)
+
+echo =[ patching lib imports... ]=
+nm *.o | grep ".* I .*" | awk '{print $3}' > import.tx2
+for /f "usebackq delims=" %%A in (import.tx2) do (
+    set "string2=!counter!"
+    printf "%%A \\x!string1!\\x!string2!\n" >> import_funcs.map
+    set /a counter+=1
+)
+dir /b *.o > importFileList.txt
+for /f "tokens=*" %%i in (importFileList.txt) do (
+    objcopy --redefine-syms=import_funcs.map %%i )
+for %%B in (%prjdir%\units\fpc-rtl\system.o %prjdir%\units\fpc-rtl\fpc_rtl.o) do (
+    objcopy --redefine-syms=import_funcs.map %%B
+)
+
 cd %prjdir%
 
+%asmx64% -o %prjdir%\units\fpc-rtl\symbols.o %prjdir%\sources\fpc-qt\symbols.asm
+
+echo =[ patching library...     ]=
+
+:: -----------------------------------------------------------------
+:: patching the rest of the project files ...
+:: -----------------------------------------------------------------
 set decimal1=4f
 set /a hex1=0x4f
 set /a counter=21
 set "string1=%hex1%
 
-for %%B in (system.o fpc_rtl.o ..\merge\*.o) do (
+for %%B in (system.o fpc_rtl.o) do (
     del %prjdir%\units\func.tx1 /F /S /Q >nul 2>nul
     del %prjdir%\units\func.tx2 /F /S /Q >nul 2>nul
     del %prjdir%\units\func.map /F /S /Q >nul 2>nul
 
     nm %prjdir%\units\fpc-rtl\%%B > %prjdir%\units\func.tx1
-    grep ".* T .*" %prjdir%\units\func.tx1 | awk '{print $3}' > %prjdir%\units\func.tx2
+    grep ".* T .*" %prjdir%\units\func.tx1 | awk '{print $3}' >  %prjdir%\units\func.tx2
 
     for /f "usebackq delims=" %%A in ("%prjdir%\units\func.tx2") do (
         set "string2=!counter!"
-        if not "%%A"=="fpc_libinitializeunits" (
-        if not "%%A"=="fpc_ansistr_decr_ref" (
-        if not "%%A"=="_DLLMainCRTStartup" if not "%%A"=="FPC_EMPTYCHAR" (
-        printf "%%A \\x!string1!\\x!string2!\n" >> "%prjdir%\units\func.map" ^
-        && set /a counter+=1
-    )   )   )   )
+        set flagged="F"
+        if "%%A"=="VMT_$SYSTEM_$$_QSTRING"          ( set flagged="T" )
+        if "%%A"=="SYSTEM$_$QSTRING_$__$_QSTRING"   ( set flagged="T" )
+        if "%%A"=="fpc_libinitializeunits"          ( set flagged="T" )
+        if "%%A"=="fpc_ansistr_decr_ref"            ( set flagged="T" )
+        if "%%A"=="_DLLMainCRTStartup"              ( set flagged="T" )
+        if "%%A"=="FPC_EMPTYCHAR"                   ( set flagged="T" )
+        if !flagged!=="F" (
+            printf "%%A \\x!string1!\\x!string2!\n" >> "%prjdir%\units\func.map" ^
+            && set /a counter+=1
+    )   )
     del %prjdir%\units\func.tx1 /F /S /Q >nul 2>nul
     del %prjdir%\units\func.tx2 /F /S /Q >nul 2>nul
 
     objcopy --redefine-syms=%prjdir%\units\func.map %prjdir%\units\fpc-rtl\%%B
-    del %prjdir%\units\func.map /F /S /Q >nul 2>nul
 )
 
 :: -----------------------------------------------------------------
@@ -288,6 +368,7 @@ echo =[ Linking fpc_rtl.dll ... ]=   30 %%  done
 %prjdir%\tests\fpc_rtl.dll       ^
 %prjdir%\units\fpc-rtl\system.o  ^
 %prjdir%\units\fpc-rtl\fpc_rtl.o ^
+%prjdir%\units\fpc-rtl\symbols.o ^
 %prjdir%\units\merge\*.o
 if errorlevel 1 (goto buildError)
 
@@ -409,11 +490,11 @@ if errorlevel 1 ( goto linkError )
 cd  %prjdir%
 
 :: -----------------------------------------------------------------
-:: delete old crap ...
+:: after compile, delete old crap ...
 :: -----------------------------------------------------------------
 echo =[ clean up dev files...   ]=   90 %%  done
-rmdir %prjdir%\units /S /Q >nul 2>nul
-if errorlevel 1 (goto buildError)
+::rmdir %prjdir%\units /S /Q >nul 2>nul
+::if errorlevel 1 (goto buildError)
 
 echo =[ start test1.exe...      ]=  100 %%  done
 %prjdir%\tests\test1.exe

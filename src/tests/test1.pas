@@ -8,9 +8,6 @@
 {$mode delphi}
 program test1;
 
-type
-    TTestTest = procedure;
-
 procedure Entry; stdcall; public name '_mainCRTStartup';
 var
     s1, s2: PChar;

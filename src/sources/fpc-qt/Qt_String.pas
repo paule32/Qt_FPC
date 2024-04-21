@@ -45,26 +45,6 @@ type
 constructor QString.Create ; begin end;
  destructor QString.Destroy; begin end;
 
-// ---------------------------------------------------------------------------
-// dummy replacements ...
-// ---------------------------------------------------------------------------
-procedure QString_Create; assembler;
-{$asmmode intel}
-asm
-    push    rbp             { save current stack value }
-    mov     rbp, rsp        { update rbp to show to new function body }
-    sub     rsp, 8 * 3      { reserve 24 (8 * 3) Bytes }
-    
-    nop
-    nop
-    int 3
-    nop
-    
-    add     rsp, 8 * 3      { reset the stack }
-    mov     rsp, rbp        { set rsp value to rbp to reset stack }
-    pop     rbp             { get the last value of rbp }
-    ret                     { return to caller }
-end;
 {$endif windll}
 
 {$endif}

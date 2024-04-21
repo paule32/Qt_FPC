@@ -45,6 +45,7 @@ procedure fpc_do_exit; compilerproc;
 procedure EmptyMethod; external name 'FPC_EMPTYMETHOD';
 
 procedure move(const source; var dest; count: DWord); assembler;
+
 {$endif}
 
 {$ifdef windows_source}

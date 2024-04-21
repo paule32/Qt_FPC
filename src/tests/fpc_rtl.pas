@@ -9,12 +9,12 @@
 library fpc_rtl;
 
 {$define windows_header}
+
 {$define uses_ntstatus}
 {$define uses_bool}
 {$define uses_status_success}
 
 type NTSTATUS  = LONG;
-
 
 procedure TestTest; forward;
 
@@ -34,7 +34,7 @@ begin
     result   := false;
     dataSize := strlen( AData );
 
-MessageBox(0,'sssss','xxxxxx',0);
+    ShowInfo('sssss');
 
     // --------------------------------------------
     // first look, if we can find the lock file ...
@@ -87,17 +87,11 @@ MessageBox(0,'sssss','xxxxxx',0);
         strcat(buffer, PChar(AFileName));
         strcat(buffer, PChar('" could not be write.'));
         
-        MessageBox(0,
-        buffer,
-        PChar('Error'),
-        MB_ICONWARNING);
+        ShowError( buffer );
         ExitProcess(GetLastError);
     end;
-    
-    MessageBox(0,
-    'CreateFile() success',
-    'Information',
-    MB_ICONINFORMATION);
+
+    ShowInfo('CreateFile() success');
 
     // --------------------------------------------------
     // set file pointer to the end - all needed data will
@@ -108,17 +102,11 @@ MessageBox(0,'sssss','xxxxxx',0);
         
     if ((dummy =  INVALID_SET_FILE_POINTER)
     and (error <> NO_ERROR)) then begin
-        MessageBox(0,
-        'SetFilePointer() failed.',
-        'Information',
-        MB_ICONWARNING);
+        ShowError('SetFilePointer() failed.');
         ExitProcess(error);
     end;
 
-    MessageBox(0,
-    'SetFilePointer() success.',
-    'Information',
-    MB_ICONINFORMATION);
+    ShowInfo('SetFilePointer() success.');
     
     dummy := WriteFile(
         THandle(hFile),
@@ -130,35 +118,20 @@ MessageBox(0,'sssss','xxxxxx',0);
     error := GetLastError;
     
     if error <> NO_ERROR then begin
-        MessageBox(0,
-        'WriteFile() failed.',
-        'Error',
-        MB_ICONWARNING);
+        ShowError('WriteFile() failed.');
         ExitProcess(error);
     end;
     
-    MessageBox(0,
-    'WriteFile() success.',
-    'Information',
-    MB_ICONINFORMATION);
+    ShowInfo('WriteFile() success.');
     
     if CloseHandle(THandle(hFile)) = 0 then begin
-        MessageBox(0,
-        'CloseHandle() failed.',
-        'Error',
-        MB_ICONWARNING);
+        ShowError('CloseHandle() failed.');
         ExitProcess(GetLastError);
     end;
-    
-    MessageBox(0,
-    'CloseHandle() success.',
-    'Information',
-    MB_ICONINFORMATION);
 
+    ShowInfo('CloseHandle() success.');
     result := true;
 end;
-
-procedure QString_Create; external 'QString_Create';
 
 function Entry(
     hModule    : HANDLE;
@@ -177,18 +150,6 @@ var
     LibraryHdl: HMODULE;
 begin
     s1 := QString.Create;
-    (* $ asmmode intel
-    asm
-        sub  rsp, 24        { reserve 24 Bytes }
-        
-        mov  rcx, 42        { first parameter (Windows ABI) }
-        mov  rdx, 75        { second parameter ... }
-        mov  r8, 100        { third parameter  ... }
-        
-        call QString_Create
-        
-        add  rsp, 24
-    end;*)
     TestTest;
     
     case dwReason of
@@ -228,5 +189,5 @@ exports
     move, TestTest;
 
 begin
-    MessageBox(0,'hello','world',0);
+    ShowInfo('hello');
 end.
