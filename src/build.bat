@@ -5,7 +5,7 @@
 ::
 :: only for education, and non-profit usage !
 ::
-:: Rhis batch file is optimized for a 64-Bit compilation, only.
+:: This batch file is optimized for a 64-Bit compilation, only.
 :: I did not test other tools for 32-Bit or operating systems other
 :: than Microsoft Windows 10/11 64-Bit Professional.
 ::
@@ -369,14 +369,15 @@ for %%B in (system.o fpc_rtl.o) do (
         
         if "%%A"=="SYSTEM_$$_WRITEFILE$LONGWORD$PCHAR$$BOOLEAN"  ( set flagged="T" )
         if "%%A"=="SYSTEM_$$_WRITEFILE$LONGWORD$PCHAR$$QWORD"    ( set flagged="T" )
-        if "%%A"=="SYSTEM_$$_WRITEFILE$LONGWORD$formal$$QWORD"   ( set flagged="T" )
-        
+        if "%%A"=="SYSTEM_$$_WRITEFILE$LONGWORD$formal$$QWORD"   ( set flagged="T" )        
         
         if "%%A"=="SYSTEM_$$_WRITEFILE$POINTER$PCHAR$$BOOLEAN"   ( set flagged="T" )
         
         if "%%A"=="SYSTEM_$$_FILEDELETE$PCHAR$$BOOLEAN"          ( set flagged="T" )
         if "%%A"=="SYSTEM_$$_FILECREATE$PCHAR$BOOLEAN$$LONGWORD" ( set flagged="T" )
         if "%%A"=="SYSTEM_$$_FILECREATE$PCHAR$BOOLEAN$$POINTER"  ( set flagged="T" )
+        
+        if "%%A"=="SYSTEM_$$_FILEWRITE$POINTER$PCHAR$LONGDWORD$$LONGDWORD" ( set flagged="T" )
         
         if !flagged!=="F" (
             printf "%%A \\x!string1!\\x!string2!\n" >> "%prjdir%\units\func.map" ^
