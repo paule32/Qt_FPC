@@ -11,79 +11,144 @@
 {$ifndef __FPC_SYSUTILS__PAS_}
 {$define __FPC_SYSUTILS__PAS_}
 
-function FileCreate( const FileName: PChar        ; flag: Boolean = false): Handle; overload;
-function FileCreate( const FileName: RawByteString; flag: Boolean = false): Handle; overload;
+function FileCreate( const AFileName: PChar        ; flag: Boolean = false): Handle; overload;
+function FileCreate( const AFileName: RawByteString; flag: Boolean = false): Handle; overload;
 
-function FileDelete( const FileName: PChar         ): Boolean; overload;
-function FileDelete( const FileName: RawByteString ): Boolean; overload;
+function FileDelete( const AFileName: PChar         ): Boolean; overload;
+function FileDelete( const AFileName: RawByteString ): Boolean; overload;
+
+function FileSeek(
+    handle : Handle ;
+    FOffset: DWORD  ;
+    Origin : DWORD ): DWORD; overload;
+
+function FileSeek(
+    handle : THandle;
+    FOffset: DWORD  ;
+    Origin : DWORD ): DWORD; overload;
 
 {$endif __FPC_SYSUTILS__PAS_}
 {$endif}
 
 {$ifdef windows_source}
-function FileCreate( const FileName: PChar; flag: Boolean ): Handle; overload;
+function FileCreate( const AFileName: PChar; flag: Boolean ): Handle; overload;
 var
     hd    : Handle;
+    dumbi : Boolean;
     dummy : DWORD;
+    error : DWORD;
     buffer: PChar;
 begin
     ShowInfo('pacher');
     
-    dummy := PathFileExistsA( FileName );
-    if ((dummy = 1) and (flag = true)) then begin
-        dummy := DeleteFileA( FileName );
-        if dummy = 0 then begin
-            ShowMessage('file not delete');
+    dummy := PathFileExistsA( AFileName );
+    if dummy = 1 then begin
+        if flag = false then begin
+            error := ERROR_SUCCESS;
+            
+            GetMem(buffer, 255);
+
+            strcpy( buffer, PChar('File: "'));
+            strcat( buffer, PChar(AFileName));
+            strcat( buffer, PChar('" already exists.\n'));
+            strcat( buffer, PChar('Would you like override it ?'));
+            
+            dummy := MessageBox(0, buffer,
+            'Information',
+            MB_YESNO);
+            if dummy = IDYES then begin
+                FileDelete( AFileName );
+                hd    := FileCreate( AFileName, true );
+                error := GetLastError;
+            end;
+            FreeMem( buffer );
+            if error <> ERROR_SUCCESS then begin
+                ShowError('file could not be created !');
+                exit;
+            end;
+        end else
+        if flag = true then begin
+            dumbi := DeleteFileA( AFileName );
+            if Boolean(dummy) = false then begin
+                ShowMessage('file not delete');
+            end;
+            hd := CreateFile(
+            AFileName,
+            GENERIC_WRITE,
+            FILE_SHARE_READ or FILE_SHARE_WRITE,
+            nil,
+            CREATE_NEW,
+            FILE_ATTRIBUTE_NORMAL,
+            nil);
+            result := hd;
+            exit;
         end;
-        hd := CreateFile(
-        FileName,
-        GENERIC_WRITE,
-        FILE_SHARE_READ or FILE_SHARE_WRITE,
-        nil,
-        CREATE_NEW,
-        FILE_ATTRIBUTE_NORMAL,
-        nil);
     end else begin
         hd := CreateFile(
-        FileName,
-        GENERIC_WRITE,
-        FILE_SHARE_READ or FILE_SHARE_WRITE,
-        nil,
-        CREATE_NEW,
-        FILE_ATTRIBUTE_NORMAL,
-        nil);
+            AFileName,
+            GENERIC_WRITE,
+            FILE_SHARE_READ or FILE_SHARE_WRITE,
+            nil,
+            CREATE_NEW,
+            FILE_ATTRIBUTE_NORMAL,
+            nil);
+        error := GetLastError;
+        if error <> ERROR_SUCCESS then begin
+            ShowError('file could not be created !');
+            exit;
+        end;
     end;
-    
     if THandle(hd) = INVALID_HANDLE_VALUE then begin
         GetMem( buffer, 255);
         
-        strcpy( buffer, 'File: "');
-        strcat( buffer, FileName );
+        strcpy( buffer, 'File: "' );
+        strcat( buffer, AFileName );
         strcat( buffer, '" could not be open.' );
 
         ShowError( buffer );
         FreeMem  ( buffer );
         
+        result := nil;
         exit;
     end;
     result := hd;
 end;
 
-function FileCreate( const FileName: RawByteString; flag: Boolean ): Handle; overload;
+function FileCreate( const AFileName: RawByteString; flag: Boolean ): Handle; overload;
 begin
-    result := FileCreate( PChar( FileName ) );
+    result := FileCreate( PChar( AFileName ), flag );
 end;
 
-function FileDelete( const FileName: PChar): Boolean; overload;
+function FileDelete( const AFileName: PChar         ): Boolean; overload; begin result := DeleteFileA( PChar( AFileName ) ); end;
+function FileDelete( const AFileName: RawByteString ): Boolean; overload; begin result := FileDelete ( PChar( AFileName ) ); end;
+
+function FileSeek(
+    handle : THandle;
+    FOffset: DWORD  ;
+    Origin : DWORD ): DWORD; overload;
+var
+    dummy : DWORD;
+    error : DWORD;
 begin
-    if DeleteFileA( PChar( FileName ) ) = 1 then
-    result := true else
-    result := false;
+    dummy := SetFilePointer(handle, FOffset, nil, Origin);
+    error := GetLastError;
+    
+    if ((dummy =  INVALID_SET_FILE_POINTER)
+    and (error <> NO_ERROR)) then begin
+        ShowError('SetFilePointer() failed.');
+        result := -1;
+        exit;
+    end;
+
+    result := dummy;
 end;
 
-function FileDelete( const FileName: RawByteString ): Boolean; overload;
+function FileSeek(
+    handle : Handle;
+    FOffset: DWORD ;
+    Origin : DWORD): DWORD; overload;
 begin
-    result := FileDelete( PChar( FileName ) );
+    FileSeek(THandle(handle), FOffset, Origin);
 end;
 
 {$endif}

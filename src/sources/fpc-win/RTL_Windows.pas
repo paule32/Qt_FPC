@@ -145,12 +145,23 @@ function CreateFile(
     stdcall; external 'kernel32.dll' name 'CreateFileA';
 
 function DeleteFileA(
-    lpFileName: PChar): BOOL;
+    lpFileName: PChar): Boolean;
     stdcall; external 'kernel32.dll' name 'DeleteFileA';
     
 function PathFileExistsA(
     pszPath: PChar ): BOOL;
     stdcall; external 'shlwapi.dll' name 'PathFileExistsA';
+
+function LockFile(
+    hfile                   : HANDLE;
+    dwFileOffsetLow         : DWORD;
+    dwFileOffsetHigh        : DWORD;
+    dwBytesToLockOffsetLow  : DWORD;
+    dwBytesToLockOffsetHigh : DWORD): Boolean; overload;
+    stdcall; external 'kernel32.dll' name 'LockFile';
+    
+function LockFile(
+    hfile : HANDLE): Boolean; overload;
     
 function SetFilePointer(
     hFile                : THandle;
@@ -167,7 +178,8 @@ function WriteFile(
     lpOverlapped: POverlapped): BOOL;
     stdcall; external 'kernel32.dll' name 'WriteFile';
     
-function WriteFile( hFile: THandle; buffer: PChar): BOOL;
+function WriteFile( hFile: THandle; buffer: PChar  ): BOOL; overload;
+function WriteFile( hFile: THandle; buffer: HMODULE): BOOL; overload;
 
 (*
 function WriteFile(
@@ -438,7 +450,10 @@ procedure ShowWarn   ( lpText: PChar ); begin MessageBox(0,lpText,'Warning'    ,
 procedure ShowError  ( lpText: PChar ); begin MessageBox(0,lpText,'Error'      , MB_ICONEXCLAMATION); end;
 procedure ShowInfo   ( lpText: PChar ); begin ShowMessage(lpText); end;
 
-procedure FillChar(var Dest; Count: Integer; Value: Char);
+procedure FillChar(
+    var Dest;
+    Count   : Integer;
+    Value   : Char);
 var
     I: Integer;
     P: PChar;
@@ -455,7 +470,9 @@ procedure FreeMem( var p: Pointer );
 begin
     VirtualFree( p, 0, MEM_RELEASE );
 end;
-procedure GetMem( var p: Pointer; size: DWORD );
+procedure GetMem(
+    var p: Pointer;
+    size : DWORD );
 begin
     p := VirtualAlloc( nil, size, MEM_COMMIT or MEM_RESERVE, PAGE_READWRITE );
 end;
@@ -465,10 +482,40 @@ begin
     result := GetACP;
 end;
 
-function WriteFile( hFile: THandle; buffer: PChar): BOOL;
+function LockFile(
+    hfile : HANDLE): Boolean; overload;
+var
+    res : Boolean;
+    bwr : DWORD;
+begin
+    result := false;
+    res := LockFile(
+    hfile, 0, 0, bwr, 0);
+    
+    if res = false then begin
+        ShowError('File can not be lock.');
+        exit;
+    end;
+    result := true;
+end;
+
+function WriteFile(
+    hFile : THandle;
+    buffer: PChar ): BOOL; overload;
 begin
     WriteFile( THandle(hFile),
     buffer^, strlen(buffer),
+    dword(nil^),
+    nil);
+    result := 1;
+end;
+
+function WriteFile(
+    hFile : THandle ;
+    buffer: HMODULE): BOOL; overload;
+begin
+    WriteFile( THandle(hFile),
+    buffer, sizeof(QWORD),
     dword(nil^),
     nil);
     result := 1;

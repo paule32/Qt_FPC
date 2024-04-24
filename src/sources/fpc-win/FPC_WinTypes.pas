@@ -12,7 +12,7 @@
 // ---------------------------------------------------------------------------
 {$ifndef __WINDOWS_TYPES_HDR__}
 {$define __WINDOWS_TYPES_HDR__}
-type BOOL      = LongBool;       // true or false
+type BOOL      = Boolean;       // true or false
 
 type PVOID     = Pointer;
 type LPVOID    = ^PVOID;

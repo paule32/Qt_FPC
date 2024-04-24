@@ -1,0 +1,4 @@
+LIBRARY app_rtl.dll
+DESCRIPTION "Mini-Framwork (c) 2024 by Jens Kallup - paule32"
+EXPORTS
+  TestTest=_TestTest

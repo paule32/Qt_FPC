@@ -10,9 +10,7 @@ library fpc_rtl;
 
 {$define windows_header}
 
-type NTSTATUS  = LONG;
-
-procedure TestTest; forward;
+procedure TestTest; cdecl; external 'app_rtl.dll' name 'TestTest';
 
 function PutToFile(const AFileName: PChar; AData: PChar): Boolean;
 var
@@ -37,28 +35,9 @@ begin
     // --------------------------------------------
     dummy := PathFileExistsA( AFileName );
     if dummy = 1 then begin
-        GetMem(buffer, 255);
-
-        strcpy( buffer, PChar('File: "'));
-        strcat( buffer, PChar(AFileName));
-        strcat( buffer, PChar('" already exists.\n'));
-        strcat( buffer, PChar('Would you like override it ?'));
-        
-        dummy := MessageBox(0, buffer,
-        'Information',
-        MB_YESNO);
-        if dummy = IDYES then begin
-            FileDelete( AFileName );
-            hFile := FileCreate( AFileName, true );
-            error := GetLastError;
-        end else begin
-            hFile := FileCreate( AFileName );
-            error := GetLastError;
-        end;
-        FreeMem( buffer );
+        hfile := FileCreate( AFileName );
     end else begin
         hFile := FileCreate( AFileName, true );
-        error := GetLastError;
     end;
     if THandle(hFile) = INVALID_HANDLE_VALUE then begin
         buffer := malloc(200);
@@ -73,22 +52,11 @@ begin
 
     ShowInfo('CreateFile() success');
 
-    // --------------------------------------------------
-    // set file pointer to the end - all needed data will
-    // be write/read backwards ...
-    // --------------------------------------------------
-    dummy := SetFilePointer(THandle(hFile), 0, nil, FILE_END);
-    error := GetLastError;
+    FileSeek(hfile, 0, FILE_END);
         
-    if ((dummy =  INVALID_SET_FILE_POINTER)
-    and (error <> NO_ERROR)) then begin
-        ShowError('SetFilePointer() failed.');
-        ExitProcess(error);
-    end;
-
     ShowInfo('SetFilePointer() success.');
     
-    WriteFile(THandle(hfile), 'Meiner Tester');
+    WriteFile(THandle(hfile), GetModuleHandle(nil) );
     error := GetLastError;
     FreeMem(buffer);
     
@@ -150,11 +118,6 @@ begin
 
     ExitProcess(0);
     result := 1;
-end;
-
-procedure TestTest; stdcall; export;
-begin
-    MessageBox(0,'hello','world',0);
 end;
 
 // -----------------------------------------------------------------
