@@ -154,7 +154,7 @@ mkdir %prjdir%\units >nul: 2>nul:
 if errorlevel 1 (goto buildError)
 
 cd %prjdir%\units
-for %%A in (fpc-qt fpc-rtl fpc-sys fpc-win) do (
+for %%A in (fpc-qt fpc-rtl fpc-sys fpc-win app-rtl) do (
     mkdir .\%%A
     if errorlevel 1 (goto buildError)
 )
@@ -171,21 +171,21 @@ cd %prjdir%
 :: create .dll file ...
 :: -----------------------------------------------------------------
 echo =[ begin compile stage     ]=    4 %%  done
-%fpcx64% -dwindll -CX -CD -WD -D -fPIC -st -Xe -XD -Us %srcsys%\system.pas
+%fpcx64% -dwindll -CX+ -fPIC -st -Xe -XD- -Us %srcsys%\system.pas
 if errorlevel 1 (goto buildError)
 
-%fpcx64% -dwindll -CX -CD -WD -D -fPIC -st -Xe -XD %srcsys%\fpintres.pp
+%fpcx64% -dwindll -CX+ -fPIC -st -Xe -XD- %srcsys%\fpintres.pp
 if errorlevel 1 (goto buildError)
 ::
 for %%A in (fpcinit sysinit) do (
-    %fpcx64% -dwindll -CD -WD -CX -D -fPIC -st -Xe -XD  %srcsys%\%%A.pas
+    %fpcx64% -dwindll -CX+ -fPIC -st -Xe -XD-  %srcsys%\%%A.pas
     if errorlevel 1 (goto buildError)
 )
-%fpcx64% -dwindll -CX -CD -WD -D -fPIC -st -Xe -XD %srcrtl%\rtl_utils.pas
+%fpcx64% -dwindll -CX+ -fPIC -st -Xe -XD- %srcrtl%\rtl_utils.pas
 if errorlevel 1 (goto buildError)
 
 echo =[ build asm files...      ]=    5 %%  done
-%fpcx64% -dwindll -CX -CD -WD -D -fPIC -st -Xe -XD -FE%prjdir%\units\fpc-rtl %prjdir%\tests\fpc_rtl.pas
+%fpcx64% -dwindll -CX+ -fPIC -st -Xe -XD- -FE%prjdir%\units\fpc-rtl %prjdir%\tests\fpc_rtl.pas
 if errorlevel 1 (goto buildError)
 
 echo =[ assembling asm files... ]=   10 %%  done
@@ -199,70 +199,71 @@ copy %punits%\fpc-sys\..\fpc-rtl\rtl_utils.s %punits%\fpc-sys\rtl_utils.s > nul
 :: remove not wanted rtti information's ...
 :: -----------------------------------------------------------------
 for %%A in (system rtl_utils fpc_rtl) do (
-    sed -i '/\; Begin asmlist al_rtti/,/\; End asmlist al_rtti/d' %punits%\fpc-sys\%%A.s
+    sed -i '/\; Begin asmlist al_rtti/,/\; End asmlist al_rtti/d' %prjdir%\units\fpc-sys\%%A.s
     if errorlevel 1 (goto buildError)
-    sed -i '/\; Begin asmlist al_rtti/,/\; End asmlist al_rtti/d' %punits%\fpc-rtl\%%A.s
+    sed -i '/\; Begin asmlist al_rtti/,/\; End asmlist al_rtti/d' %prjdir%\units\fpc-rtl\%%A.s
     if errorlevel 1 (goto buildError)
-    sed -i '/\; Begin asmlist al_dwarf_frame.*/,/\; End asmlist al_dwarf_frame.*/d' %punits%\fpc-sys\%%A.s
+    sed -i '/\; Begin asmlist al_dwarf_frame.*/,/\; End asmlist al_dwarf_frame.*/d' %prjdir%\units\fpc-sys\%%A.s
     if errorlevel 1 (goto buildError)
-    sed -i '/\; Begin asmlist al_dwarf_frame.*/,/\; End asmlist al_dwarf_frame.*/d' %punits%\fpc-rtl\%%A.s
+    sed -i '/\; Begin asmlist al_dwarf_frame.*/,/\; End asmlist al_dwarf_frame.*/d' %prjdir%\units\fpc-rtl\%%A.s
     if errorlevel 1 (goto buildError)
-    sed -i '/\.\.\@.*strlab\:/,+3d' %punits%\fpc-sys\%%A.s
+    sed -i '/\.\.\@.*strlab\:/,+3d' %prjdir%\units\fpc-sys\%%A.s
     if errorlevel 1 (goto buildError)
-    sed -i '/\.\.\@.*strlab\:/,+3d' %punits%\fpc-rtl\%%A.s
+    sed -i '/\.\.\@.*strlab\:/,+3d' %prjdir%\units\fpc-rtl\%%A.s
     if errorlevel 1 (goto buildError)
-    sed -i '/\; Begin asmlist al_indirectglobals.*/,/\; End asmlist al_indirectglobals.*/d' %punits%\fpc-sys\%%A.s
+    sed -i '/\; Begin asmlist al_indirectglobals.*/,/\; End asmlist al_indirectglobals.*/d' %prjdir%\units\fpc-sys\%%A.s
     if errorlevel 1 (goto buildError)
-    sed -i '/\; Begin asmlist al_indirectglobals.*/,/\; End asmlist al_indirectglobals.*/d' %punits%\fpc-rtl\%%A.s
+    sed -i '/\; Begin asmlist al_indirectglobals.*/,/\; End asmlist al_indirectglobals.*/d' %prjdir%\units\fpc-rtl\%%A.s
     if errorlevel 1 (goto buildError)
-    sed -i '/\; Begin asmlist al_globals.*/,/\; End asmlist al_globals.*/d' %punits%\fpc-sys\%%A.s
+    sed -i '/\; Begin asmlist al_globals.*/,/\; End asmlist al_globals.*/d' %prjdir%\units\fpc-sys\%%A.s
     if errorlevel 1 (goto buildError)
-    sed -i '/\; Begin asmlist al_globals.*/,/\; End asmlist al_globals.*/d' %punits%\fpc-rtl\%%A.s
+    sed -i '/\; Begin asmlist al_globals.*/,/\; End asmlist al_globals.*/d' %prjdir%\units\fpc-rtl\%%A.s
     if errorlevel 1 (goto buildError)
 )
+
 :: -----------------------------------------------------------------
 :: add removed symbols by sed ...
 :: -----------------------------------------------------------------
-echo SECTION .data                     >> %punits%\fpc-sys\system.s
-echo global VMT_$SYSTEM_$$_QSTRING     >> %punits%\fpc-sys\system.s
-echo VMT_$SYSTEM_$$_QSTRING:           >> %punits%\fpc-sys\system.s
-echo dq 0                              >> %punits%\fpc-sys\system.s
+echo SECTION .data                     >> %prjdir%\units\fpc-rtl\system.s
+echo global VMT_$SYSTEM_$$_QSTRING     >> %prjdir%\units\fpc-rtl\system.s
+echo VMT_$SYSTEM_$$_QSTRING:           >> %prjdir%\units\fpc-rtl\system.s
+echo dq 0                              >> %prjdir%\units\fpc-rtl\system.s
 
-echo SECTION .data                     >> %punits%\fpc-rtl\fpc_rtl.s
-echo global U_$P$FPC_RTL_$$_LIBRARYHDL >> %punits%\fpc-rtl\fpc_rtl.s
-echo U_$P$FPC_RTL_$$_LIBRARYHDL:       >> %punits%\fpc-rtl\fpc_rtl.s
-echo dq 0                              >> %punits%\fpc-rtl\fpc_rtl.s
+echo SECTION .data                     >> %prjdir%\units\fpc-rtl\fpc_rtl.s
+echo global U_$P$FPC_RTL_$$_LIBRARYHDL >> %prjdir%\units\fpc-rtl\fpc_rtl.s
+echo U_$P$FPC_RTL_$$_LIBRARYHDL:       >> %prjdir%\units\fpc-rtl\fpc_rtl.s
+echo dq 0                              >> %prjdir%\units\fpc-rtl\fpc_rtl.s
 
 :: -----------------------------------------------------------------
 :: patch with assembly code ...
 :: -----------------------------------------------------------------
-sed -i '/.*GLOBAL SYSTEM\$\_\$QSTRING\_\$\_\_\$\$\_CREATE\$\$QSTRING/,/SECTION \.text/d' %punits%\fpc-rtl\system.s
-sed -i '/.*GLOBAL SYSTEM\$\_\$QOBJECT\_\$\_\_\$\$\_CREATE$$QOBJECT/,/SECTION \.text/d'   %punits%\fpc-rtl\system.s
-sed -i '/.*GLOBAL SYSTEM\$\_\$QOBJECT\_\$\_\_\$\$\_DESTROY/,/SECTION \.text/d'           %punits%\fpc-rtl\system.s
-sed -i '/.*GLOBAL SYSTEM\$\_\$TOBJECT\_\$\_\_\$\$_AFTERCONSTRUCTION/,/SECTION \.text/d'  %punits%\fpc-rtl\system.s
-sed -i '/.*GLOBAL SYSTEM\$\_\$TOBJECT\_\$\_\_\$\$\_BEFOREDESTRUCTION/,/SECTION \.text/d' %punits%\fpc-rtl\system.s
-sed -i '/.*GLOBAL SYSTEM\$\_\$TOBJECT\_\$\_\_\$\$\_FREE/,/SECTION \.text/d'              %punits%\fpc-rtl\system.s
-sed -i '/.*GLOBAL SYSTEM\$\_\$TOBJECT\_\$\_\_\$\$\_FREEINSTANCE/,/SECTION \.text/d'      %punits%\fpc-rtl\system.s
-sed -i '/.*GLOBAL SYSTEM\$\_\$TOBJECT\_\$\_\_\$\$\_SAFECALLEXCEPTION$TOBJECT\$POINTER\$\$SHORTDWORD/,/SECTION \.text/d' %punits%\fpc-rtl\system.s
-sed -i '/.*GLOBAL SYSTEM\$\_\$TOBJECT\_\$\_\_\$\$\_DEFAULTHANDLER\$formal/,/SECTION \.text/d' %punits%\fpc-rtl\system.s
+sed -i '/\tGLOBAL\s*SYSTEM\$\_\$QSTRING\_\$\_\_\$\$\_CREATE\$\$QSTRING/,/\t\tret/d' %prjdir%\units\fpc-rtl\system.s
+sed -i '/\tGLOBAL\s*SYSTEM\$\_\$QSTRING\_\$\_\_\$\$\_CREATE\$QSTRING\$\$QSTRING/,/\t\tret/d' %prjdir%\units\fpc-rtl\system.s
+sed -i '/\tGLOBAL\s*SYSTEM\$\_\$QSTRING\_\$\_\_\$\$\_CREATE\$PCHAR\$\$QSTRING/,/\t\tret/d'   %prjdir%\units\fpc-rtl\system.s
+sed -i '/\tGLOBAL\s*SYSTEM\$\_\$QSTRING\_\$\_\_\$\$\_DESTROY/,/\t\tret/d'  %prjdir%\units\fpc-rtl\system.s
 
-::echo section .text                                 >> %punits%\fpc-rtl\system.s
-::echo global SYSTEM$_$QSTRING_$__$$_CREATE$$QSTRING >> %punits%\fpc-rtl\system.s
-::echo SYSTEM$_$QSTRING_$__$$_CREATE$$QSTRING:       >> %punits%\fpc-rtl\system.s
-::echo ret >> %punits%\fpc-rtl\system.s
+sed -i '/\tGLOBAL\s*SYSTEM\$\_\$QSTRING\_\$\_\_\$\$\_APPEND\$PCHAR\$\$QSTRING/,/\t\tret/d' %prjdir%\units\fpc-rtl\system.s
+sed -i '/\tGLOBAL\s*SYSTEM\$\_\$QSTRING\_\$\_\_\$\$\_APPEND\$QSTRING\$\$QSTRING/,/\t\tret/d' %prjdir%\units\fpc-rtl\system.s
+
+sed -i '/\tGLOBAL\s*SYSTEM\$\_\$QOBJECT\_\$\_\_\$\$\_CREATE$$QOBJECT/,/\t\tret/d'   %prjdir%\units\fpc-rtl\system.s
+sed -i '/\tGLOBAL\s*SYSTEM\$\_\$QOBJECT\_\$\_\_\$\$\_DESTROY/,/\t\tret/d'           %prjdir%\units\fpc-rtl\system.s
+
+sed -i '/\tGLOBAL\s*SYSTEM\$\_\$TOBJECT\_\$\_\_\$\$\_AFTERCONSTRUCTION/,/\t\tret/d' %prjdir%\units\fpc-rtl\system.s
+sed -i '/\tGLOBAL\s*SYSTEM\$\_\$TOBJECT\_\$\_\_\$\$\_BEFOREDESTRUCTION/,/\t\tret/d' %prjdir%\units\fpc-rtl\system.s
+sed -i '/\tGLOBAL\s*SYSTEM\$\_\$TOBJECT\_\$\_\_\$\$\_CREATE\$\$TOBJECT/,/\t\tret/d' %prjdir%\units\fpc-rtl\system.s
+sed -i '/\tGLOBAL\s*SYSTEM\$\_\$TOBJECT\_\$\_\_\$\$\_DESTROY/,/\t\tret/d'           %prjdir%\units\fpc-rtl\system.s
+sed -i '/\tGLOBAL\s*SYSTEM\$\_\$TOBJECT\_\$\_\_\$\$\_FREE/,/\t\tret/d'              %prjdir%\units\fpc-rtl\system.s
+sed -i '/\tGLOBAL\s*SYSTEM\$\_\$TOBJECT\_\$\_\_\$\$\_FREEINSTANCE/,/\t\tret/d'      %prjdir%\units\fpc-rtl\system.s
+sed -i '/\tGLOBAL\s*SYSTEM\$\_\$TOBJECT\_\$\_\_\$\$\_SAFECALLEXCEPTION$TOBJECT\$POINTER\$\$SHORTDWORD/,/\t\tret/d' %prjdir%\units\fpc-rtl\system.s
+sed -i '/\tGLOBAL\s*SYSTEM\$\_\$TOBJECT\_\$\_\_\$\$\_DEFAULTHANDLER\$formal/,/\t\tret/d' %prjdir%\units\fpc-rtl\system.s
 
 :: -----------------------------------------------------------------
 :: assemble all new files for this build ...
 :: -----------------------------------------------------------------
 for %%A in (system rtl_utils fpc_rtl) do (
-    %asmx64% -o %punits%\fpc-sys\%%A.o %punits%\fpc-sys\%%A.s
+    %asmx64% -o %prjdir%\units\fpc-rtl\%%A.o %punits%\fpc-rtl\%%A.s
     if errorlevel 1 (goto buildError)
 )
-for %%A in (system fpc_rtl) do (
-    copy %punits%\fpc-sys\%%A.o %punits%\fpc-rtl\%%A.o > nul
-    if errorlevel 1 (goto buildError)
-)
-
 :: -----------------------------------------------------------------
 :: rename big symbols to small names, to save storage space ...
 :: you need msys64 "printf" !!!
@@ -303,13 +304,16 @@ for /f "usebackq delims=" %%A in (import.tx2) do (
 :: -----------------------------------------------------------------
 dir /b *.o > importFileList.txt
 for /f "tokens=*" %%i in (importFileList.txt) do (
-    objcopy --redefine-syms=import_funcs.map %%i )
+    objcopy --redefine-syms=import_funcs.map %%i
+    if errorlevel 1 (goto buildError)
+)
 
 :: -----------------------------------------------------------------
 :: patch the project library files import data ...
 :: -----------------------------------------------------------------
 for %%B in (%prjdir%\units\fpc-rtl\system.o %prjdir%\units\fpc-rtl\fpc_rtl.o) do (
     objcopy --redefine-syms=import_funcs.map %%B
+    if errorlevel 1 (goto buildError)
 )
 
 echo =[ patching lib imports... ]=
@@ -321,14 +325,18 @@ for /f "usebackq delims=" %%A in (import.tx2) do (
 )
 dir /b *.o > importFileList.txt
 for /f "tokens=*" %%i in (importFileList.txt) do (
-    objcopy --redefine-syms=import_funcs.map %%i )
+    objcopy --redefine-syms=import_funcs.map %%i
+    if errorlevel 1 (goto buildError)
+)
 for %%B in (%prjdir%\units\fpc-rtl\system.o %prjdir%\units\fpc-rtl\fpc_rtl.o) do (
     objcopy --redefine-syms=import_funcs.map %%B
+    if errorlevel 1 (goto buildError)
 )
 
 cd %prjdir%
 
 %asmx64% -o %prjdir%\units\fpc-rtl\symbols.o %prjdir%\sources\fpc-qt\symbols.asm
+if errorlevel 1 (goto buildError)
 
 echo =[ patching library...     ]=
 
@@ -357,7 +365,9 @@ for %%B in (system.o fpc_rtl.o) do (
         if "%%A"=="fpc_ansistr_decr_ref"            ( set flagged="T" )
         if "%%A"=="_DLLMainCRTStartup"              ( set flagged="T" )
         
-        if "%%A"=="SYSTEM$_$QSTRING_$__$_QSTRING"   ( set flagged="T" )
+        if "%%A"=="SYSTEM$_$QSTRING_$__$_QSTRING"                 ( set flagged="T" )
+        if "%%A"=="SYSTEM$_$QSTRING_$__$$_APPEND$PCHAR$$QSTRING"  ( set flagged="T" )
+        if "%%A"=="SYSTEM$_$QSTRING_$__$$_CREATE$$QSTRING"        ( set flagged="T" )
         
         if "%%A"=="SYSTEM_$$_FREEMEM$POINTER"          ( set flagged="T" )
         if "%%A"=="SYSTEM_$$_GETMEM$POINTER$LONGDWORD" ( set flagged="T" )
@@ -366,6 +376,8 @@ for %%B in (system.o fpc_rtl.o) do (
         if "%%A"=="SYSTEM_$$_SHOWINFO$PCHAR"        ( set flagged="T" )
         if "%%A"=="SYSTEM_$$_SHOWWARN$PCHAR"        ( set flagged="T" )
         if "%%A"=="SYSTEM_$$_SHOWERROR$PCHAR"       ( set flagged="T" )
+        
+        if "%%A"=="SYSTEM_$$_WRITEFILE$LONGWORD$POINTER$$QWORD"  ( set flagged="T" )
         
         if "%%A"=="SYSTEM_$$_WRITEFILE$LONGWORD$PCHAR$$BOOLEAN"  ( set flagged="T" )
         if "%%A"=="SYSTEM_$$_WRITEFILE$LONGWORD$PCHAR$$QWORD"    ( set flagged="T" )
@@ -377,7 +389,8 @@ for %%B in (system.o fpc_rtl.o) do (
         if "%%A"=="SYSTEM_$$_FILECREATE$PCHAR$BOOLEAN$$LONGWORD" ( set flagged="T" )
         if "%%A"=="SYSTEM_$$_FILECREATE$PCHAR$BOOLEAN$$POINTER"  ( set flagged="T" )
         
-        if "%%A"=="SYSTEM_$$_FILEWRITE$POINTER$PCHAR$LONGDWORD$$LONGDWORD" ( set flagged="T" )
+        if "%%A"=="SYSTEM_$$_FILESEEK$POINTER$LONGDWORD$LONGDWORD$$LONGDWORD" ( set flagged="T" )
+        if "%%A"=="SYSTEM_$$_FILEWRITE$POINTER$PCHAR$LONGDWORD$$LONGDWORD"    ( set flagged="T" )
         
         if !flagged!=="F" (
             printf "%%A \\x!string1!\\x!string2!\n" >> "%prjdir%\units\func.map" ^
@@ -387,25 +400,47 @@ for %%B in (system.o fpc_rtl.o) do (
     del %prjdir%\units\func.tx2 /F /S /Q >nul 2>nul
 
     objcopy --redefine-syms=%prjdir%\units\func.map %prjdir%\units\fpc-rtl\%%B
+    if errorlevel 1 (goto buildError)
 )
+
+g++ -m64 -O2 -fPIC -shared -Wno-write-strings -o ^
+%prjdir%\tests\app_rtl.dll    ^
+%prjdir%\sources\app-rtl\start.cc
+if errorlevel 1 (goto buildError)
 
 :: -----------------------------------------------------------------
 :: finally, build/link the .dll file ...
 :: -----------------------------------------------------------------
 echo =[ Linking fpc_rtl.dll ... ]=   30 %%  done
 
-%ld64% --shared --dll --entry=_DLLMainCRTStartup -o ^
+:: -----------------------------------------------------------------
+:: create 64-Bit import definition .def + library .a file ...
+:: -----------------------------------------------------------------
+dlltool.exe --dllname ^
+%prjdir%\tests\app_rtl.dll --def ^
+%prjdir%\sources\app-rtl\app_rtl.def --output-lib ^
+%prjdir%\units\app-rtl\libimpapp_rtl.a  
+if errorlevel 1 (goto buildError)
+
+gcc -fPIC -nostdlib -nostartfiles --shared -Wl,--entry=_DLLMainCRTStartup -o ^
 %prjdir%\tests\fpc_rtl.dll       ^
 %prjdir%\units\fpc-rtl\system.o  ^
 %prjdir%\units\fpc-rtl\fpc_rtl.o ^
 %prjdir%\units\fpc-rtl\symbols.o ^
-%prjdir%\units\merge\*.o
+%prjdir%\units\merge\*.o         ^
+-L %prjdir%\units\fpc-rtl ^
+-L %prjdir%\units\app-rtl ^
+-l impfpc_rtl ^
+-l impapp_rtl
 if errorlevel 1 (goto buildError)
 
 :: -----------------------------------------------------------------
 :: discards all debug symbols - todo !
 :: -----------------------------------------------------------------
 strip %prjdir%\tests\fpc_rtl.dll
+if errorlevel 1 (goto buildError)
+
+strip %prjdir%\tests\app_rtl.dll
 if errorlevel 1 (goto buildError)
 
 :: -----------------------------------------------------------------
@@ -441,6 +476,7 @@ if errorlevel 1 (goto buildError)
 if errorlevel 1 (goto buildError)
 
 echo =[ sed .asm files...       ]=   50 %%  done
+
 :: -----------------------------------------------------------------
 :: remove not wanted rtti information's ...
 :: -----------------------------------------------------------------
@@ -468,21 +504,16 @@ for %%A in (system test1) do (
 )
 
 echo =[ linking test1.exe...    ]=   70 %%  done
-:: -----------------------------------------------------------------
-:: create 64-Bit import definition .def + library .a file ...
-:: -----------------------------------------------------------------
-%gccdir2%\dlltool.exe  --dllname ^
-%prjdir%\tests\fpc_rtl.dll --def ^
-%prjdir%\units\fpc-rtl\fpc_rtl.def --output-lib ^
-%prjdir%\tests\libimpfpc_rtl.a  >nul: 2>nul:
-if errorlevel 1 (goto buildError)
 
 %gcc64% -nostartfiles -nostdlib -Wl,--entry=_mainCRTStartup -o ^
 %prjdir%\tests\test1.exe ^
 %prjdir%\tests\test1.o   ^
 %prjdir%\tests\system.o  ^
-%prjdir%\units\fpc-rtl\rtl_utils.o -L ^
-%prjdir%\tests -l impsystem -l impfpc_rtl
+%prjdir%\units\fpc-rtl\rtl_utils.o ^
+-L %prjdir%\tests ^
+-L %prjdir%\units\app-rtl ^
+-l impsystem ^
+-l impapp_rtl
 if errorlevel 1 (goto buildError)
 
 :: -----------------------------------------------------------------
@@ -506,7 +537,8 @@ for %%A in (a o s ppu) do (
 :: -----------------------------------------------------------------
 :: finally shrink the EXE file again with upx.exe  ...
 :: -----------------------------------------------------------------
-upx32.exe %prjdir%\tests\test1.exe >nul 2>nul
+upx32.exe %prjdir%\tests\test1.exe   >nul 2>nul
+upx32.exe %prjdir%\tests\app_rtl.dll >nul 2>nul
 :: -----------------------------------------------------------------
 :: bundle a zip file for upload on my github.com account ...
 :: -----------------------------------------------------------------
@@ -515,7 +547,7 @@ echo =[ build bundle zip file...]=   80 %%  done
 del %prjdir%\tests\packed.zip  /F /S /Q >nul: 2>nul:
 cd  %prjdir%\tests\
 
-zip -9 -v packed.zip test1.exe fpc_rtl.dll >nul: 2>nul:
+zip -9 -v packed.zip test1.exe *.dll >nul: 2>nul:
 if errorlevel 1 ( goto linkError )
 cd  %prjdir%
 

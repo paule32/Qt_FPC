@@ -16,14 +16,14 @@ type
         //FStringObject: QString;
         //FString: String;
     public
-        //constructor Create(other: QString); overload;
-        //constructor Create(str: AnsiString); overload;
-        constructor Create; overload;
-
+        constructor Create(other: QString); overload;
+        constructor Create(str  : PChar  ); overload;
+        constructor Create                ; overload;
+        
         destructor Destroy; virtual;
-
-        //function append(str: String): QString; overload;
-        //function append(other: QString): QString; overload;
+        
+        function append(other: QString): QString; overload;
+        function append(str  : PChar  ): QString; overload;
 
         //function arg(a: QString; fieldWidth: Integer = 0; base: Integer = 10; fillChar: Char = ' '): QString;
     end;
@@ -42,8 +42,14 @@ type
 // ---------------------------------------------------------------------------
 // dummy deklaration for the FPC Compiler - patched later, so dummy ...
 // ---------------------------------------------------------------------------
-constructor QString.Create ; begin end;
+//constructor QString.Create(other: QString); begin end;
+constructor QString.Create                ; begin end;
+constructor QString.Create(str  : PChar  ); begin end;
+constructor QString.Create(other: QString); begin end;
  destructor QString.Destroy; begin end;
+
+function QString.append(other: QString): QString; begin end;
+function QString.append(str  : PChar  ): QString; begin end;
 
 {$endif windll}
 

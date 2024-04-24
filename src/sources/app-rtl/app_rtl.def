@@ -1,4 +1,13 @@
+; ---------------------------------------------------------------------------
+; File      : app_rtl.def - application framework => Qt5
+; Author    : Jens Kallup - paule32
+;
+; Copyright : All rights reserved.
+;           : only for education or non-profit project's !
+; ---------------------------------------------------------------------------
 LIBRARY app_rtl.dll
 DESCRIPTION "Mini-Framwork (c) 2024 by Jens Kallup - paule32"
 EXPORTS
-  TestTest=_TestTest
+    QString_Create_QString
+    QString_Create_PChar
+    QString_Append_QString

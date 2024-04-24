@@ -89,10 +89,17 @@ var
     dataSize : Integer;
     
     s1: QString;
+    s2: QString;
+    s3: QString;
 var
     LibraryHdl: HMODULE;
 begin
     s1 := QString.Create;
+    s2 := QString.Create;
+    s3 := QString.Create;
+    buffer := 'juhu';
+    s1.append(buffer);
+    
     TestTest;
     
     case dwReason of
