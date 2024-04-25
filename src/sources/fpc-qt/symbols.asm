@@ -7,8 +7,19 @@
 ; (c) Copyright 2024 Jens Kallup - paule32
 ; only for non-profit usage !!!
 ; ---------------------------------------------------------------------------
-section .text
-global  YSTEM$_$QSTRING_$__$$_CREATE$$QSTRING
+extern MessageBox_QString_PChar
+
+extern QString_Create_PChar
+extern QString_Create_QString
+extern QString_Append_QString
+
+section .data
+global VMT_$SYSTEM_$$_QSTRING
+VMT_$SYSTEM_$$_QSTRING:
+dq 0
+
+section .code
+    global  YSTEM$_$QSTRING_$__$$_CREATE$$QSTRING
 YSTEM$_$QSTRING_$__$$_CREATE$$QSTRING:
     push    rbp                     ; save current stack value
     mov     rbp, rsp                ; update rbp to show to new function body
@@ -23,26 +34,26 @@ YSTEM$_$QSTRING_$__$$_CREATE$$QSTRING:
     pop     rbp                     ; get the last value of rbp
     ret                             ; return to caller
 
-extern QString_Create_PChar
-section .text
-global SYSTEM$_$QSTRING_$__$$_CREATE$$PCHAR
-SYSTEM$_$QSTRING_$__$$_CREATE$$PCHAR:
+section .code
+    global SYSTEM$_$QSTRING_$__$$_CREATE$PCHAR$$QSTRING
+SYSTEM$_$QSTRING_$__$$_CREATE$PCHAR$$QSTRING:
     push    rbp
     mov     rbp, rsp
     sub     rsp, 8 * 3
 
-    mov     qword [rsp], rdx
-    mov     rcx, rdx
+    mov     rcx, r8
     call    QString_Create_PChar
+    mov     rcx, rax
+    call    QString_Create_PChar
+    mov     rcx, rax
 
     add     rsp, 8 * 3
     mov     rsp, rbp
     pop     rbp
     ret
 
-extern QString_Create_QString
-section .text
-global SYSTEM$_$QSTRING_$__$$_CREATE$$QSTRING
+section .code
+    global SYSTEM$_$QSTRING_$__$$_CREATE$$QSTRING
 SYSTEM$_$QSTRING_$__$$_CREATE$$QSTRING:
     push    rbp
     mov     rbp, rsp
@@ -57,9 +68,8 @@ SYSTEM$_$QSTRING_$__$$_CREATE$$QSTRING:
     pop     rbp
     ret
 
-extern QString_Append_QString
-section .text
-global SYSTEM$_$QSTRING_$__$$_APPEND$PCHAR$$QSTRING
+section .code
+    global SYSTEM$_$QSTRING_$__$$_APPEND$PCHAR$$QSTRING
 SYSTEM$_$QSTRING_$__$$_APPEND$PCHAR$$QSTRING:
     push    rbp
     mov     rbp, rsp
@@ -70,6 +80,21 @@ SYSTEM$_$QSTRING_$__$$_APPEND$PCHAR$$QSTRING:
     call    QString_Append_QString
 
     add     rsp, 8 * 3
+    mov     rsp, rbp
+    pop     rbp
+    ret
+
+section .code
+global SYSTEM_$$_MESSAGEBOX$QSTRING$PCHAR$$LONGDWORD
+SYSTEM_$$_MESSAGEBOX$QSTRING$PCHAR$$LONGDWORD:
+    push    rbp
+    mov     rbp, rsp
+    sub     rsp, 8 * 8
+    
+    mov     rcx, rax
+    call    MessageBox_QString_PChar
+
+    add     rsp, 8 * 8
     mov     rsp, rbp
     pop     rbp
     ret

@@ -9,12 +9,10 @@
 // ---------------------------------------------------------------------------
 {$ifdef windows_header}
 
-{$ifdef windll}
 type
-    QString  = class(QObject)
-    protected
-        //FStringObject: QString;
-        //FString: String;
+    QString = class(QObject)
+    private
+        FString: PChar;
     public
         constructor Create(other: QString); overload;
         constructor Create(str  : PChar  ); overload;
@@ -26,8 +24,12 @@ type
         function append(str  : PChar  ): QString; overload;
 
         //function arg(a: QString; fieldWidth: Integer = 0; base: Integer = 10; fillChar: Char = ' '): QString;
+        
+        function getText: PChar;
+        
+        procedure setText( AString: PChar   );
+        procedure setText( AString: QString );
     end;
-{$endif windll}
 
 {$ifdef winexe}
 //function QString_Create(s: QString): QString; stdcall; external rtl_dll name 'QString_CreateQString'; overload;
@@ -35,14 +37,11 @@ type
 {$endif winexe}
 
 {$endif windows_header}
-
 {$ifdef windows_source}
 
-{$ifdef windll}
 // ---------------------------------------------------------------------------
 // dummy deklaration for the FPC Compiler - patched later, so dummy ...
 // ---------------------------------------------------------------------------
-//constructor QString.Create(other: QString); begin end;
 constructor QString.Create                ; begin end;
 constructor QString.Create(str  : PChar  ); begin end;
 constructor QString.Create(other: QString); begin end;
@@ -51,6 +50,19 @@ constructor QString.Create(other: QString); begin end;
 function QString.append(other: QString): QString; begin end;
 function QString.append(str  : PChar  ): QString; begin end;
 
-{$endif windll}
+function QString.getText: PChar;
+begin
+    result := FString;
+end;
+
+procedure QString.setText( AString: PChar );
+begin
+    FString := AString;
+end;
+
+procedure QString.setText( AString: QString );
+begin
+    setText( AString.FString );
+end;
 
 {$endif}

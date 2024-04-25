@@ -52,15 +52,19 @@ set fpcdst=^
     -Fi%prjdir%\sources\fpc-win ^
     -Fi%prjdir%\sources\fpc-rtl ^
     -Fi%prjdir%\sources\fpc-gnu ^
-    -Fi%prjdir%\sources\fpc-qt
+    -Fi%prjdir%\sources\fpc-qt  ^
+    -Fi%prjdir%\sources\app-rtl
 
 set fpcsys1=^
     -Fu%prjdir%\sources\fpc-sys ^
     -Fu%prjdir%\sources\fpc-qt  ^
-    -Fu%prjdir%\units\fpc-rtl ^
-    -Fu%prjdir%\units\fpc-sys ^
-    -Fu%prjdir%\units\fpc-win ^
-    -Fu%prjdir%\units\fpc-qt
+    -Fu%prjdir%\sources\app-rtl ^
+    ^
+    -Fu%prjdir%\units\fpc-rtl   ^
+    -Fu%prjdir%\units\fpc-sys   ^
+    -Fu%prjdir%\units\fpc-win   ^
+    -Fu%prjdir%\units\fpc-qt    ^
+    -Fu%prjdir%\units\app-rtl
 
 set fpcsys2=^
     -n -Mdelphi -Twin64 -dwindows -dwin64 -O3 -Os -Anasmwin64 -a
@@ -147,6 +151,10 @@ del %prjdir%\units              /F /S /Q >nul 2>nul
 del %prjdir%\tests\fpc_rtl.dll  /F /S /Q >nul 2>nul
 del %prjdir%\tests\test1.exe    /F /S /Q >nul 2>nul
 
+for %%A in (a o s ppu) do (
+    del %prjdir%\tests\*.%%A    /F /S /Q >nul 2>nul
+)
+
 rmdir %prjdir%\units /S /Q >nul: 2>nul:
 if errorlevel 1 (goto buildError)
 
@@ -178,22 +186,22 @@ if errorlevel 1 (goto buildError)
 if errorlevel 1 (goto buildError)
 ::
 for %%A in (fpcinit sysinit) do (
-    %fpcx64% -dwindll -CX+ -fPIC -st -Xe -XD-  %srcsys%\%%A.pas
+    %fpcx64% -dwindll -CX -fPIC -st -Xe -XD-  %srcsys%\%%A.pas
     if errorlevel 1 (goto buildError)
 )
 %fpcx64% -dwindll -CX+ -fPIC -st -Xe -XD- %srcrtl%\rtl_utils.pas
 if errorlevel 1 (goto buildError)
 
 echo =[ build asm files...      ]=    5 %%  done
+
 %fpcx64% -dwindll -CX+ -fPIC -st -Xe -XD- -FE%prjdir%\units\fpc-rtl %prjdir%\tests\fpc_rtl.pas
 if errorlevel 1 (goto buildError)
 
 echo =[ assembling asm files... ]=   10 %%  done
-::copy %punits%\fpc-sys\fpcinit.s %sysrtl%\fpcinit.s
 
 :: todo => sed
-copy %punits%\fpc-sys\..\fpc-rtl\fpc_rtl.s   %punits%\fpc-sys\fpc_rtl.s   > nul
-copy %punits%\fpc-sys\..\fpc-rtl\rtl_utils.s %punits%\fpc-sys\rtl_utils.s > nul
+copy %punits%\fpc-rtl\fpc_rtl.s   %punits%\fpc-sys\fpc_rtl.s   > nul
+copy %punits%\fpc-rtl\rtl_utils.s %punits%\fpc-sys\rtl_utils.s > nul
 
 :: -----------------------------------------------------------------
 :: remove not wanted rtti information's ...
@@ -222,21 +230,10 @@ for %%A in (system rtl_utils fpc_rtl) do (
 )
 
 :: -----------------------------------------------------------------
-:: add removed symbols by sed ...
-:: -----------------------------------------------------------------
-echo SECTION .data                     >> %prjdir%\units\fpc-rtl\system.s
-echo global VMT_$SYSTEM_$$_QSTRING     >> %prjdir%\units\fpc-rtl\system.s
-echo VMT_$SYSTEM_$$_QSTRING:           >> %prjdir%\units\fpc-rtl\system.s
-echo dq 0                              >> %prjdir%\units\fpc-rtl\system.s
-
-echo SECTION .data                     >> %prjdir%\units\fpc-rtl\fpc_rtl.s
-echo global U_$P$FPC_RTL_$$_LIBRARYHDL >> %prjdir%\units\fpc-rtl\fpc_rtl.s
-echo U_$P$FPC_RTL_$$_LIBRARYHDL:       >> %prjdir%\units\fpc-rtl\fpc_rtl.s
-echo dq 0                              >> %prjdir%\units\fpc-rtl\fpc_rtl.s
-
-:: -----------------------------------------------------------------
 :: patch with assembly code ...
 :: -----------------------------------------------------------------
+sed -i '/\tGLOBAL\s*SYSTEM\_\$\$\_MESSAGEBOX\$QSTRING\$PCHAR\$\$LONGDWORD/,/.*ret/d'  %prjdir%\units\fpc-rtl\system.s
+
 sed -i '/\tGLOBAL\s*SYSTEM\$\_\$QSTRING\_\$\_\_\$\$\_CREATE\$\$QSTRING/,/\t\tret/d' %prjdir%\units\fpc-rtl\system.s
 sed -i '/\tGLOBAL\s*SYSTEM\$\_\$QSTRING\_\$\_\_\$\$\_CREATE\$QSTRING\$\$QSTRING/,/\t\tret/d' %prjdir%\units\fpc-rtl\system.s
 sed -i '/\tGLOBAL\s*SYSTEM\$\_\$QSTRING\_\$\_\_\$\$\_CREATE\$PCHAR\$\$QSTRING/,/\t\tret/d'   %prjdir%\units\fpc-rtl\system.s
@@ -256,6 +253,12 @@ sed -i '/\tGLOBAL\s*SYSTEM\$\_\$TOBJECT\_\$\_\_\$\$\_FREE/,/\t\tret/d'          
 sed -i '/\tGLOBAL\s*SYSTEM\$\_\$TOBJECT\_\$\_\_\$\$\_FREEINSTANCE/,/\t\tret/d'      %prjdir%\units\fpc-rtl\system.s
 sed -i '/\tGLOBAL\s*SYSTEM\$\_\$TOBJECT\_\$\_\_\$\$\_SAFECALLEXCEPTION$TOBJECT\$POINTER\$\$SHORTDWORD/,/\t\tret/d' %prjdir%\units\fpc-rtl\system.s
 sed -i '/\tGLOBAL\s*SYSTEM\$\_\$TOBJECT\_\$\_\_\$\$\_DEFAULTHANDLER\$formal/,/\t\tret/d' %prjdir%\units\fpc-rtl\system.s
+
+echo section .data                      >> %prjdir%\units\fpc-rtl\fpc_rtl.s
+echo global U_$P$FPC_RTL_$$_LIBRARYHDL  >> %prjdir%\units\fpc-rtl\fpc_rtl.s
+echo U_$P$FPC_RTL_$$_LIBRARYHDL:        >> %prjdir%\units\fpc-rtl\fpc_rtl.s
+echo dq 0                               >> %prjdir%\units\fpc-rtl\fpc_rtl.s
+echo.                                   >> %prjdir%\units\fpc-rtl\fpc_rtl.s
 
 :: -----------------------------------------------------------------
 :: assemble all new files for this build ...
@@ -348,6 +351,7 @@ set /a hex1=0x4f
 set /a counter=21
 set "string1=%hex1%
 
+goto bigskip
 for %%B in (system.o fpc_rtl.o) do (
     del %prjdir%\units\func.tx1 /F /S /Q >nul 2>nul
     del %prjdir%\units\func.tx2 /F /S /Q >nul 2>nul
@@ -367,7 +371,9 @@ for %%B in (system.o fpc_rtl.o) do (
         
         if "%%A"=="SYSTEM$_$QSTRING_$__$_QSTRING"                 ( set flagged="T" )
         if "%%A"=="SYSTEM$_$QSTRING_$__$$_APPEND$PCHAR$$QSTRING"  ( set flagged="T" )
+        
         if "%%A"=="SYSTEM$_$QSTRING_$__$$_CREATE$$QSTRING"        ( set flagged="T" )
+        if "%%A"=="SYSTEM$_$QSTRING_$__$$_CREATE$PCHAR"           ( set flagged="T" )
         
         if "%%A"=="SYSTEM_$$_FREEMEM$POINTER"          ( set flagged="T" )
         if "%%A"=="SYSTEM_$$_GETMEM$POINTER$LONGDWORD" ( set flagged="T" )
@@ -402,7 +408,7 @@ for %%B in (system.o fpc_rtl.o) do (
     objcopy --redefine-syms=%prjdir%\units\func.map %prjdir%\units\fpc-rtl\%%B
     if errorlevel 1 (goto buildError)
 )
-
+:bigskip
 g++ -m64 -O2 -fPIC -shared -Wno-write-strings -o ^
 %prjdir%\tests\app_rtl.dll    ^
 %prjdir%\sources\app-rtl\start.cc
@@ -425,12 +431,11 @@ if errorlevel 1 (goto buildError)
 gcc -fPIC -nostdlib -nostartfiles --shared -Wl,--entry=_DLLMainCRTStartup -o ^
 %prjdir%\tests\fpc_rtl.dll       ^
 %prjdir%\units\fpc-rtl\system.o  ^
-%prjdir%\units\fpc-rtl\fpc_rtl.o ^
 %prjdir%\units\fpc-rtl\symbols.o ^
+%prjdir%\units\fpc-rtl\fpc_rtl.o ^
 %prjdir%\units\merge\*.o         ^
 -L %prjdir%\units\fpc-rtl ^
 -L %prjdir%\units\app-rtl ^
--l impfpc_rtl ^
 -l impapp_rtl
 if errorlevel 1 (goto buildError)
 
@@ -463,7 +468,6 @@ if errorlevel 1 (goto buildError)
 
 %fpcx64% -dwinexe -FE%prjdir%\tests %prjdir%\tests\test1.pas
 if errorlevel 1 (goto buildError)
-
 ::
 for %%A in (fpcinit sysinit) do (
     %fpcx64% -dwinexe %srcsys%\%%A.pas
@@ -472,8 +476,6 @@ for %%A in (fpcinit sysinit) do (
 %fpcx64% -dwinexe %srcrtl%\rtl_utils.pas
 if errorlevel 1 (goto buildError)
 
-%fpcx64% -dwinexe -FE%prjdir%\tests %prjdir%\tests\test1.pas
-if errorlevel 1 (goto buildError)
 
 echo =[ sed .asm files...       ]=   50 %%  done
 
@@ -497,18 +499,21 @@ for %%A in (system rtl_utils fpc_rtl) do (
     if errorlevel 1 (goto buildError)
 )
 
+sed -i '/\tGLOBAL\s*PASCALMAIN/,/\t\tret/d'  %prjdir%\tests\test1.s
+
 echo =[ Assembling exe files... ]=   60 %%  done
 for %%A in (system test1) do (
     %asmx64% -o %prjdir%\tests\%%A.o %prjdir%\tests\%%A.s
     if errorlevel 1 (goto buildError)
 )
+%asmx64% -o %prjdir%\units\fpc-rtl\symbols.o %prjdir%\sources\fpc-qt\symbols.asm
 
 echo =[ linking test1.exe...    ]=   70 %%  done
 
 %gcc64% -nostartfiles -nostdlib -Wl,--entry=_mainCRTStartup -o ^
-%prjdir%\tests\test1.exe ^
-%prjdir%\tests\test1.o   ^
-%prjdir%\tests\system.o  ^
+%prjdir%\tests\test1.exe  ^
+%prjdir%\tests\test1.o    ^
+%prjdir%\units\fpc-rtl\symbols.o   ^
 %prjdir%\units\fpc-rtl\rtl_utils.o ^
 -L %prjdir%\tests ^
 -L %prjdir%\units\app-rtl ^
@@ -531,9 +536,9 @@ if errorlevel 1 (goto buildError)
 :: -----------------------------------------------------------------
 :: delete all build files, except the dll and exe file ...
 :: -----------------------------------------------------------------
-for %%A in (a o s ppu) do (
-    del %prjdir%\tests\*.%%A   /F /S /Q >nul: 2>nul:
-)
+::for %%A in (a o s ppu) do (
+::    del %prjdir%\tests\*.%%A   /F /S /Q >nul: 2>nul:
+::)
 :: -----------------------------------------------------------------
 :: finally shrink the EXE file again with upx.exe  ...
 :: -----------------------------------------------------------------
@@ -566,6 +571,7 @@ goto allok
 
 :buildError
 echo =[ build error ]=
+exit
 :: -----------------------------------------------------------------
 :: delete old crap ...
 :: -----------------------------------------------------------------

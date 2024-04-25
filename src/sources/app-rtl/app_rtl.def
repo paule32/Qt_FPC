@@ -11,3 +11,4 @@ EXPORTS
     QString_Create_QString
     QString_Create_PChar
     QString_Append_QString
+    MessageBox_QString_PChar

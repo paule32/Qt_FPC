@@ -8,26 +8,15 @@
 {$mode delphi}
 program test1;
 
-procedure Entry; stdcall; public name '_mainCRTStartup';
+procedure Entry;
+stdcall; public name '_mainCRTStartup';
 var
-    s1, s2: PChar;
     hm: HMODULE;
-    ap: procedure;
+    qs: QString;
 begin
-    s1 := 'mufo   Lo aalo';
-    s2 := 'Hello World  --> ' + 'hiho';
-    MessageBox(0,s2,s1,0);
-
-    HM := LoadLibrary('fpc_rtl.dll');
-    if HM = nil then begin
-        MessageBox(0,'dll error','Error',0);
-        ExitProcess(4);
-    end else begin
-        MessageBox(0,'dll load ok','Information',0);
-        // todo !!!
-    end;
-
-    FreeLibrary(HM);
+    qs := QString.Create('one string');
+        
+    MessageBox(qs,'Information');
     ExitProcess(0);
 end;
 

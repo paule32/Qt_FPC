@@ -10,7 +10,7 @@ library fpc_rtl;
 
 {$define windows_header}
 
-procedure TestTest; cdecl; external 'app_rtl.dll' name 'TestTest';
+var LibraryHdl      : HMODULE;
 
 function PutToFile(const AFileName: PChar; AData: PChar): Boolean;
 var
@@ -76,42 +76,14 @@ begin
     result := true;
 end;
 
-function Entry(
-    hModule    : HANDLE;
-    dwReason   : DWORD ;
-    lpReserved : PVOID): BOOL; stdcall; export; public name '_DLLMainCRTStartup';
+function initialize: BOOL; stdcall;
 var
     msg: TMessage;
-    hFile: THandle;
-    
-    count    : Cardinal;
-    buffer   : PChar;
-    dataSize : Integer;
-    
-    s1: QString;
-    s2: QString;
-    s3: QString;
-var
-    LibraryHdl: HMODULE;
 begin
-    s1 := QString.Create;
-    s2 := QString.Create;
-    s3 := QString.Create;
-    buffer := 'juhu';
-    s1.append(buffer);
+    MessageBox(0,'hel --mumu-- lo','world',0);
+    result := 1;
+    exit;
     
-    TestTest;
-    
-    case dwReason of
-        DLL_PROCESS_ATTACH: begin
-            // save our HANDLE
-            LibraryHdl := GetModuleHandle(nil);
-            PutToFile('fpc_rtl.txt', 'Ein Test');
-        end;
-    end;
-    
-    MessageBox(0,'hel ---- lo','world',0);
-    ExitProcess(0);
     while (GetMessage(msg, LongWord( LibraryHdl ), 0, 0) > 0) do
     begin
         case msg.message of
@@ -127,11 +99,22 @@ begin
     result := 1;
 end;
 
-// -----------------------------------------------------------------
-// export public function's/procedure's ...
-// -----------------------------------------------------------------
-exports
-    move, TestTest;
+function DLLEntry(
+    hModule    : HANDLE;
+    dwReason   : DWORD ;
+    lpReserved : PVOID): BOOL;
+    stdcall; export; public name '_DLLMainCRTStartup';
+begin
+    case dwReason of
+        DLL_PROCESS_ATTACH: begin
+            // save our HANDLE
+            LibraryHdl := GetModuleHandle(nil);
+            initialize;
+        end;
+        DLL_PROCESS_DETACH: begin
+        end;
+    end;
+end;    
 
 begin
     ShowInfo('hello');
