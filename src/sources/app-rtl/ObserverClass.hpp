@@ -5,11 +5,13 @@
 //
 // only for education, and non-profit usage !
 // -----------------------------------------------------------------
+#ifndef __OBSERVERCLASS_HPP__
+#define __OBSERVERCLASS_HPP__
 #pragma once
-
-# include "Observer.hpp"
 
 class TObserver {
 public:
     virtual void update() = 0;
 };
+
+#endif  // __OBSERVERCLASS_HPP__

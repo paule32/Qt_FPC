@@ -7,6 +7,7 @@
 // -----------------------------------------------------------------
 # include "Observer.hpp"
 # include "DisplayObserver.hpp"
+# include "Connection.hpp"
 
 extern "C" {
 // -----------------------------------------------------------------
@@ -14,58 +15,43 @@ extern "C" {
 // -----------------------------------------------------------------
 ResultStruct*
 MessageBox_QString_PChar_Callee(
-    char *prev,    // previous callee
-    char *S1,      // message text
-    char *S2)      // message title
+    const char *prev, // previous callee
+    char       *S1,   // message text
+    char       *S2)   // message title
 {
-    auto *result   = new ResultStruct;
+    // save result ...
+    auto *result     = new ResultStruct;
     
-    result->prev   = std::string(prev);
-    result->args   = 2;
-    
-    result->arg[1] = std::string("QSTRING"); result->ptr[1] = S1;
-    result->arg[2] = std::string("PCHAR"  ); result->ptr[2] = S2;
+    result->prev     = std::string(prev);
+    result->args     = 2;
 
-    resultList[__FUNCTION__] = result;
+    result->arg[1]   = std::string("QSTRING"); result->ptr[1] = S1;
+    result->arg[2]   = std::string("PCHAR"  ); result->ptr[2] = S2;
+
+    result->username = std::string("paule32");
+    result->time_srv = std::time  (nullptr);
+    
+    resultList.push_back( result );
     
     std::cout << "prev: " << prev << std::endl;
     MessageBoxA(0, LPCTSTR(S1), LPCTSTR(S2), 0);
     return result;
 }
+
+// -----------------------------------------------------------------
+// \brief
+// -----------------------------------------------------------------
 ResultStruct*
 MessageBox_QString_PChar(
     char *S1,      // message text
     char *S2) {    // message title
-    return MessageBox_QString_PChar_Callee(
-        "MessageBox_QString_PChar",
-        S1,
-        S2);
+    return(
+        // call proxy ...
+        MessageBox_QString_PChar_Callee(
+        __FUNCTION__, S1, S2)
+    );
 }
 };  // extern "C"
-
-class TConnection {
-private:
-    std::vector< TObserver *> observers;
-public:
-    void registerDisplay(TObserver *observer) {
-        observers.push_back(observer);
-    }
-    
-    void removeDisplay(TObserver *observer) {
-        // todo
-    }
-    
-    void notifyObservers() {
-        for (TObserver *observer: observers) {
-            observer->update();
-        }
-    }
-    
-    void setValue() {
-        // set new values
-        notifyObservers();
-    }
-};
 
 void TDisplay::update() {
     std::cout << "TDisplay: update" << std::endl;

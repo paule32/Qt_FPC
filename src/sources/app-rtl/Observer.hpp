@@ -5,6 +5,8 @@
 //
 // only for education, and non-profit usage !
 // -----------------------------------------------------------------
+#ifndef __OBSERVER_HPP__
+#define __OBSERVER_HPP__
 #pragma once
 
 # include <windows.h>
@@ -14,11 +16,17 @@
 # include <strings.h>
 
 # include <iostream>
+# include <cstdio>
 # include <string>
 # include <map>
 # include <vector>
+# include <functional>
+# include <ctime>
 
-#define result(x) return x
+# include "Connection.hpp"
+
+class TConnection;
+class TObserver;
 
 // -----------------------------------------------------------------
 // \brief this structure holds the return values for a given member.
@@ -26,9 +34,13 @@
 struct ResultStruct {
     std::uint32_t                     args;
     std::string                       prev;
+    std::string                   username;
+    std::time_t                   time_srv;
+
     std::map< uint32_t, std::string > arg ;
     std::map< uint32_t, void*       > ptr ;
-    
 };
 
-extern std::map< std::string, ResultStruct* > resultList;
+extern std::vector< ResultStruct* > resultList;
+
+#endif  // __OBSERVER_HPP__
