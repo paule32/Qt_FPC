@@ -16,6 +16,7 @@
 # include <iostream>
 # include <string>
 # include <map>
+# include <vector>
 
 #define result(x) return x
 

@@ -11,5 +11,5 @@
 
 class TObserver {
 public:
-    virtual void update();
+    virtual void update() = 0;
 };

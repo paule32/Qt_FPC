@@ -6,6 +6,8 @@
 // only for education, and non-profit usage !
 // -----------------------------------------------------------------
 # include "Observer.hpp"
+# include "DisplayObserver.hpp"
+
 extern "C" {
 // -----------------------------------------------------------------
 // save the callee, and display a message on display device ...
@@ -39,5 +41,32 @@ MessageBox_QString_PChar(
         S1,
         S2);
 }
-
 };  // extern "C"
+
+class TConnection {
+private:
+    std::vector< TObserver *> observers;
+public:
+    void registerDisplay(TObserver *observer) {
+        observers.push_back(observer);
+    }
+    
+    void removeDisplay(TObserver *observer) {
+        // todo
+    }
+    
+    void notifyObservers() {
+        for (TObserver *observer: observers) {
+            observer->update();
+        }
+    }
+    
+    void setValue() {
+        // set new values
+        notifyObservers();
+    }
+};
+
+void TDisplay::update() {
+    std::cout << "TDisplay: update" << std::endl;
+}

@@ -11,7 +11,5 @@
 
 class TDisplay: public TObserver {
 public:
-    void update() {
-        std::cout << "update" << std::endl;
-    }
+    void update();
 };
