@@ -411,7 +411,7 @@ for %%B in (system.o fpc_rtl.o) do (
 :bigskip
 g++ -m64 -O2 -fPIC -shared -Wno-write-strings -o ^
 %prjdir%\tests\app_rtl.dll    ^
-%prjdir%\sources\app-rtl\start.cc
+%prjdir%\sources\app-rtl\start.cc -lkernel32 -luser32
 if errorlevel 1 (goto buildError)
 
 :: -----------------------------------------------------------------

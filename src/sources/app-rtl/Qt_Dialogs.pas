@@ -18,16 +18,8 @@ begin
     result := 1;
 end;
 function MessageBox(AText: QString; ATitle: PChar  ): DWORD;
-{$asmmode intel}
 begin
-    asm
-        nop
-        nop
-        mov rax, AText
-        nop
-        nop
-    end;
-    MessageBox(0, AText.FString, ATitle, 0);
+    result := 1;
 end;
 
 {$endif windows_source}

@@ -15,6 +15,22 @@
 # include <string>
 # include <map>
 
+#define result(x) return x
+
+// -----------------------------------------------------------------
+//
+// -----------------------------------------------------------------
+struct ResultStruct {
+    std::uint32_t                     args;
+    std::string                       prev;
+    std::map< uint32_t, std::string > arg ;
+    std::map< uint32_t, void*       > ptr ;
+    
+};  std::map< std::string, ResultStruct* > resultList;
+
+// -----------------------------------------------------------------
+//
+// -----------------------------------------------------------------
 std::map< void*, std::string > labels;
 
 extern "C" {
@@ -40,20 +56,37 @@ QString_Create_PChar  (void *p)
 }
 void QString_Append_QString(void *p) { std::cout << "Append: QString" << std::endl; }
 
-
-uint32_t
-MessageBox_QString_PChar(char *S1, char *S2)
+// -----------------------------------------------------------------
+// save the callee, and display a message on display device ...
+// -----------------------------------------------------------------
+ResultStruct*
+MessageBox_QString_PChar_Callee(
+    char *prev,    // previous callee
+    char *S1,      // message text
+    char *S2)      // message title
 {
-    std::cout << "zweier" << std::endl;
+    auto *result   = new ResultStruct;
     
-    char *sz1 = reinterpret_cast<char*>(S1);
-    char *sz2 = reinterpret_cast<char*>(S2);
+    result->prev   = std::string(prev);
+    result->args   = 2;
     
-    std::cout
-    << "String A: " << sz1 << std::endl
-    << "String B: " << sz2 << std::endl;
+    result->arg[1] = std::string("PCHAR"); result->ptr[1] = S1;
+    result->arg[2] = std::string("PCHAR"); result->ptr[2] = S2;
+
+    resultList[__FUNCTION__] = result;
     
-    return 7;
+    std::cout << "prev: " << prev << std::endl;
+    MessageBoxA(0, LPCTSTR(S1), LPCTSTR(S2), 0);
+    return result;
+}
+ResultStruct*
+MessageBox_QString_PChar(
+    char *S1,      // message text
+    char *S2) {    // message title
+    return MessageBox_QString_PChar_Callee(
+        "MessageBox_QString_PChar",
+        S1,
+        S2);
 }
 
 // -----------------------------------------------------------------
