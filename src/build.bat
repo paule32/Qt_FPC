@@ -338,6 +338,10 @@ for %%B in (%prjdir%\units\fpc-rtl\system.o %prjdir%\units\fpc-rtl\fpc_rtl.o) do
 
 cd %prjdir%
 
+g++ -O2 -m64 -fPIC -Wno-write-strings -o %prjdir%\units\app-rtl\Observer.o       -c %prjdir%\sources\app-rtl\Observer.cc
+g++ -O2 -m64 -fPIC -Wno-write-strings -o %prjdir%\units\app-rtl\DisplayDialogs.o -c %prjdir%\sources\app-rtl\DisplayDialogs.cc
+g++ -O2 -m64 -fPIC -Wno-write-strings -o %prjdir%\units\app-rtl\start.o          -c %prjdir%\sources\app-rtl\start.cc
+
 %asmx64% -o %prjdir%\units\fpc-rtl\symbols.o %prjdir%\sources\fpc-qt\symbols.asm
 if errorlevel 1 (goto buildError)
 
@@ -411,7 +415,10 @@ for %%B in (system.o fpc_rtl.o) do (
 :bigskip
 g++ -m64 -O2 -fPIC -shared -Wno-write-strings -o ^
 %prjdir%\tests\app_rtl.dll    ^
-%prjdir%\sources\app-rtl\start.cc -lkernel32 -luser32
+%prjdir%\units\app-rtl\start.o ^
+%prjdir%\units\app-rtl\Observer.o ^
+%prjdir%\units\app-rtl\DisplayDialogs.o -lkernel32 -luser32
+
 if errorlevel 1 (goto buildError)
 
 :: -----------------------------------------------------------------
@@ -429,11 +436,11 @@ dlltool.exe --dllname ^
 if errorlevel 1 (goto buildError)
 
 gcc -fPIC -nostdlib -nostartfiles --shared -Wl,--entry=_DLLMainCRTStartup -o ^
-%prjdir%\tests\fpc_rtl.dll       ^
-%prjdir%\units\fpc-rtl\system.o  ^
-%prjdir%\units\fpc-rtl\symbols.o ^
-%prjdir%\units\fpc-rtl\fpc_rtl.o ^
-%prjdir%\units\merge\*.o         ^
+%prjdir%\tests\fpc_rtl.dll        ^
+%prjdir%\units\fpc-rtl\system.o   ^
+%prjdir%\units\fpc-rtl\symbols.o  ^
+%prjdir%\units\fpc-rtl\fpc_rtl.o  ^
+%prjdir%\units\merge\*.o          ^
 -L %prjdir%\units\fpc-rtl ^
 -L %prjdir%\units\app-rtl ^
 -l impapp_rtl
