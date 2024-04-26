@@ -25,7 +25,6 @@
 
 # include "Connection.hpp"
 
-class TConnection;
 class TObserver;
 
 // -----------------------------------------------------------------
@@ -42,5 +41,19 @@ struct ResultStruct {
 };
 
 extern std::vector< ResultStruct* > resultList;
+extern bool userProtocol;
+
+// -----------------------------------------------------------------
+// \brief
+// -----------------------------------------------------------------
+class ObserverResultClass {
+private:
+public:
+    ObserverResultClass();
+    ~ObserverResultClass();
+    
+    ResultStruct* add( ResultStruct* );
+    ResultStruct* del( ResultStruct* );
+};
 
 #endif  // __OBSERVER_HPP__

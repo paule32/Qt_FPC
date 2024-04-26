@@ -13,7 +13,7 @@
 
 class TDisplay: public TObserver {
 public:
-    void update();
+    ResultStruct* update();
 };
 
 #endif  // __DISPLAYOBSERVER_HPP__

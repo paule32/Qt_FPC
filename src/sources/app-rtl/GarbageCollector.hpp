@@ -1,17 +1,18 @@
 // -----------------------------------------------------------------
-// File:   ObserverClass.hpp
+// File:   GarbageCollector.hpp
 // Author: (c) 2023 Jens Kallup - paule32
 // All rights reserved
 //
 // only for education, and non-profit usage !
 // -----------------------------------------------------------------
-#ifndef __OBSERVERCLASS_HPP__
-#define __OBSERVERCLASS_HPP__
-#pragma once
+#ifndef __GARBAGECOLLECTOR_HPP__
+#define __GARBAGECOLLECTOR_HPP__
 
-class TObserver {
+class TGarbageCollector {
+private:
 public:
-    virtual ResultStruct* update() = 0;
+    TGarbageCollector();
+   ~TGarbageCollector();
 };
 
-#endif  // __OBSERVERCLASS_HPP__
+#endif  // __GARBAGECOLLECTOR_HPP__

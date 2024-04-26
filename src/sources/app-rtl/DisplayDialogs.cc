@@ -28,8 +28,11 @@ MessageBox_QString_PChar_Callee(
     result->arg[1]   = std::string("QSTRING"); result->ptr[1] = S1;
     result->arg[2]   = std::string("PCHAR"  ); result->ptr[2] = S2;
 
-    result->username = std::string("paule32");
-    result->time_srv = std::time  (nullptr);
+    // todo
+    if (userProtocol) {
+        result->username = std::string("paule32");
+        result->time_srv = std::time  (nullptr);
+    }
     
     resultList.push_back( result );
     
