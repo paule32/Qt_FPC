@@ -18,18 +18,16 @@
 # include <iostream>
 # include <cstdio>
 # include <string>
+# include <variant>
 # include <map>
 # include <vector>
 # include <functional>
 # include <ctime>
 
-# include "Connection.hpp"
-
-class TObserver;
-
 // -----------------------------------------------------------------
 // \brief this structure holds the return values for a given member.
 // -----------------------------------------------------------------
+#if 0
 struct ResultStruct {
     std::uint32_t                     args;
     std::string                       prev;
@@ -55,5 +53,6 @@ public:
     ResultStruct* add( ResultStruct* );
     ResultStruct* del( ResultStruct* );
 };
+#endif
 
 #endif  // __OBSERVER_HPP__
