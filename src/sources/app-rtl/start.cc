@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------
 // File:   start.cc
-// Author: (c) 2023 Jens Kallup - paule32
+// Author: (c) 2024 Jens Kallup - paule32
 // All rights reserved
 //
 // only for education, and non-profit usage !
@@ -38,6 +38,8 @@ QString_Create_PChar  (void *p)
 void QString_Append_QString(void *p) { std::cout << "Append: QString" << std::endl; }
 void foo1() { std::cout << "foo1" << std::endl; }
 void foo2() { std::cout << "foo2" << std::endl; }
+
+extern void testFoo();
 // -----------------------------------------------------------------
 // DLL entry start function ...
 // -----------------------------------------------------------------
@@ -50,12 +52,14 @@ BOOL WINAPI DllMain(
         case DLL_PROCESS_ATTACH: {
             labels.clear();
             
-            TConnection connection;
+            //TConnection connection;
+            
+            testFoo();
             
             //connection.onBeforeConnect = foo1;
             //connection.onAfterConnect  = foo2;
             //
-            connection.connect();
+            //connection.connect();
             
             //TDisplay display1;
             //TDisplay display2;

@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------
 // File:   DisplayDialogs.cc
-// Author: (c) 2023 Jens Kallup - paule32
+// Author: (c) 2024 Jens Kallup - paule32
 // All rights reserved
 //
 // only for education, and non-profit usage !
@@ -8,7 +8,7 @@
 # include "Observer.hpp"
 # include "DisplayObserver.hpp"
 # include "Connection.hpp"
-
+#if 0
 extern "C" {
 // -----------------------------------------------------------------
 // save the callee, and display a message on display device ...
@@ -59,3 +59,4 @@ MessageBox_QString_PChar(
 void TDisplay::update() {
     std::cout << "TDisplay: update" << std::endl;
 }
+#endif

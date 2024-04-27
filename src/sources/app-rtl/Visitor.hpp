@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------
 // File:   Visitor.hpp
-// Author: (c) 2023 Jens Kallup - paule32
+// Author: (c) 2024 Jens Kallup - paule32
 // All rights reserved
 //
 // only for education, and non-profit usage !
@@ -19,27 +19,104 @@ struct ArgumentStruct {
     void*        arg_pos;   // argument memory position
 };
 
+class Derived {
+public:
+    std::string class_name;
+    std::string class_parent;
+    Derived(std::string p) {
+        class_parent  = p;
+        class_name    = std::string("Derived");
+        std::cout << "DERIVED" << std::endl;
+    }
+    std::string ClassName() {
+        std::cout << class_name << std::endl;
+        return class_name;
+    }
+};
 template <class Derived >
 class SuperClass {
 public:
-    std::string ClassName() const {
-        return (static_cast< Derived* >(this))->ClassName();
+    // ---------------------------------------------------------
+    // \brief convert C++ type name to readable name ...
+    // ---------------------------------------------------------
+    std::string demangle(const char* mangledName) {
+        #ifdef __GNUC__
+        int status = 0;
+        char *demangled = abi::__cxa_demangle(mangledName, NULL, NULL, &status);
+        if (status == 0 && demangled != NULL) {
+            std::string result(demangled);
+            free(demangled);
+            return result;
+        }   else {
+            return std::string(mangledName);
+        }
+        #else
+        #error demangle only for GNU C++
+        #endif
+    }
+
+    Derived * parent = nullptr;
+    std::string class_name;
+    std::string class_parent;
+
+    SuperClass() {
+        class_parent  = std::string(typeid(Derived).name());
+        class_name    = std::string("SuperClass");
+        std::cout << "TSUPERCLASS" << std::endl;
+    }
+    SuperClass(std::string p) {
+        class_parent = p;
+        class_name   = std::string(typeid(Derived).name());
+        std::cout << "TSUPERCLASS" << std::endl;
+    }
+    std::string ClassName() {
+        std::cout << class_name << std::endl;
+        return class_name;
     }
 };
 
-class TObject: public SuperClass< TObject > {
+class TObject: public SuperClass< Derived > {
+private:
+    Derived *parent;
 public:
-    std::string ClassName() const {
-        std::cout << "ClassName: TObject" << std::endl;
-        return std::string("TObject");
+    std::string class_name;
+    std::string class_parent;
+    TObject() {
+        class_parent  = std::string(typeid(Derived).name());
+        class_name    = std::string("TObject");
+        std::cout << "TOBJECT" << std::endl;
+    }
+    TObject(std::string p) {
+        class_parent  = std::string(typeid(Derived).name());
+        class_name    = std::string("TObject");
+        std::cout << "TOBJECT" << std::endl;
+    }
+    std::string ClassName()  {
+        std::cout << class_name << std::endl;
+        return class_name;
     }
 };
 
-class TClass: public TObject {
+class TClass: public SuperClass< Derived > {
+private:
+    Derived *parent;
 public:
+    std::string class_name;
+    std::string class_parent;
+    
+    TClass() {
+        class_parent = std::string(typeid(Derived).name());
+        class_name   = std::string("TCLASS");
+        std::cout << "TCLASS" << std::endl;
+    }
+    TClass(std::string p) {
+        class_parent = std::string(typeid(Derived).name());
+        class_name   = std::string("TCLASS");
+        std::cout << "TCLASS" << std::endl;
+    }
     std::string ClassName() const {
-        std::cout << "ClassName: TClass" << std::endl;
-        return std::string("TClass");
+        std::cout << class_name << std::endl;
+        return class_name;
     }
 };
 
@@ -106,42 +183,41 @@ public:
         func_args_beg.clear();
         func_desc_end = std::string("EventObserver() Leave");
         func_time_end = std::time( nullptr );
+        
+        return *this;
     }
     EventObserver& operator << (const std::vector< ArgumentStruct > &value) {
-        func_time_end = value;
+        func_args_beg = value;
         return *this;
     }
     EventObserver& operator >> (const std::vector< ArgumentStruct > &value) {
-        func_time_beg = value;
+        // todo
         return *this;
     }
     EventObserver& operator << (const ArgumentStruct &value) {
-        if (font_args_beg.size() == font_args_end.size()) {
-            if (font_args_beg.size() > 0) {
-                func_args_beg.pop_back();
-                func_args_end.pop_back();
-            }
+        if (func_args_beg.size() > 0) {
+            func_args_beg.push_back( value );
         }
         return *this;
     }
     EventObserver& operator >> (const ArgumentStruct &value) {
-        func_args_beg.push_back( value );
+        func_args_beg.pop_back();
         return *this;
     }
     EventObserver& operator << (const std::string &value) {
-        func_name_end = value;
-        return *this;
-    }
-    EventObserver& operator >> (const std::string &value) {
         func_name_beg = value;
         return *this;
     }
+    EventObserver& operator >> (const std::string &value) {
+        // todo
+        return *this;
+    }
     EventObserver& operator << (const std::time_t &value) {
-        func_time_end = value;
+        func_time_beg = value;
         return *this;
     }
     EventObserver& operator >> (const std::time_t &value) {
-        func_time_beg = value;
+        func_time_end = value;
         return *this;
     }
 };
@@ -151,6 +227,8 @@ private:
     std::time_t user_enter;
     std::time_t user_leave;
 public:
+    void Enter() {
+    }
     void Enter(
         std::string             user_name,
         std::vector< uint16_t > user_priv)
@@ -170,12 +248,12 @@ public:
 };
 
 struct Visitor {
-    void operator()(const EventObserver &obj) {
+    void operator()(EventObserver &obj) {
         std::cout << "it is an Event -> ";
         obj.Enter();
         obj.Leave();
     }
-    void operator()(const UserObserver &obj) {
+    void operator()(UserObserver &obj) {
         std::cout << "it is an User -> ";
         obj.Enter();
         obj.Leave();

@@ -142,6 +142,7 @@ set sysrtl=%punits%\fpc-rtl
 set /a counter=0
 
 cd %prjdir%
+goto cplusplus
 
 echo =[ clean up directories    ]=    1 %%  done
 :: -----------------------------------------------------------------
@@ -336,11 +337,19 @@ for %%B in (%prjdir%\units\fpc-rtl\system.o %prjdir%\units\fpc-rtl\fpc_rtl.o) do
     if errorlevel 1 (goto buildError)
 )
 
-cd %prjdir%
+:cplusplus
+cd %prjdir%\sources\app-rtl
+echo build...
+call make.exe
+if errorlevel 1 (goto buildError)
 
-g++ -O2 -m64 -fPIC -Wno-write-strings -o %prjdir%\units\app-rtl\Observer.o       -c %prjdir%\sources\app-rtl\Observer.cc
-g++ -O2 -m64 -fPIC -Wno-write-strings -o %prjdir%\units\app-rtl\DisplayDialogs.o -c %prjdir%\sources\app-rtl\DisplayDialogs.cc
-g++ -O2 -m64 -fPIC -Wno-write-strings -o %prjdir%\units\app-rtl\start.o          -c %prjdir%\sources\app-rtl\start.cc
+cd %prjdir%\..\doc
+call build.bat
+if errorlevel 1 (goto buildError)
+
+cd %prjdir%
+call %prjdir%\tests\test1.exe
+goto allok
 
 %asmx64% -o %prjdir%\units\fpc-rtl\symbols.o %prjdir%\sources\fpc-qt\symbols.asm
 if errorlevel 1 (goto buildError)

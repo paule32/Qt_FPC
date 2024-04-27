@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------
 // File:   Observer.hpp
-// Author: (c) 2023 Jens Kallup - paule32
+// Author: (c) 2024 Jens Kallup - paule32
 // All rights reserved
 //
 // only for education, and non-profit usage !
@@ -17,12 +17,15 @@
 
 # include <iostream>
 # include <cstdio>
+# include <typeinfo>
 # include <string>
 # include <variant>
 # include <map>
 # include <vector>
 # include <functional>
 # include <ctime>
+
+# include <cxxabi.h> // header for __cxa_demangle
 
 // -----------------------------------------------------------------
 // \brief this structure holds the return values for a given member.

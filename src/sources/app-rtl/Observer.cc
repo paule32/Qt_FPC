@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------
 // File:   Observer.cc
-// Author: (c) 2023 Jens Kallup - paule32
+// Author: (c) 2024 Jens Kallup - paule32
 // All rights reserved
 //
 // only for education, and non-profit usage !
@@ -8,6 +8,7 @@
 # include "Connection.hpp"
 # include "ObserverClass.hpp"
 
+#if 0
 std::vector< ResultStruct* > resultList;
 bool userProtocol = false;
 
@@ -143,3 +144,5 @@ TConnection::connect(
     resultList.add( result );
     return result;
 }
+
+#endif

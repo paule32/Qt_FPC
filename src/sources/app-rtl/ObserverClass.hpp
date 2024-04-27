@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------
 // File:   ObserverClass.hpp
-// Author: (c) 2023 Jens Kallup - paule32
+// Author: (c) 2024 Jens Kallup - paule32
 // All rights reserved
 //
 // only for education, and non-profit usage !
@@ -9,9 +9,10 @@
 #define __OBSERVERCLASS_HPP__
 #pragma once
 
+/*
 class TObserver {
 public:
     virtual ResultStruct* update() = 0;
-};
+};*/
 
 #endif  // __OBSERVERCLASS_HPP__

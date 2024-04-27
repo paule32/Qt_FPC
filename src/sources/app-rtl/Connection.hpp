@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------
 // File:   Connection.hpp
-// Author: (c) 2023 Jens Kallup - paule32
+// Author: (c) 2024 Jens Kallup - paule32
 // All rights reserved
 //
 // only for education, and non-profit usage !
@@ -14,10 +14,10 @@
 
 class TConnection {
 private:
-    std::vector< TObserver *> observers;
+//    std::vector< TObserver *> observers;
 public:
-    void registerDisplay(TObserver *observer);
-    void removeDisplay(TObserver *observer);
+//    void registerDisplay(TObserver *observer);
+//    void removeDisplay(TObserver *observer);
     void notifyObservers();
     void setValue();
 
