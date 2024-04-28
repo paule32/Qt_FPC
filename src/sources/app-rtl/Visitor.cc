@@ -5,8 +5,12 @@
 //
 // only for education, and non-profit usage !
 // -----------------------------------------------------------------
-# include "Visitor.hpp"
+# include "inc/Observer.hpp"
+# include "inc/Visitor.hpp"
+# include "inc/SuperClass.hpp"
+# include "inc/TClass.hpp"
 
+START_BOOSTRELEASE_NS
 template <typename Derived >
 class TFoo: public SuperClass< Derived > {
 private:
@@ -16,31 +20,29 @@ public:
     std::string class_parent;
     TFoo() {
         class_parent = std::string(typeid(Derived).name());
-        class_name   = std::string("TClass");
-        std::cout << "TFOO" << std::endl;
+        class_name   = demangle(typeid(TFoo).name());
     }
     TFoo(std::string p) {
-        class_parent  = std::string(typeid(Derived).name());
-        class_name    = "TFoo";
-        std::cout << "TFOO" << std::endl;
+        class_parent = std::string(typeid(Derived).name());
+        class_name   = demangle(typeid(TFoo).name());
     }
     std::string ClassName()  {
-        std::cout << class_name << std::endl;
         return class_name;
     }
 };
 
 extern "C" void testFoo( ) {
-    TFoo< TClass > foo;
+    TFoo< TClass<> > foo;
     std::cout << foo.ClassName() << std::endl;
 }
 
 void useObjects(
-    std::vector<
-        EventObserver*>
+    std::vector< EventObserver< int >*>
     &v)
 {
     //for (const auto &item: v) {
 //        std::visit( Visitor{}, item );
 //    }
 }
+
+END_BOOSTRELEASE_NS

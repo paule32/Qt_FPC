@@ -4,3 +4,4 @@ img/screen001.png
 img/screen002.png
 src/sources/fpc-sys/1
 src/sources/app-rtl/app_rtl.dll
+/src/sources/app-rtl/obj

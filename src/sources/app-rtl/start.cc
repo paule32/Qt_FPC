@@ -5,9 +5,9 @@
 //
 // only for education, and non-profit usage !
 // -----------------------------------------------------------------
-# include "ObserverClass.hpp"
-# include "Connection.hpp"
-# include "DisplayObserver.hpp"
+# include "inc/ObserverClass.hpp"
+# include "inc/Connection.hpp"
+# include "inc/DisplayObserver.hpp"
 
 // -----------------------------------------------------------------
 //

@@ -5,9 +5,9 @@
 //
 // only for education, and non-profit usage !
 // -----------------------------------------------------------------
-# include "Observer.hpp"
-# include "DisplayObserver.hpp"
-# include "Connection.hpp"
+# include "inc/Observer.hpp"
+# include "inc/DisplayObserver.hpp"
+# include "inc/Connection.hpp"
 #if 0
 extern "C" {
 // -----------------------------------------------------------------

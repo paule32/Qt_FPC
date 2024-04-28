@@ -5,8 +5,8 @@
 //
 // only for education, and non-profit usage !
 // -----------------------------------------------------------------
-# include "Connection.hpp"
-# include "ObserverClass.hpp"
+# include "inc/Connection.hpp"
+# include "inc/ObserverClass.hpp"
 
 #if 0
 std::vector< ResultStruct* > resultList;
