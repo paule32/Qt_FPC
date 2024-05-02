@@ -1,0 +1,53 @@
+// -----------------------------------------------------------------
+// File:   datentypen.dot
+// Author: (c) 2024 Jens Kallup - paule32
+//         all rights reserved.
+//
+// only for education, and non-profit usage !
+// -----------------------------------------------------------------
+digraph G {
+    graph [
+        bgcolor   = black,
+        size      = "4,4"
+    ];
+    node [
+        shape     = box,
+        style     = "rounded,filled",
+        fontname  = "Arial",
+        fontsize  = 10,
+        color     = yellow,
+        fillcolor = "#000080",  // dark navy-blue
+        fontcolor = white,
+        penwidth  = 2,
+        width     = 1.5,
+        height    = 0.34        // scaled: -15 %
+    ];
+    edge [
+        penwidth  = 2,
+        color     = white
+    ];
+
+    // SuperBox
+    SuperBox [
+        label     = "Datentypen",
+        fontname  = "Arial Bold"
+    ];
+
+    // Erste untere Box
+    FirstBox [
+        label     = "ohne Vorzeichen",
+        pos       = "0,-1",
+        fillcolor = "#000060"
+    ];
+
+    // Zweite untere Box
+    SecondBox [
+        label     = "mit Vorzeichen",
+        pos       = "2,-1",
+        fillcolor = "#000060"
+    ];
+
+    // Pfeile
+    SuperBox -> FirstBox;
+    SuperBox -> SecondBox;
+}
