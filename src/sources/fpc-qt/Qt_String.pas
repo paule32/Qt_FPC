@@ -7,8 +7,10 @@
 // (c) Copyright 2024 Jens Kallup - paule32
 // only for non-profit usage !!!
 // ---------------------------------------------------------------------------
-{$ifdef windows_header}
+{$mode delphi}
+unit Qt_String;
 
+interface
 type
     QString = class(QObject)
     private
@@ -27,25 +29,31 @@ type
         
         function getText: PChar;
         
-        procedure setText( AString: PChar   );
-        procedure setText( AString: QString );
+        procedure setText( AString: PChar   ); overload;
+        procedure setText( AString: QString ); overload;
     end;
 
-{$ifdef winexe}
 //function QString_Create(s: QString): QString; stdcall; external rtl_dll name 'QString_CreateQString'; overload;
 //function QString_Create            : QString; stdcall; external rtl_dll name 'QString_Create';        overload;
-{$endif winexe}
 
-{$endif windows_header}
-{$ifdef windows_source}
+procedure QString_Create_PChar(ref: Pointer; s: PChar);
+implementation
 
 // ---------------------------------------------------------------------------
 // dummy deklaration for the FPC Compiler - patched later, so dummy ...
 // ---------------------------------------------------------------------------
-constructor QString.Create                ; begin end;
-constructor QString.Create(str  : PChar  ); begin end;
-constructor QString.Create(other: QString); begin end;
- destructor QString.Destroy; begin end;
+constructor QString.Create                ; assembler;
+asm
+nop
+ret
+end;
+constructor QString.Create(str  : PChar  ); assembler;
+asm
+nop
+ret
+end;
+constructor QString.Create(other: QString); assembler; asm end;
+ destructor QString.Destroy; assembler; asm end;
 
 function QString.append(other: QString): QString; begin end;
 function QString.append(str  : PChar  ): QString; begin end;
@@ -65,4 +73,10 @@ begin
     setText( AString.FString );
 end;
 
-{$endif}
+procedure QString_Create_PChar(ref: Pointer; s: PChar); [alias: 'QString_Create_PChar' ];
+begin
+    QString(ref).FString := s;
+end;
+
+end.
+{ $ e ndif}

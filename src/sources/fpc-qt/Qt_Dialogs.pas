@@ -5,13 +5,17 @@
 //
 // only for education, and non-profit usage !
 // -----------------------------------------------------------------
-{$ifdef windows_header}
+unit Qt_Dialogs;
 
-function MessageBox(AText: QString; ATitle: QString): DWORD;
-function MessageBox(AText: QString; ATitle: PChar  ): DWORD;
+interface
+uses Qt_String;
 
-{$endif windows_header}
-{$ifdef windows_source}
+function MessageBox(AText: QString; ATitle: QString): DWORD; overload;
+function MessageBox(AText: QString; ATitle: PChar  ): DWORD; overload;
+function MessageBox(AText: String;  ATitle: String ): DWORD; overload;
+
+implementation
+
 function MessageBox(AText: QString; ATitle: QString): DWORD;
 begin
     //MessageBox(0, AText.getText, ATitle.getText, 0);
@@ -21,5 +25,10 @@ function MessageBox(AText: QString; ATitle: PChar  ): DWORD;
 begin
     result := 1;
 end;
+function MessageBox(AText: String; ATitle: String ): DWORD;
+begin
+    result := 1;
+end;
 
-{$endif windows_source}
+begin
+end.

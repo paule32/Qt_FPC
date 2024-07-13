@@ -40,7 +40,7 @@ procedure fpc_libinitializeunits; compilerproc;
 
 procedure fpc_finalize(Data,TypeInfo: Pointer); compilerproc;
 procedure fpc_copy_proc(Src, Dest, TypeInfo : Pointer); compilerproc; inline;
-procedure fpc_do_exit; compilerproc;
+procedure fpc_do_exit; external name 'fpc_do_exit'; compilerproc;
 
 procedure EmptyMethod; external name 'FPC_EMPTYMETHOD';
 
@@ -239,7 +239,7 @@ end;
 procedure fpc_readln_end(var f: Text); [public,alias:'FPC_READLN_END']; iocheck; compilerproc;
 begin end;
 
-procedure fpc_do_exit; alias: 'FPC_DO_EXIT'; compilerproc;
+procedure fpc_do_exit; [public,alias: 'FPC_DO_EXIT']; compilerproc;
 begin
   ExitProcess(0);
 end;

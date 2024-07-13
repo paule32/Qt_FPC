@@ -45,8 +45,8 @@ const rtl_dll = 'fpc_rtl.dll';
 // Qt-Framework GUI ...
 // ---------------------------------------------------------------------------
 {$I Qt_Object.pas}
-{$I Qt_String.pas}
-{$I Qt_Dialogs.pas}
+{ $ I Q t _String.pas}
+{ $ I Q t_Dialogs.pas}
 
 // ---------------------------------------------------------------------------
 implementation
@@ -72,7 +72,7 @@ implementation
 // Qt-Framework GUI ...
 // ---------------------------------------------------------------------------
 {$I Qt_Object.pas}
-{$I Qt_String.pas}
-{$I Qt_Dialogs.pas}
+{ $ I  Q t_String.pas}
+{ $ I  Q t_Dialogs.pas}
 
 end.
