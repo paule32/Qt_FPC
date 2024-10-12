@@ -240,7 +240,7 @@ echo.
 echo delete: %prjdir%\units\fpc-qt\system.s/.ppu
 @rm %prjdir%\units\fpc-qt\system.*
 echo create: %prjdir%\units\fpc-qt\system.s
-touch %prjdir%\units\fpc-qt\system.s
+type nul  >  %prjdir%\units\fpc-qt\system.s
 echo.
 
 echo =[ assemble files...       ]=    6 %%  done
@@ -550,7 +550,16 @@ for %%A in (fpcinit sysinit) do (
 if errorlevel 1 (goto buildError)
 
 %fpcx64% -dwinexe -FE%prjdir%\tests %prjdir%\tests\test1.pas
-if errorlevel 1 (goto buildError)
+::
+sed -i 's/EXTERN\tFPC\_DO\_EXIT//g' %prjdir%\tests\test1.s
+sed -i 's/EXTERN\tfpc\_initializeunits//g' %prjdir%\tests\test1.s
+sed -i 's/call\tFPC\_DO\_EXIT/\n; [1]\nxor ecx, ecx\ncall _$dll$kernel32$ExitProcess\n; [1]/g' %prjdir%\tests\test1.s
+sed -i 's/call\tfpc_initializeunits//g' %prjdir%\tests\test1.s
+sed -i '/; Begin asmlist al_dwarf_frame/,/; End asmlist al_dwarf_frame/d' %prjdir%\tests\test1.s
+sed -i '/; Begin asmlist al_globals/,/; End asmlist al_globals/d' %prjdir%\tests\test1.s
+sed -i 's/\tGLOBAL main/\tGLOBAL main\n\tglobal \_mainCRTStartup\n\_mainCRTStartup\:/g' %prjdir%\tests\test1.s
+sed -i 's/\t\tnop\n\t\tlea\trsp,\[rsp\+40]\n//g' %prjdir%\tests\test1.s
+sed -i ':a;N;$!ba;s/\.\.\@.*\:\n\t\tlea\trsp,\[rsp\-40\]\n\.\.\@.*\://g' %prjdir%\tests\test1.s
 ::
 for %%A in (fpcinit sysinit) do (
     %fpcx64% -dwinexe %srcsys%\%%A.pas
@@ -565,7 +574,13 @@ echo.
 :: -----------------------------------------------------------------
 :: remove not wanted rtti information's ...
 :: -----------------------------------------------------------------
-%BASHCO% --login -i -c "%SCRIPT_PATH%/script_sed_test1.sh"
+del %prjdir%\tests\system.s      /F /S /Q >nul: 2>nul:
+del %prjdir%\tests\system.ppu    /F /S /Q >nul: 2>nul:
+del %prjdir%\tests\sysinit.ppu   /F /S /Q >nul: 2>nul:
+del %prjdir%\tests\fpintres.ppu  /F /S /Q >nul: 2>nul:
+del %prjdir%\tests\test1.exe     /F /S /Q >nul: 2>nul:
+
+type nul > %prjdir%\tests\system.s
 
 for %%A in (system rtl_utils fpc_rtl) do (
     echo assemble: %sysrtl%\%%A.s
